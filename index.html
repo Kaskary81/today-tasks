@@ -351,7 +351,7 @@ h1 .accent{background:linear-gradient(100deg,#c4b5fd,#a855f7 40%,#f0abfc);
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='TASKS 2026-08-17 · t2';
+const BUILD='TASKS 2026-08-18 · t3';
 
 let SESSION=null, TASKS=[], LISTS=[], STEPS={}, VIEW='today', LIST=null, SEL=null, MOB=false;
 let UNDO=null;
@@ -366,16 +366,40 @@ const shiftDay=(n,from)=>{const d=from?new Date(from+'T00:00:00'):new Date();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=id=>document.getElementById(id);
 
-async function api(path,opts={}){
+async function api(path,opts={},tries=0){
   const r=await fetch(SB_URL+'/rest/v1/'+path,{...opts,headers:{
     apikey:SB_KEY,
     Authorization:'Bearer '+(SESSION?SESSION.access_token:SB_KEY),
     'Content-Type':'application/json',
-    Prefer:opts.method==='POST'?'return=representation':'return=representation',
+    Prefer:'return=representation',
     ...(opts.headers||{})}});
-  const txt=await r.text();
-  if(!r.ok)throw new Error(txt.slice(0,140)||('HTTP '+r.status));
-  return txt?JSON.parse(txt):null;
+  if(r.ok){
+    const txt=await r.text();
+    return txt?JSON.parse(txt):null;
+  }
+  const body=await r.text();
+  /* The sign-in server can mint a token a second or two ahead of the database's
+     clock; the database then refuses it as "issued at future". It settles on its
+     own, so wait briefly and try again rather than throwing the person out. */
+  if(/PGRST303|issued at future/.test(body)&&tries<4){
+    await new Promise(res=>setTimeout(res,900+tries*700));
+    return api(path,opts,tries+1);
+  }
+  /* an expired token deserves one silent refresh */
+  if(r.status===401&&tries<1&&await resume()){
+    return api(path,opts,tries+1);
+  }
+  throw new Error(friendly(body,r.status));
+}
+function friendly(body,status){
+  try{
+    const j=JSON.parse(body);
+    if(/issued at future/.test(j.message||''))
+      return 'The clock on this device is out of step with the server. '+
+             'Check the date and time settings, then try again.';
+    if(j.message)return j.message;
+  }catch(e){}
+  return body.slice(0,120)||('Request failed ('+status+')');
 }
 
 /* ============================================================
