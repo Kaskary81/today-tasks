@@ -122,6 +122,26 @@ table.g td.c-title{position:sticky;left:var(--nol,54px);z-index:3;background:#1a
 table.g thead th.c-title{position:sticky;left:var(--nol,54px);z-index:7}
 table.g tbody tr:nth-child(even) td.c-title{background:#1c1433}
 table.g td.spacer,table.g th.spacer{border-right:0;background:transparent}
+
+/* an item row reads as a heading, an action row is indented beneath it */
+table.g tr.irow td{font-weight:600}
+table.g tr.irow td.c-title .cv{color:var(--ink)}
+table.g tr.arow td{font-weight:400}
+table.g tr.arow td.rowno{color:var(--ink3);font-size:11px}
+table.g td.na{background:rgba(0,0,0,.16)}
+table.g tr.arow td.na{background:rgba(0,0,0,.2)}
+table.g td.ro .cv{color:var(--ink3)}
+table.g td.ro.calc .cv{font-style:italic}
+.nocell{display:flex;align-items:center;gap:3px;justify-content:flex-start;padding:0 6px}
+.nocell.sub{justify-content:flex-end;padding-right:10px;color:var(--ink3);font-size:11px}
+.car{width:15px;flex:none;color:var(--ink3);font-size:9px;line-height:1;text-align:center}
+button.car:hover{color:var(--violet)}
+.actiontext{padding-left:20px!important;position:relative}
+.actiontext:before{content:"";position:absolute;left:8px;top:50%;width:7px;height:1px;
+  background:var(--line2)}
+.hbtn{font-size:11px;color:var(--ink3);border:1px solid var(--line2);border-radius:7px;
+  padding:1px 8px;line-height:18px;font-variant-numeric:tabular-nums}
+.hbtn:hover{border-color:var(--violet);color:#e9d5ff;background:rgba(168,85,247,.12)}
 table.g td.sel{background:rgba(168,85,247,.16)!important;
   box-shadow:inset 0 0 0 1px rgba(168,85,247,.24)}
 table.g td.cur{background:rgba(168,85,247,.22)!important;
@@ -198,6 +218,32 @@ select.cellin{padding:0 4px}
 .dlg .acts{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
 @keyframes rise{from{opacity:0;transform:translateY(9px) scale(.99)}to{opacity:1;transform:none}}
 
+/* ---------- history panel ---------- */
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);z-index:95;
+  background:linear-gradient(180deg,rgba(34,23,57,.99),rgba(20,14,38,.99));
+  border-left:1px solid rgba(168,85,247,.22);box-shadow:-30px 0 80px rgba(5,2,14,.6);
+  transform:translateX(102%);transition:transform .38s var(--ease);
+  display:flex;flex-direction:column}
+.sheet.on{transform:none}
+.sheet .sh{display:flex;align-items:center;gap:10px;padding:16px 18px;
+  border-bottom:1px solid var(--line);font-size:15px}
+.sheet .sb{flex:1;overflow:auto;padding:16px 18px}
+.sheet .hd{margin:0 0 14px;font-size:14px;color:var(--ink);line-height:1.5}
+.sheet .sf{display:flex;gap:8px;padding:12px 18px calc(14px + var(--safe-b));
+  border-top:1px solid var(--line)}
+.sheet .sf input{flex:1;background:rgba(18,12,33,.85);border:1px solid var(--line2);
+  border-radius:10px;padding:9px 12px;outline:none;font-size:13px}
+.sheet .sf input:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(168,85,247,.15)}
+.hrow{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid rgba(51,37,82,.5)}
+.hrow .hk{width:8px;height:8px;border-radius:50%;flex:none;margin-top:6px;
+  background:var(--ink3)}
+.hrow .hk.k-opened{background:var(--sky)}
+.hrow .hk.k-closed{background:var(--good)}
+.hrow .hk.k-reopened{background:var(--warn)}
+.hrow .hk.k-note{background:var(--violet)}
+.hrow .hn{font-size:13px;color:var(--ink2);line-height:1.45}
+.hrow .ht{font-size:11px;color:var(--ink3);margin-top:2px;font-variant-numeric:tabular-nums}
+
 /* ---------- toast ---------- */
 #toast{position:fixed;left:50%;bottom:52px;transform:translate(-50%,26px);z-index:120;
   background:rgba(35,25,62,.97);border:1px solid rgba(168,85,247,.3);border-radius:13px;
@@ -257,14 +303,16 @@ select.cellin{padding:0 4px}
     <div class="hgrow"></div>
     <div class="search">
       <span style="color:var(--ink3)">⌕</span>
-      <input id="q" placeholder="Search every column…  Ctrl+F" autocomplete="off">
+      <input id="q" placeholder="Search items and actions…  Ctrl+F" autocomplete="off">
       <button class="x" id="qx" title="Clear">×</button>
     </div>
     <button class="tbtn" id="signout" title="Sign out">⎋</button>
   </header>
 
   <div class="tools">
-    <button class="tbtn primary" id="badd">+ Add row</button>
+    <button class="tbtn primary" id="badd">+ Item</button>
+    <button class="tbtn" id="bact">+ Action</button>
+    <button class="tbtn" id="bsplit">Split out</button>
     <button class="tbtn" id="bins">Insert above</button>
     <button class="tbtn danger" id="bdel">Delete rows</button>
     <div class="tsep"></div>
@@ -289,25 +337,28 @@ select.cellin{padding:0 4px}
   <div class="statusbar" id="sbar"></div>
 </div>
 
+<div class="sheet" id="sheet"></div>
 <div class="menu" id="menu"></div>
 <div class="scrim" id="scrim"><div class="dlg" id="dlg"></div></div>
 <div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ============================================================
-   Action list — spreadsheet register over task_items
+   Action list — a two-level register.
+   An ITEM has a description; ACTIONS hang beneath it as sub-rows,
+   each with its own due date, closure and history.
+   The item's due date is the LONGEST due among its open actions,
+   and the item closes itself once none are open. Both are done by
+   database triggers, so they hold whatever writes the row.
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-27 · a2';
+const BUILD='ACTIONS 2026-08-27 · a3';
 
-let SESSION=null, ROWS=[], VIEW=[], BUSY=false;
-let SORT=null;                 /* {k,dir}  dir 1 asc, -1 desc              */
-let FILT={};                   /* key -> {vals:Set|null, text:''}          */
-let SEARCH='';
-let CUR={r:0,c:1}, ANC={r:0,c:1};   /* focus cell and selection anchor     */
-let EDIT=null;                 /* {r,c,el}                                 */
-let UNDO=[];
+let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
+let SORT=null, FILT={}, SEARCH='';
+let CUR={r:0,c:1}, ANC={r:0,c:1};
+let EDIT=null, UNDO=[], SHUT=new Set();
 let PREFS={w:{},rowh:32};
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -317,22 +368,41 @@ const isoDay=d=>{const x=(d instanceof Date)?d:new Date(d);
          String(x.getDate()).padStart(2,'0');};
 const TODAY=()=>isoDay(new Date());
 
-/* ---------- columns ---------- */
+/* ---------- columns ----------
+   `on` says which row kind the column belongs to; a cell that is not on
+   this row's kind is greyed and cannot be typed into. */
 const STATUSES=['Open','In progress','On hold','Closed'];
 const COLS=[
-  {k:'__no',        lb:'No.',         w:54,  ro:true, kind:'no'},
-  {k:'title',       lb:'Action',      w:330, kind:'text'},
-  {k:'project',     lb:'Project',     w:135, kind:'text', suggest:true},
-  {k:'responsible', lb:'Responsible', w:150, kind:'text', suggest:true},
-  {k:'priority',    lb:'Priority',    w:92,  kind:'sel', opts:['1','2','3','4']},
-  {k:'status',      lb:'Status',      w:126, kind:'sel', opts:STATUSES},
-  {k:'raised',      lb:'Raised on',   w:112, kind:'date'},
-  {k:'due',         lb:'Due',         w:112, kind:'date'},
-  {k:'done_at',     lb:'Closed on',   w:112, kind:'date', ro:true},
-  {k:'notes',       lb:'Notes',       w:300, kind:'text'}
+  {k:'__no',        lb:'No.',         w:66,  ro:true, kind:'no',   on:'both'},
+  {k:'description', lb:'Description', w:300, kind:'text', on:'item'},
+  {k:'text',        lb:'Action',      w:300, kind:'text', on:'action'},
+  {k:'project',     lb:'Project',     w:130, kind:'text', on:'item',   suggest:true},
+  {k:'responsible', lb:'Responsible', w:145, kind:'text', on:'both',   suggest:true},
+  {k:'priority',    lb:'Priority',    w:86,  kind:'sel',  on:'item',   opts:['1','2','3','4']},
+  {k:'status',      lb:'Status',      w:124, kind:'sel',  on:'both',   opts:STATUSES},
+  {k:'raised',      lb:'Raised on',   w:110, kind:'date', on:'item'},
+  {k:'due',         lb:'Due',         w:110, kind:'date', on:'both'},
+  {k:'closed',      lb:'Closed on',   w:110, kind:'date', on:'both', ro:true},
+  {k:'__hist',      lb:'History',     w:92,  kind:'hist', on:'action', ro:true},
+  {k:'notes',       lb:'Notes',       w:260, kind:'text', on:'item'}
 ];
 const colOf=k=>COLS.findIndex(c=>c.k===k);
-const FIRSTC=1;                                     /* No. is not editable */
+const FIRSTC=1;
+
+function get(node,c){
+  if(c.kind==='no'||c.kind==='hist')return '';
+  if(c.on!=='both'&&c.on!==node.kind)return '';
+  const rec=node.rec;
+  if(c.k==='closed')return node.kind==='item'?(rec.done_at||''):(rec.closed_at||'');
+  return rec[c.k]==null?'':String(rec[c.k]);
+}
+/* an item that owns actions has its due date and status computed for it */
+function locked(node,c){
+  if(c.ro||c.kind==='no'||c.kind==='hist')return true;
+  if(c.on!=='both'&&c.on!==node.kind)return true;
+  if(node.kind==='item'&&node.kids>0&&(c.k==='due'||c.k==='status'))return true;
+  return false;
+}
 
 /* ============================================================
    Talking to the database
@@ -346,7 +416,6 @@ async function api(path,opts={},tries=0){
     ...(opts.headers||{})}});
   if(r.ok){const t=await r.text();return t?JSON.parse(t):null;}
   const body=await r.text();
-  /* the token can be minted a moment ahead of the database's clock */
   if(/PGRST303|issued at future/.test(body)&&tries<4){
     await new Promise(res=>setTimeout(res,900+tries*700));
     return api(path,opts,tries+1);
@@ -380,64 +449,73 @@ async function resume(){
   if(!r.ok)return false;
   SESSION=await r.json(); save(); return true;
 }
-
-/* ---------- preferences (own storage key — the trackers share this domain) */
 function loadPrefs(){
   try{const p=JSON.parse(localStorage.getItem('task-prefs')||'null');
-    if(p&&p.w)PREFS=Object.assign(PREFS,p);}catch(e){}
+    if(p&&p.w)PREFS=Object.assign(PREFS,p);
+    if(p&&p.shut)SHUT=new Set(p.shut);}catch(e){}
   COLS.forEach(c=>{if(PREFS.w[c.k])c.w=PREFS.w[c.k];});
   document.documentElement.style.setProperty('--rowh',(PREFS.rowh||32)+'px');
 }
 function savePrefs(){
-  PREFS.w={}; COLS.forEach(c=>PREFS.w[c.k]=c.w);
+  PREFS.w={}; COLS.forEach(c=>PREFS.w[c.k]=c.w); PREFS.shut=[...SHUT];
   try{localStorage.setItem('task-prefs',JSON.stringify(PREFS));}catch(e){}
 }
 
-/* ============================================================
-   Loading
-   ============================================================ */
-const FIELDS='id,title,project,responsible,priority,status,raised,due,done,done_at,notes,sort,deleted_at';
+const IFIELDS='id,description,title,project,responsible,priority,status,raised,due,done,done_at,notes,sort,deleted_at';
+const AFIELDS='id,item_id,text,responsible,due,status,closed_at,sort,created_at,deleted_at';
 async function loadAll(){
-  const rows=await api('task_items?select='+FIELDS+'&deleted_at=is.null&order=sort.asc,id.asc');
-  ROWS=rows||[];
-  ROWS.forEach((r,i)=>{if(r.sort==null||r.sort===0)r.sort=i+1;});
+  const [it,ac]=await Promise.all([
+    api('task_items?select='+IFIELDS+'&deleted_at=is.null&order=sort.asc,id.asc'),
+    api('task_actions?select='+AFIELDS+'&deleted_at=is.null&order=sort.asc,id.asc')]);
+  ITEMS=(it||[]).map(r=>({...r,description:r.description||r.title||''}));
+  ACTS=ac||[];
+  ITEMS.forEach((r,i)=>{if(r.sort==null||r.sort===0)r.sort=i+1;});
 }
+const kidsOf=id=>ACTS.filter(a=>a.item_id===id);
 
 /* ============================================================
-   Filtering, sorting, searching
+   Filtering, sorting, flattening
    ============================================================ */
-function cellText(row,c){
-  if(c.kind==='no')return '';
-  const v=row[c.k];
-  return v==null?'':String(v);
+function textOf(node){
+  return COLS.filter(c=>c.kind!=='no'&&c.kind!=='hist')
+             .map(c=>get(node,c)).join(' ').toLowerCase();
 }
-function passes(row){
-  if(SEARCH){
-    const hay=COLS.filter(c=>c.kind!=='no').map(c=>cellText(row,c)).join(' ').toLowerCase();
-    if(!hay.includes(SEARCH))return false;
-  }
+function matches(node){
+  if(SEARCH&&!textOf(node).includes(SEARCH))return false;
   for(const k in FILT){
     const f=FILT[k]; if(!f)continue;
-    const c=COLS[colOf(k)]; const v=cellText(row,c);
+    const v=get(node,COLS[colOf(k)]);
     if(f.vals&&!f.vals.has(v))return false;
     if(f.text&&!v.toLowerCase().includes(f.text.toLowerCase()))return false;
   }
   return true;
 }
 function rebuild(){
-  VIEW=ROWS.filter(passes);
+  const items=ITEMS.slice();
   if(SORT){
     const c=COLS[colOf(SORT.k)];
-    VIEW.sort((a,b)=>{
-      let x=cellText(a,c), y=cellText(b,c);
-      if(c.kind==='sel'&&c.k==='priority'){x=+x||9;y=+y||9;}
+    items.sort((a,b)=>{
+      let x=get({kind:'item',rec:a,kids:0},c), y=get({kind:'item',rec:b,kids:0},c);
+      if(c.k==='priority'){x=+x||9;y=+y||9;}
       else if(c.kind==='date'){x=x||'9999';y=y||'9999';}
       else {x=x.toLowerCase();y=y.toLowerCase();}
       return (x<y?-1:x>y?1:0)*SORT.dir;
     });
-  }else{
-    VIEW.sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
-  }
+  }else items.sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
+
+  VIEW=[];
+  items.forEach(it=>{
+    const kids=kidsOf(it.id).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
+    const inode={kind:'item',rec:it,kids:kids.length,no:0};
+    const anodes=kids.map((a,j)=>({kind:'action',rec:a,parent:it,kids:0,sub:j+1}));
+    const keptKids=anodes.filter(matches);
+    if(!(matches(inode)||keptKids.length))return;
+    VIEW.push(inode);
+    if(!SHUT.has(it.id))
+      (matches(inode)?anodes:keptKids).forEach(n=>VIEW.push(n));
+  });
+  let n=0;
+  VIEW.forEach(node=>{ if(node.kind==='item')node.no=++n; else node.no=n; });
   if(CUR.r>=VIEW.length)CUR.r=Math.max(0,VIEW.length-1);
   if(ANC.r>=VIEW.length)ANC.r=CUR.r;
 }
@@ -448,7 +526,7 @@ function rebuild(){
 function head(){
   let h='<tr>';
   COLS.forEach((c,i)=>{
-    const cls=(c.kind==='no'?'rowno':'')+(c.k==='title'?' c-title':'');
+    const cls=(c.kind==='no'?'rowno':'')+(c.k==='description'?' c-title':'');
     const mark=SORT&&SORT.k===c.k?(SORT.dir>0?'▲':'▼'):'';
     const on=FILT[c.k]?'on':'';
     h+='<th class="'+cls+'" style="width:'+c.w+'px" data-c="'+i+'">'
@@ -456,108 +534,126 @@ function head(){
       +(c.kind==='no'?'<span class="lb">'+esc(c.lb)+'</span>'
         :'<span class="lb" data-sort="'+c.k+'">'+esc(c.lb)+'</span>'
          +'<span class="sortmark">'+mark+'</span>'
-         +'<button class="fbtn '+on+'" data-menu="'+c.k+'" title="Sort and filter">▼</button>')
+         +(c.kind==='hist'?'':'<button class="fbtn '+on+'" data-menu="'+c.k
+            +'" title="Sort and filter">▼</button>'))
       +'</div>'
       +(c.kind==='no'?'':'<div class="rsz" data-rsz="'+i+'"></div>')
       +'</th>';
   });
-  /* a width-less trailing column: under table-layout:fixed the leftover space
-     goes to columns with no width, so the real ones keep their exact px and the
-     frozen-column offsets stay true. */
   h+='<th class="spacer"></th>';
   return h+'</tr>';
 }
-function stCls(s){
-  return s==='Closed'?'st-closed':s==='In progress'?'st-prog':s==='On hold'?'st-hold':'st-open';
-}
-function cellHTML(row,c,ri){
-  if(c.kind==='no')return '<span class="cv">'+(ri+1)+'</span>';
-  const v=row[c.k]==null?'':String(row[c.k]);
+const stCls=s=>s==='Closed'?'st-closed':s==='In progress'?'st-prog'
+              :s==='On hold'?'st-hold':'st-open';
+function cellHTML(node,c){
+  if(c.kind==='no'){
+    if(node.kind==='item'){
+      const car=node.kids?'<button class="car" data-shut="'+node.rec.id+'">'
+        +(SHUT.has(node.rec.id)?'▸':'▾')+'</button>':'<span class="car"></span>';
+      return '<span class="cv nocell">'+car+'<b>'+node.no+'</b></span>';
+    }
+    return '<span class="cv nocell sub">'+node.no+'.'+node.sub+'</span>';
+  }
+  if(c.kind==='hist'){
+    if(node.kind!=='action')return '<span class="cv"></span>';
+    const n=(LOGS[node.rec.id]||[]).length;
+    return '<span class="cv"><button class="hbtn" data-hist="'+node.rec.id+'">⏱ '
+      +(n||'')+'</button></span>';
+  }
+  if(c.on!=='both'&&c.on!==node.kind)return '<span class="cv"></span>';
+  const v=get(node,c);
   if(c.k==='status')
     return '<span class="cv"><span class="st '+stCls(v)+'">'+esc(v||'Open')+'</span></span>';
   if(c.k==='priority')
     return '<span class="cv">'+(v?'<span class="pr pr'+esc(v)+'">'+esc(v)+'</span>':'')+'</span>';
-  if(c.k==='due'&&v&&row.status!=='Closed'){
+  if(c.k==='due'&&v&&get(node,COLS[colOf('status')])!=='Closed'){
     const cls=v<TODAY()?'late':v===TODAY()?'duetoday':'';
     return '<span class="cv '+cls+'">'+esc(v)+'</span>';
   }
+  if(c.k==='text')return '<span class="cv actiontext">'+esc(v)+'</span>';
   return '<span class="cv">'+esc(v)+'</span>';
 }
 function body(){
   if(!VIEW.length)
     return '<tr><td colspan="'+(COLS.length+1)+'" style="height:120px;text-align:center;'
       +'color:var(--ink3)">Nothing to show. '
-      +(Object.keys(FILT).length||SEARCH?'Clear the filters, or ':'')
-      +'add a row.</td></tr>';
+      +(Object.keys(FILT).length||SEARCH?'Clear the filters, or ':'')+'add a row.</td></tr>';
   const box=selBox();
   let h='';
-  VIEW.forEach((row,ri)=>{
+  VIEW.forEach((node,ri)=>{
     const picked=ri>=box.r1&&ri<=box.r2;
-    h+='<tr'+(picked?' class="picked"':'')+' data-r="'+ri+'">';
+    h+='<tr class="'+(node.kind==='action'?'arow':'irow')+(picked?' picked':'')
+      +'" data-r="'+ri+'">';
     COLS.forEach((c,ci)=>{
       const inBox=ri>=box.r1&&ri<=box.r2&&ci>=box.c1&&ci<=box.c2;
       const isCur=ri===CUR.r&&ci===CUR.c;
-      const cls=[c.kind==='no'?'rowno':'', c.k==='title'?'c-title':'', c.ro?'ro':'',
+      const cls=[c.kind==='no'?'rowno':'', c.k==='description'?'c-title':'',
+                 locked(node,c)?'ro':'',
+                 (c.on!=='both'&&c.on!==node.kind)?'na':'',
                  inBox&&c.kind!=='no'?'sel':'', isCur?'cur':''].filter(Boolean).join(' ');
-      h+='<td class="'+cls+'" data-r="'+ri+'" data-c="'+ci+'">'+cellHTML(row,c,ri)+'</td>';
+      h+='<td class="'+cls+'" data-r="'+ri+'" data-c="'+ci+'">'+cellHTML(node,c)+'</td>';
     });
     h+='<td class="spacer"></td></tr>';
   });
   return h;
 }
+function armButtons(){
+  const node=VIEW[CUR.r];
+  $('bact').disabled=!node;
+  $('bsplit').disabled=!node||node.kind!=='action';
+  $('bundo').disabled=!UNDO.length;
+}
 function paint(){
   rebuild();
   $('ghead').innerHTML=head();
   $('gbody').innerHTML=body();
-  pinFrozen();
-  sbar();
-  $('bundo').disabled=!UNDO.length;
+  pinFrozen(); sbar(); armButtons();
 }
-/* the Action column is frozen just right of the row numbers, so its sticky
-   offset must be that column's REAL width, not the 54 we asked for. */
+function repaintBody(){
+  $('gbody').innerHTML=body(); pinFrozen(); sbar(); armButtons();
+}
+/* the Description column is frozen just right of the row numbers, so its sticky
+   offset must be that column's REAL width, not the value we asked for. */
 function pinFrozen(){
   const th=$('ghead')&&$('ghead').querySelector('th.rowno');
   const w=th&&th.offsetWidth;
   if(w)document.documentElement.style.setProperty('--nol',w+'px');
 }
-function repaintBody(){ $('gbody').innerHTML=body(); pinFrozen(); sbar(); }
-
 function selBox(){
   return {r1:Math.min(CUR.r,ANC.r), r2:Math.max(CUR.r,ANC.r),
           c1:Math.max(FIRSTC,Math.min(CUR.c,ANC.c)), c2:Math.max(CUR.c,ANC.c)};
 }
 function sbar(){
-  const open=ROWS.filter(r=>r.status!=='Closed').length;
-  const closed=ROWS.length-open;
-  const late=ROWS.filter(r=>r.status!=='Closed'&&r.due&&r.due<TODAY()).length;
-  const b=selBox();
-  const n=(b.r2-b.r1+1)*(b.c2-b.c1+1);
-  const pct=ROWS.length?Math.round(closed/ROWS.length*100):0;
+  const openI=ITEMS.filter(r=>r.status!=='Closed').length;
+  const openA=ACTS.filter(a=>a.status!=='Closed').length;
+  const late=ACTS.filter(a=>a.status!=='Closed'&&a.due&&a.due<TODAY()).length
+    +ITEMS.filter(r=>r.status!=='Closed'&&r.due&&r.due<TODAY()&&!kidsOf(r.id).length).length;
+  const b=selBox(), n=(b.r2-b.r1+1)*(b.c2-b.c1+1);
+  const pct=ITEMS.length?Math.round((ITEMS.length-openI)/ITEMS.length*100):0;
+  const node=VIEW[CUR.r];
   $('sbar').innerHTML=
-     '<span><b>'+ROWS.length+'</b> actions</span>'
-    +'<span><b>'+VIEW.length+'</b> shown</span>'
-    +'<span class="kpi"><i class="dot" style="background:var(--sky)"></i>Open <b>'+open+'</b></span>'
-    +'<span class="kpi"><i class="dot" style="background:var(--good)"></i>Closed <b>'+closed+'</b> ('+pct+'%)</span>'
-    +(late?'<span class="kpi"><i class="dot" style="background:var(--hot)"></i>Past due <b>'+late+'</b></span>':'')
+     '<span><b>'+ITEMS.length+'</b> items</span>'
+    +'<span><b>'+ACTS.length+'</b> actions</span>'
+    +'<span class="kpi"><i class="dot" style="background:var(--sky)"></i>Open <b>'
+      +openI+'</b> items · <b>'+openA+'</b> actions</span>'
+    +'<span class="kpi"><i class="dot" style="background:var(--good)"></i>Items closed <b>'
+      +pct+'%</b></span>'
+    +(late?'<span class="kpi"><i class="dot" style="background:var(--hot)"></i>Past due <b>'
+      +late+'</b></span>':'')
     +'<span class="hgrow"></span>'
-    +(VIEW.length?'<span>'+(n>1?n+' cells selected':'Row '+(CUR.r+1)+' · '+COLS[CUR.c].lb)+'</span>':'')
+    +(VIEW.length?'<span>'+(n>1?n+' cells selected'
+        :(node?(node.kind==='action'?'Action ':'Item ')+node.no
+          +(node.sub?'.'+node.sub:'')+' · '+COLS[CUR.c].lb:''))+'</span>':'')
     +'<span style="opacity:.55">'+BUILD+'</span>';
 }
 
 /* ============================================================
-   Saving a cell
+   Writing
    ============================================================ */
 function coerce(c,val){
   let v=String(val==null?'':val).trim();
-  if(c.kind==='date'){
-    if(!v)return '';
-    const d=parseDate(v);
-    return d||v;
-  }
-  if(c.k==='priority'){
-    const n=parseInt(v,10);
-    return (n>=1&&n<=4)?n:4;
-  }
+  if(c.kind==='date')return v?(parseDate(v)||v):'';
+  if(c.k==='priority'){const n=parseInt(v,10);return (n>=1&&n<=4)?n:4;}
   if(c.k==='status'){
     if(!v)return 'Open';
     const hit=STATUSES.find(s=>s.toLowerCase()===v.toLowerCase());
@@ -572,67 +668,89 @@ function parseDate(v){
   v=String(v).trim();
   let m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(v);
   if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
-  m=/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/.exec(v);        /* d/m/y */
+  m=/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/.exec(v);
   if(m){let y=m[3].length===2?'20'+m[3]:m[3];
     return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}
-  if(/^\d{5}$/.test(v)){                                  /* an Excel serial */
+  if(/^\d{5}$/.test(v)){
     const d=new Date(Date.UTC(1899,11,30+ +v));
     return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'
           +String(d.getUTCDate()).padStart(2,'0');
   }
-  const d=new Date(v);
-  return isNaN(d)?'':isoDay(d);
+  const d=new Date(v); return isNaN(d)?'':isoDay(d);
 }
-/* writes a set of {row,col,value} and records one undo step */
+const findRec=(kind,id)=>(kind==='item'?ITEMS:ACTS).find(r=>r.id===id);
 async function applyEdits(list,label){
-  const back=[], byId={};
+  const back=[], pend={};
   list.forEach(e=>{
-    const c=COLS[e.c], row=e.row;
-    if(c.ro||c.kind==='no')return;
+    const c=COLS[e.c], node=e.node;
+    if(locked(node,c))return;
     const nv=coerce(c,e.v);
-    if(String(row[c.k]??'')===String(nv))return;
-    back.push({id:row.id,k:c.k,v:row[c.k]});
-    row[c.k]=nv;
-    (byId[row.id]=byId[row.id]||{})[c.k]=nv;
+    if(String(node.rec[c.k]??'')===String(nv))return;
+    back.push({kind:node.kind,id:node.rec.id,k:c.k,v:node.rec[c.k]});
+    node.rec[c.k]=nv;
+    const key=node.kind+':'+node.rec.id;
+    (pend[key]=pend[key]||{})[c.k]=nv;
   });
   if(!back.length)return;
   UNDO.push({t:'cells',back,label:label||'edit'});
   if(UNDO.length>60)UNDO.shift();
-  repaintBody(); $('bundo').disabled=false;
-  for(const id in byId){
-    try{
-      const out=await api('task_items?id=eq.'+id,{method:'PATCH',body:JSON.stringify(byId[id])});
-      if(out&&out[0])Object.assign(ROWS.find(r=>r.id==id)||{},out[0]);
-    }catch(err){ toast('Could not save: '+err.message); }
-  }
   repaintBody();
+  await push(pend);
+  await refreshAfterAction(list);
+  paint();
 }
+async function push(pend){
+  for(const key in pend){
+    const i=key.indexOf(':'), kind=key.slice(0,i), id=key.slice(i+1);
+    const tbl=kind==='item'?'task_items':'task_actions';
+    try{
+      const out=await api(tbl+'?id=eq.'+id,{method:'PATCH',body:JSON.stringify(pend[key])});
+      if(out&&out[0])Object.assign(findRec(kind,+id)||{},out[0]);
+    }catch(err){toast('Could not save: '+err.message);}
+  }
+}
+/* an action's due date or closure moves its item, so re-read the items */
+async function refreshAfterAction(list){
+  if(!list.some(e=>e.node.kind==='action'))return;
+  await refreshItems();
+}
+async function refreshItems(){
+  try{
+    const it=await api('task_items?select='+IFIELDS+'&deleted_at=is.null&order=sort.asc,id.asc');
+    if(it)ITEMS=it.map(r=>({...r,description:r.description||r.title||''}));
+  }catch(e){}
+}
+async function reload(){ await loadAll(); await loadLogCounts(); paint(); }
 async function undo(){
   const step=UNDO.pop(); if(!step)return;
-  $('bundo').disabled=!UNDO.length;
+  armButtons();
   if(step.t==='cells'){
-    const byId={};
+    const pend={};
     step.back.forEach(b=>{
-      const row=ROWS.find(r=>r.id===b.id); if(!row)return;
-      row[b.k]=b.v; (byId[b.id]=byId[b.id]||{})[b.k]=b.v;
+      const rec=findRec(b.kind,b.id); if(!rec)return;
+      rec[b.k]=b.v; (pend[b.kind+':'+b.id]=pend[b.kind+':'+b.id]||{})[b.k]=b.v;
     });
-    repaintBody();
-    for(const id in byId){
-      try{const out=await api('task_items?id=eq.'+id,{method:'PATCH',body:JSON.stringify(byId[id])});
-        if(out&&out[0])Object.assign(ROWS.find(r=>r.id==id)||{},out[0]);}catch(e){}
-    }
+    repaintBody(); await push(pend); await refreshItems();
   }else if(step.t==='add'){
-    for(const id of step.ids){
-      try{await api('task_items?id=eq.'+id,{method:'PATCH',
+    for(const r of step.made){
+      const tbl=r.kind==='item'?'task_items':'task_actions';
+      try{await api(tbl+'?id=eq.'+r.id,{method:'PATCH',
         body:JSON.stringify({deleted_at:new Date().toISOString()})});}catch(e){}
-      ROWS=ROWS.filter(r=>r.id!==id);
     }
+    await loadAll();
   }else if(step.t==='del'){
     for(const r of step.rows){
-      try{const out=await api('task_items?id=eq.'+r.id,{method:'PATCH',
-        body:JSON.stringify({deleted_at:null})});
-        if(out&&out[0])ROWS.push(out[0]);}catch(e){}
+      const tbl=r.kind==='item'?'task_items':'task_actions';
+      try{await api(tbl+'?id=eq.'+r.id,{method:'PATCH',
+        body:JSON.stringify({deleted_at:null})});}catch(e){}
     }
+    await loadAll();
+  }else if(step.t==='split'){
+    try{await api('task_actions?id=eq.'+step.actionId,{method:'PATCH',
+      body:JSON.stringify({item_id:step.fromItem})});}catch(e){}
+    try{await api('task_items?id=eq.'+step.newItem,{method:'PATCH',
+      body:JSON.stringify({deleted_at:new Date().toISOString()})});}catch(e){}
+    await loadAll(); paint(); toast('Split undone'); return;
   }
   paint(); toast('Undone');
 }
@@ -640,20 +758,22 @@ async function undo(){
 /* ============================================================
    Editing a cell
    ============================================================ */
-function tdAt(r,c){ return $('gbody').querySelector('td[data-r="'+r+'"][data-c="'+c+'"]'); }
+const tdAt=(r,c)=>$('gbody').querySelector('td[data-r="'+r+'"][data-c="'+c+'"]');
 function suggestions(k){
-  const s=new Set(); ROWS.forEach(r=>{const v=(r[k]||'').trim(); if(v)s.add(v);});
+  const s=new Set();
+  ITEMS.forEach(r=>{const v=(r[k]||'').trim(); if(v)s.add(v);});
+  ACTS.forEach(r=>{const v=(r[k]||'').trim(); if(v)s.add(v);});
   return [...s].sort();
 }
 function beginEdit(seed){
   if(EDIT)return;
-  const c=COLS[CUR.c]; if(c.ro||c.kind==='no')return;
-  const row=VIEW[CUR.r]; if(!row)return;
+  const c=COLS[CUR.c], node=VIEW[CUR.r];
+  if(!node||locked(node,c))return;
   const td=tdAt(CUR.r,CUR.c); if(!td)return;
   let el;
   if(c.kind==='sel'){
     el=document.createElement('select'); el.className='cellin';
-    const cur=String(row[c.k]??'');
+    const cur=get(node,c);
     c.opts.forEach(o=>{
       const op=document.createElement('option'); op.value=o; op.textContent=o;
       if(o===cur)op.selected=true; el.appendChild(op);
@@ -661,17 +781,16 @@ function beginEdit(seed){
   }else{
     el=document.createElement('input'); el.className='cellin';
     el.type=c.kind==='date'?'date':'text';
-    el.value=seed!=null?seed:(row[c.k]==null?'':String(row[c.k]));
+    el.value=seed!=null?seed:get(node,c);
     if(c.suggest){
-      const id='dl-'+c.k;
-      let dl=$(id);
+      const id='dl-'+c.k; let dl=$(id);
       if(!dl){dl=document.createElement('datalist');dl.id=id;document.body.appendChild(dl);}
       dl.innerHTML=suggestions(c.k).map(v=>'<option value="'+esc(v)+'">').join('');
       el.setAttribute('list',id);
     }
   }
   td.appendChild(el);
-  EDIT={r:CUR.r,c:CUR.c,el,row};
+  EDIT={r:CUR.r,c:CUR.c,el,node};
   el.focus();
   if(el.tagName==='INPUT'&&seed==null&&el.type==='text')el.select();
   el.addEventListener('keydown',ev=>{
@@ -681,14 +800,14 @@ function beginEdit(seed){
     ev.stopPropagation();
   });
   if(c.kind==='sel')el.addEventListener('change',()=>commitEdit());
-  el.addEventListener('blur',()=>{ setTimeout(()=>{ if(EDIT&&EDIT.el===el)commitEdit(); },120); });
+  el.addEventListener('blur',()=>{setTimeout(()=>{if(EDIT&&EDIT.el===el)commitEdit();},120);});
 }
 function commitEdit(){
   if(!EDIT)return;
-  const {el,row,c}=EDIT, col=COLS[EDIT.c], v=el.value;
+  const el=EDIT.el, node=EDIT.node, ci=EDIT.c, v=el.value;
   EDIT=null;
   if(el.parentNode)el.parentNode.removeChild(el);
-  applyEdits([{row,c:colOf(col.k),v}]);
+  applyEdits([{node,c:ci,v}]);
   $('gwrap').focus();
 }
 function cancelEdit(){
@@ -713,11 +832,11 @@ function goto_(r,c,extend){
   repaintBody(); scrollIntoView();
 }
 function scrollIntoView(){
-  const td=tdAt(CUR.r,CUR.c); if(!td||!td.scrollIntoView)return;
+  const td=tdAt(CUR.r,CUR.c); if(!td||!td.getBoundingClientRect)return;
   const w=$('gwrap'), tr=td.getBoundingClientRect(), wr=w.getBoundingClientRect();
   if(tr.top<wr.top+38)w.scrollTop-=(wr.top+38-tr.top);
   if(tr.bottom>wr.bottom)w.scrollTop+=(tr.bottom-wr.bottom);
-  if(tr.left<wr.left+190)w.scrollLeft-=(wr.left+190-tr.left);
+  if(tr.left<wr.left+200)w.scrollLeft-=(wr.left+200-tr.left);
   if(tr.right>wr.right)w.scrollLeft+=(tr.right-wr.right);
 }
 
@@ -725,14 +844,14 @@ function scrollIntoView(){
    Clipboard
    ============================================================ */
 function selTSV(){
-  const b=selBox(); const out=[];
+  const b=selBox(), out=[];
   for(let r=b.r1;r<=b.r2;r++){
-    const line=[];
+    const line=[], node=VIEW[r];
     for(let c=b.c1;c<=b.c2;c++){
       const col=COLS[c];
-      let v=col.kind==='no'?String(r+1):(VIEW[r]?(VIEW[r][col.k]??''):'');
-      v=String(v).replace(/\t/g,' ').replace(/\r?\n/g,' ');
-      line.push(v);
+      const v=col.kind==='no'?(node?node.no+(node.sub?'.'+node.sub:''):'')
+              :(node?get(node,col):'');
+      line.push(String(v).replace(/\t/g,' ').replace(/\r?\n/g,' '));
     }
     out.push(line.join('\t'));
   }
@@ -740,7 +859,7 @@ function selTSV(){
 }
 async function doCopy(){
   const t=selTSV();
-  try{ await navigator.clipboard.writeText(t); }
+  try{await navigator.clipboard.writeText(t);}
   catch(e){
     const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
     ta.select(); try{document.execCommand('copy');}catch(e2){} ta.remove();
@@ -752,14 +871,14 @@ async function doPasteText(text){
   const grid=text.replace(/\r/g,'').replace(/\n$/,'').split('\n').map(l=>l.split('\t'));
   const b=selBox();
   const need=b.r1+grid.length-VIEW.length;
-  if(need>0)await addRows(need,false);
+  if(need>0){await addItems(need,false);rebuild();}
   const edits=[];
   grid.forEach((line,i)=>{
-    const row=VIEW[b.r1+i]; if(!row)return;
+    const node=VIEW[b.r1+i]; if(!node)return;
     line.forEach((v,j)=>{
       const ci=b.c1+j; if(ci>=COLS.length)return;
-      if(COLS[ci].ro||COLS[ci].kind==='no')return;
-      edits.push({row,c:ci,v});
+      if(locked(node,COLS[ci]))return;
+      edits.push({node,c:ci,v});
     });
   });
   await applyEdits(edits,'paste');
@@ -770,14 +889,14 @@ async function doPasteText(text){
   toast('Pasted '+grid.length+' row'+(grid.length>1?'s':''));
 }
 async function doPasteButton(){
-  try{ const t=await navigator.clipboard.readText(); await doPasteText(t); }
-  catch(e){ toast('Press Ctrl+V (or ⌘V) — the browser will not let a button read the clipboard'); }
+  try{const t=await navigator.clipboard.readText(); await doPasteText(t);}
+  catch(e){toast('Press Ctrl+V (or ⌘V) — the browser will not let a button read the clipboard');}
 }
 async function clearSel(){
   const b=selBox(), edits=[];
   for(let r=b.r1;r<=b.r2;r++)for(let c=b.c1;c<=b.c2;c++){
-    if(COLS[c].ro||COLS[c].kind==='no')continue;
-    if(VIEW[r])edits.push({row:VIEW[r],c,v:''});
+    const node=VIEW[r]; if(!node||locked(node,COLS[c]))continue;
+    edits.push({node,c,v:''});
   }
   await applyEdits(edits,'clear');
 }
@@ -785,83 +904,207 @@ async function fillDown(){
   const b=selBox(); if(b.r2===b.r1)return;
   const edits=[];
   for(let c=b.c1;c<=b.c2;c++){
-    if(COLS[c].ro||COLS[c].kind==='no')continue;
-    const src=VIEW[b.r1]?VIEW[b.r1][COLS[c].k]:'';
-    for(let r=b.r1+1;r<=b.r2;r++)if(VIEW[r])edits.push({row:VIEW[r],c,v:src});
+    const top=VIEW[b.r1]; if(!top)continue;
+    const src=get(top,COLS[c]);
+    for(let r=b.r1+1;r<=b.r2;r++){
+      const node=VIEW[r]; if(!node||locked(node,COLS[c]))continue;
+      edits.push({node,c,v:src});
+    }
   }
   await applyEdits(edits,'fill down');
   toast('Filled down');
 }
 
 /* ============================================================
-   Rows
+   Items and actions
    ============================================================ */
-async function addRows(n,focus=true,at){
-  const base=ROWS.length?Math.max(...ROWS.map(r=>r.sort||0)):0;
+async function addItems(n,focus=true,at){
+  const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
   const payload=[];
   for(let i=0;i<n;i++)
-    payload.push({title:'',status:'Open',priority:4,raised:TODAY(),
-      sort:(at!=null?at+ (i+1)/(n+1) : base+i+1)});
+    payload.push({description:'',title:'',status:'Open',priority:4,raised:TODAY(),
+      sort:(at!=null?at+(i+1)/(n+1):base+i+1)});
   try{
     const out=await api('task_items',{method:'POST',body:JSON.stringify(payload)});
-    (out||[]).forEach(r=>ROWS.push(r));
-    UNDO.push({t:'add',ids:(out||[]).map(r=>r.id)});
+    (out||[]).forEach(r=>ITEMS.push({...r,description:r.description||''}));
+    UNDO.push({t:'add',made:(out||[]).map(r=>({kind:'item',id:r.id}))});
     rebuild();
     if(focus&&out&&out[0]){
-      const ri=VIEW.findIndex(r=>r.id===out[0].id);
-      if(ri>=0){CUR={r:ri,c:1};ANC={...CUR};}
+      const ri=VIEW.findIndex(nd=>nd.kind==='item'&&nd.rec.id===out[0].id);
+      if(ri>=0){CUR={r:ri,c:colOf('description')};ANC={...CUR};}
     }
     paint();
     if(focus){scrollIntoView();beginEdit('');}
-  }catch(e){ toast('Could not add: '+e.message); }
+  }catch(e){toast('Could not add: '+e.message);}
 }
 async function insertAbove(){
-  const row=VIEW[CUR.r];
-  if(!row)return addRows(1);
-  const prev=CUR.r>0?VIEW[CUR.r-1]:null;
-  const at=prev?(prev.sort+row.sort)/2-0.5:(row.sort-1);
-  await addRows(1,true,at);
+  const node=VIEW[CUR.r];
+  if(!node)return addItems(1);
+  const it=node.kind==='item'?node.rec:node.parent;
+  const idx=ITEMS.findIndex(r=>r.id===it.id);
+  const prev=idx>0?ITEMS[idx-1]:null;
+  await addItems(1,true,prev?(prev.sort+it.sort)/2-0.5:it.sort-1);
+}
+/* an action always belongs to the item of whichever row you are standing on */
+async function addAction(){
+  const node=VIEW[CUR.r]; if(!node)return;
+  const it=node.kind==='item'?node.rec:node.parent;
+  const sibs=kidsOf(it.id);
+  const base=sibs.length?Math.max(...sibs.map(a=>a.sort||0)):0;
+  try{
+    const out=await api('task_actions',{method:'POST',body:JSON.stringify([
+      {item_id:it.id,text:'',status:'Open',responsible:it.responsible||'',
+       due:it.due||'',sort:base+1}])});
+    if(!out||!out[0])throw new Error('nothing came back');
+    ACTS.push(out[0]);
+    UNDO.push({t:'add',made:[{kind:'action',id:out[0].id}]});
+    SHUT.delete(it.id); savePrefs();
+    await refreshItems(); rebuild();
+    const ri=VIEW.findIndex(nd=>nd.kind==='action'&&nd.rec.id===out[0].id);
+    if(ri>=0){CUR={r:ri,c:colOf('text')};ANC={...CUR};}
+    paint(); scrollIntoView(); beginEdit('');
+  }catch(e){toast('Could not add the action: '+e.message);}
+}
+/* promote an action to an item of its own, history and all */
+async function splitAction(){
+  const node=VIEW[CUR.r];
+  if(!node||node.kind!=='action')return toast('Stand on an action row first');
+  const a=node.rec, from=a.item_id, parent=node.parent||{};
+  const ok=await confirmBox('Split this action into its own item?',
+    'It leaves "'+(parent.description||'the item')
+    +'" and becomes a row of its own, keeping its dates and its history.');
+  if(!ok)return;
+  const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
+  try{
+    const made=await api('task_items',{method:'POST',body:JSON.stringify([{
+      description:a.text||'',title:a.text||'',project:parent.project||'',
+      responsible:a.responsible||'',priority:parent.priority||4,
+      status:a.status||'Open',raised:parent.raised||TODAY(),due:a.due||'',
+      notes:parent.notes||'',sort:base+1}])});
+    if(!made||!made[0])throw new Error('the new item was not created');
+    await api('task_actions?id=eq.'+a.id,{method:'PATCH',
+      body:JSON.stringify({item_id:made[0].id})});
+    UNDO.push({t:'split',actionId:a.id,fromItem:from,newItem:made[0].id});
+    await loadAll(); paint();
+    const ri=VIEW.findIndex(nd=>nd.kind==='item'&&nd.rec.id===made[0].id);
+    if(ri>=0){CUR={r:ri,c:colOf('description')};ANC={...CUR};repaintBody();scrollIntoView();}
+    toast('Split out as its own item','Undo',undo);
+  }catch(e){toast('Could not split: '+e.message);}
 }
 async function deleteRows(){
   const b=selBox();
-  const rows=VIEW.slice(b.r1,b.r2+1);
-  if(!rows.length)return;
-  const ok=await confirmBox('Delete '+rows.length+' row'+(rows.length>1?'s':'')+'?',
-    'They go to the bin — Undo brings them straight back.');
+  const nodes=VIEW.slice(b.r1,b.r2+1);
+  if(!nodes.length)return;
+  const items=nodes.filter(n=>n.kind==='item').length;
+  const acts=nodes.filter(n=>n.kind==='action').length;
+  const bits=[];
+  if(items)bits.push(items+' item'+(items>1?'s':''));
+  if(acts)bits.push(acts+' action'+(acts>1?'s':''));
+  const ok=await confirmBox('Delete '+bits.join(' and ')+'?',
+    (items?'Deleting an item takes its actions with it. ':'')
+    +'Everything goes to the bin — Undo brings it straight back.');
   if(!ok)return;
-  const keep=rows.map(r=>({...r}));
-  const stamp=new Date().toISOString();
-  for(const r of rows){
-    try{ await api('task_items?id=eq.'+r.id,{method:'PATCH',
-      body:JSON.stringify({deleted_at:stamp})}); }catch(e){}
-    ROWS=ROWS.filter(x=>x.id!==r.id);
+  const keep=[], stamp=new Date().toISOString();
+  for(const n of nodes){
+    const tbl=n.kind==='item'?'task_items':'task_actions';
+    try{await api(tbl+'?id=eq.'+n.rec.id,{method:'PATCH',
+      body:JSON.stringify({deleted_at:stamp})});}catch(e){}
+    keep.push({kind:n.kind,id:n.rec.id});
+    if(n.kind==='item'){
+      for(const k of kidsOf(n.rec.id)){
+        try{await api('task_actions?id=eq.'+k.id,{method:'PATCH',
+          body:JSON.stringify({deleted_at:stamp})});}catch(e){}
+        keep.push({kind:'action',id:k.id});
+      }
+    }
   }
   UNDO.push({t:'del',rows:keep});
-  paint();
-  toast('Deleted '+rows.length+' row'+(rows.length>1?'s':''),'Undo',undo);
+  await loadAll(); paint();
+  toast('Deleted '+bits.join(' and '),'Undo',undo);
 }
 
 /* ============================================================
-   Column width, autofit, row height
+   History
+   ============================================================ */
+async function loadLog(actionId){
+  try{
+    const rows=await api('task_action_log?select=id,at,kind,note&action_id=eq.'
+      +actionId+'&order=at.desc,id.desc');
+    LOGS[actionId]=rows||[];
+  }catch(e){LOGS[actionId]=LOGS[actionId]||[];}
+  return LOGS[actionId];
+}
+async function loadLogCounts(){
+  if(!ACTS.length){LOGS={};return;}
+  try{
+    const rows=await api('task_action_log?select=id,action_id&order=id.asc');
+    LOGS={};
+    (rows||[]).forEach(r=>{(LOGS[r.action_id]=LOGS[r.action_id]||[]).push(r);});
+  }catch(e){}
+}
+function whenTxt(iso){
+  const d=new Date(iso);
+  if(isNaN(d))return String(iso||'');
+  return isoDay(d)+'  '+String(d.getHours()).padStart(2,'0')+':'
+        +String(d.getMinutes()).padStart(2,'0');
+}
+async function openHistory(actionId){
+  const a=ACTS.find(x=>x.id===actionId); if(!a)return;
+  const sh=$('sheet');
+  sh.innerHTML='<div class="sh"><b>History</b><span class="hgrow"></span>'
+    +'<button class="tbtn" id="hclose">Close</button></div>'
+    +'<div class="sb"><p class="hd">'+esc(a.text||'(untitled action)')+'</p>'
+    +'<div id="hlist" style="color:var(--ink3)">Loading…</div></div>'
+    +'<div class="sf"><input id="hnote" placeholder="Add a note to the history…">'
+    +'<button class="tbtn primary" id="hadd">Add</button></div>';
+  sh.classList.add('on');
+  $('hclose').onclick=()=>{sh.classList.remove('on');$('gwrap').focus();};
+  const draw=()=>{
+    const rows=LOGS[actionId]||[];
+    $('hlist').innerHTML=rows.length?rows.map(r=>
+      '<div class="hrow"><i class="hk k-'+esc(r.kind)+'"></i><div>'
+      +'<div class="hn">'+esc(r.note)+'</div>'
+      +'<div class="ht">'+esc(whenTxt(r.at))+'</div></div></div>').join('')
+      :'<p style="color:var(--ink3)">Nothing recorded yet.</p>';
+    const btn=$('gbody').querySelector('[data-hist="'+actionId+'"]');
+    if(btn)btn.textContent='⏱ '+(rows.length||'');
+  };
+  await loadLog(actionId); draw();
+  const add=async()=>{
+    const v=$('hnote').value.trim(); if(!v)return;
+    $('hnote').value='';
+    try{
+      await api('task_action_log',{method:'POST',
+        body:JSON.stringify([{action_id:actionId,kind:'note',note:v}])});
+      await loadLog(actionId); draw();
+    }catch(e){toast('Could not add the note: '+e.message);}
+  };
+  $('hadd').onclick=add;
+  $('hnote').addEventListener('keydown',e=>{if(e.key==='Enter')add();});
+  $('hnote').focus();
+}
+
+/* ============================================================
+   Column width, autofit
    ============================================================ */
 function setW(i,w){
   COLS[i].w=Math.max(46,Math.min(680,Math.round(w)));
   const th=$('ghead').querySelector('th[data-c="'+i+'"]');
   if(th)th.style.width=COLS[i].w+'px';
-  savePrefs();
+  savePrefs(); pinFrozen();
 }
 function autofit(i){
   const c=COLS[i];
   const cv=document.createElement('canvas').getContext('2d');
   cv.font='13px ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif';
   let w=cv.measureText(c.lb).width+46;
-  VIEW.slice(0,500).forEach(r=>{
-    const t=c.kind==='no'?'000':String(r[c.k]??'');
-    w=Math.max(w,cv.measureText(t).width+30);
+  VIEW.slice(0,500).forEach(nd=>{
+    const t=c.kind==='no'?'000.0':get(nd,c);
+    w=Math.max(w,cv.measureText(t).width+(c.k==='text'?46:30));
   });
   setW(i,w);
 }
-function autofitAll(){ COLS.forEach((c,i)=>{ if(c.kind!=='no')autofit(i); }); toast('Columns fitted'); }
+function autofitAll(){COLS.forEach((c,i)=>{if(c.kind!=='no')autofit(i);});toast('Columns fitted');}
 function wireResize(){
   $('ghead').addEventListener('mousedown',e=>{
     const h=e.target.closest('[data-rsz]'); if(!h)return;
@@ -879,13 +1122,18 @@ function wireResize(){
 }
 
 /* ============================================================
-   Header menu — sort and filter
+   Header menu
    ============================================================ */
 let MENUK=null;
 function openMenu(k,anchor){
   MENUK=k;
   const c=COLS[colOf(k)];
-  const vals=[...new Set(ROWS.map(r=>cellText(r,c)))].sort();
+  const seen=new Set();
+  if(c.on==='both'||c.on==='item')
+    ITEMS.forEach(r=>seen.add(get({kind:'item',rec:r,kids:0},c)));
+  if(c.on==='both'||c.on==='action')
+    ACTS.forEach(r=>seen.add(get({kind:'action',rec:r,kids:0},c)));
+  const vals=[...seen].sort();
   const f=FILT[k]||{vals:null,text:''};
   let h='<button class="mi" data-act="asc">▲ Sort A → Z</button>'
        +'<button class="mi" data-act="desc">▼ Sort Z → A</button>'
@@ -906,7 +1154,7 @@ function openMenu(k,anchor){
   m.style.left=Math.min(window.innerWidth-248,Math.max(8,b.left-190))+'px';
   m.style.top=(b.bottom+6)+'px';
 }
-function closeMenu(){ $('menu').classList.remove('on'); MENUK=null; }
+function closeMenu(){$('menu').classList.remove('on');MENUK=null;}
 function menuAct(act){
   const k=MENUK; if(!k)return;
   if(act==='asc'){SORT={k,dir:1};closeMenu();paint();return;}
@@ -927,17 +1175,33 @@ function menuAct(act){
 /* ============================================================
    Export and import
    ============================================================ */
+const EXCOLS=()=>COLS.filter(c=>c.kind!=='hist');
 function sheetData(){
-  const head=COLS.map(c=>c.lb);
-  const rows=VIEW.map((r,i)=>COLS.map(c=>c.kind==='no'?i+1:(r[c.k]??'')));
+  const head=['Level',...EXCOLS().map(c=>c.lb)];
+  const rows=VIEW.map(nd=>[nd.kind==='item'?'Item':'Action',
+    ...EXCOLS().map(c=>c.kind==='no'?(nd.no+(nd.sub?'.'+nd.sub:'')):get(nd,c))]);
   return [head,...rows];
 }
 function exportXLSX(){
-  if(typeof XLSX==='undefined')return toast('The spreadsheet library did not load — try again online');
+  if(typeof XLSX==='undefined')
+    return toast('The spreadsheet library did not load — try again online');
   const ws=XLSX.utils.aoa_to_sheet(sheetData());
-  ws['!cols']=COLS.map(c=>({wpx:c.w}));
-  ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:VIEW.length,c:COLS.length-1}})};
-  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Action list');
+  ws['!cols']=[{wpx:70},...EXCOLS().map(c=>({wpx:c.w}))];
+  ws['!autofilter']={ref:XLSX.utils.encode_range(
+    {s:{r:0,c:0},e:{r:VIEW.length,c:EXCOLS().length}})};
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Action list');
+  const hist=[['Item','Action','When','Kind','Entry']];
+  ACTS.forEach(a=>{
+    const it=ITEMS.find(i=>i.id===a.item_id)||{};
+    (LOGS[a.id]||[]).slice().reverse().forEach(l=>
+      hist.push([it.description||'',a.text||'',whenTxt(l.at),l.kind||'',l.note||'']));
+  });
+  if(hist.length>1){
+    const hs=XLSX.utils.aoa_to_sheet(hist);
+    hs['!cols']=[{wpx:220},{wpx:240},{wpx:120},{wpx:80},{wpx:320}];
+    XLSX.utils.book_append_sheet(wb,hs,'History');
+  }
   XLSX.writeFile(wb,'Action list '+TODAY()+'.xlsx');
   toast('Exported '+VIEW.length+' rows');
 }
@@ -952,42 +1216,60 @@ function exportCSV(){
 }
 async function importFile(file){
   if(!file)return;
-  if(typeof XLSX==='undefined')return toast('The spreadsheet library did not load — try again online');
+  if(typeof XLSX==='undefined')
+    return toast('The spreadsheet library did not load — try again online');
   const buf=await file.arrayBuffer();
   const wb=XLSX.read(buf,{type:'array'});
-  const ws=wb.Sheets[wb.SheetNames[0]];
-  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,defval:''});
+  const aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],
+    {header:1,raw:false,defval:''});
   if(!aoa.length)return toast('That file looks empty');
-  /* match the header row to our columns, by label, loosely */
   const norm=s=>String(s||'').toLowerCase().replace(/[^a-z]/g,'');
-  const map=aoa[0].map(h=>{
+  let levelCol=-1;
+  const map=aoa[0].map((h,i)=>{
     const n=norm(h);
+    if(n==='level'){levelCol=i;return -1;}
     const c=COLS.find(c=>norm(c.lb)===n||norm(c.k)===n
-      ||(n==='action'&&c.k==='title')||(n==='task'&&c.k==='title')
+      ||(n==='task'&&c.k==='description')||(n==='item'&&c.k==='description')
       ||(n==='owner'&&c.k==='responsible')||(n==='duedate'&&c.k==='due'));
-    return c&&c.kind!=='no'&&!c.ro?colOf(c.k):-1;
+    return (c&&c.kind!=='no'&&c.kind!=='hist'&&!c.ro)?colOf(c.k):-1;
   });
   if(!map.some(i=>i>=0))
     return toast('No matching column headings — the first row must name the columns');
   const lines=aoa.slice(1).filter(r=>r.some(v=>String(v).trim()!==''));
   if(!lines.length)return toast('No rows to import');
+  const asAction=r=>levelCol>=0&&/^action$/i.test(String(r[levelCol]||'').trim());
+  const nAct=lines.filter(asAction).length;
   const ok=await confirmBox('Import '+lines.length+' row'+(lines.length>1?'s':'')+'?',
-    'They are added to the bottom of the register. Nothing already here is changed.');
+    (nAct?nAct+' of them are marked Action and will hang under the item above them. ':'')
+    +'Everything is added at the bottom; nothing already here is changed.');
   if(!ok)return;
-  const base=ROWS.length?Math.max(...ROWS.map(r=>r.sort||0)):0;
-  const payload=lines.map((line,i)=>{
-    const rec={title:'',status:'Open',priority:4,raised:TODAY(),sort:base+i+1};
-    map.forEach((ci,j)=>{ if(ci<0)return;
-      const c=COLS[ci]; rec[c.k]=coerce(c,line[j]); });
-    if(!rec.raised)rec.raised=TODAY();
-    return rec;
-  });
-  try{
-    const out=await api('task_items',{method:'POST',body:JSON.stringify(payload)});
-    (out||[]).forEach(r=>ROWS.push(r));
-    UNDO.push({t:'add',ids:(out||[]).map(r=>r.id)});
-    paint(); toast('Imported '+lines.length+' rows','Undo',undo);
-  }catch(e){ toast('Import failed: '+e.message); }
+  const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
+  const made=[]; let lastItem=null, n=0, asort=0;
+  for(const line of lines){
+    const vals={};
+    map.forEach((ci,j)=>{if(ci<0)return;const c=COLS[ci];vals[c.k]=coerce(c,line[j]);});
+    try{
+      if(asAction(line)&&lastItem){
+        const out=await api('task_actions',{method:'POST',body:JSON.stringify([{
+          item_id:lastItem,text:vals.text||vals.description||'',
+          responsible:vals.responsible||'',due:vals.due||'',
+          status:vals.status||'Open',sort:++asort}])});
+        if(out&&out[0])made.push({kind:'action',id:out[0].id});
+      }else{
+        const d=vals.description||vals.text||'';
+        const out=await api('task_items',{method:'POST',body:JSON.stringify([{
+          description:d,title:d,project:vals.project||'',
+          responsible:vals.responsible||'',priority:vals.priority||4,
+          status:vals.status||'Open',raised:vals.raised||TODAY(),
+          due:vals.due||'',notes:vals.notes||'',sort:base+(++n)}])});
+        if(out&&out[0]){made.push({kind:'item',id:out[0].id});
+          lastItem=out[0].id; asort=0;}
+      }
+    }catch(e){toast('Import stopped: '+e.message);break;}
+  }
+  UNDO.push({t:'add',made});
+  await loadAll(); await loadLogCounts(); paint();
+  toast('Imported '+made.length+' rows','Undo',undo);
 }
 
 /* ============================================================
@@ -1022,15 +1304,23 @@ function wireGrid(){
   const gb=$('gbody');
   gb.addEventListener('mousedown',e=>{
     if(e.target.closest('.cellin'))return;
+    const car=e.target.closest('[data-shut]');
+    if(car){
+      const id=+car.dataset.shut;
+      SHUT.has(id)?SHUT.delete(id):SHUT.add(id);
+      savePrefs(); paint(); return;
+    }
+    if(e.target.closest('[data-hist]'))return;
     const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const r=+td.dataset.r, c=+td.dataset.c;
     if(EDIT)commitEdit();
-    if(COLS[c].kind==='no'){                       /* row number picks the row */
-      CUR={r,c:FIRSTC}; ANC={r,c:COLS.length-1}; repaintBody(); return;
-    }
-    if(e.shiftKey){CUR={r,c};}
-    else{CUR={r,c};ANC={r,c};}
+    if(COLS[c].kind==='no'){CUR={r,c:FIRSTC};ANC={r,c:COLS.length-1};repaintBody();return;}
+    if(e.shiftKey)CUR={r,c}; else {CUR={r,c};ANC={r,c};}
     DRAG=true; repaintBody(); $('gwrap').focus();
+  });
+  gb.addEventListener('click',e=>{
+    const hb=e.target.closest('[data-hist]');
+    if(hb){e.stopPropagation();openHistory(+hb.dataset.hist);}
   });
   gb.addEventListener('mouseover',e=>{
     if(!DRAG)return;
@@ -1045,7 +1335,6 @@ function wireGrid(){
     CUR={r:+td.dataset.r,c:+td.dataset.c}; ANC={...CUR};
     repaintBody(); beginEdit();
   });
-
   $('ghead').addEventListener('click',e=>{
     const mb=e.target.closest('[data-menu]');
     if(mb){e.stopPropagation();openMenu(mb.dataset.menu,mb);return;}
@@ -1057,26 +1346,25 @@ function wireGrid(){
     }
   });
   $('menu').addEventListener('click',e=>{
-    const b=e.target.closest('[data-act]'); if(b){e.stopPropagation();menuAct(b.dataset.act);}
+    const b=e.target.closest('[data-act]'); if(b)menuAct(b.dataset.act);
     e.stopPropagation();
   });
   document.addEventListener('click',e=>{
     if(!e.target.closest('#menu')&&!e.target.closest('[data-menu]'))closeMenu();
   });
-
   $('gwrap').addEventListener('keydown',onKey);
   document.addEventListener('paste',e=>{
     if(EDIT)return;
-    if(document.activeElement&&document.activeElement.tagName==='INPUT'
-       &&document.activeElement.id==='q')return;
+    const ae=document.activeElement;
+    if(ae&&(ae.id==='q'||ae.id==='hnote'))return;
     const t=(e.clipboardData||window.clipboardData).getData('text');
     if(t){e.preventDefault();doPasteText(t);}
   });
 }
 function onKey(e){
   if(EDIT)return;
-  const mod=e.ctrlKey||e.metaKey;
-  const k=e.key;
+  const mod=e.ctrlKey||e.metaKey, k=e.key;
+  if(mod&&k==='Enter'){e.preventDefault();addAction();return;}
   if(mod&&(k==='c'||k==='C')){e.preventDefault();doCopy();return;}
   if(mod&&(k==='x'||k==='X')){e.preventDefault();doCopy().then(clearSel);return;}
   if(mod&&(k==='z'||k==='Z')){e.preventDefault();undo();return;}
@@ -1099,7 +1387,9 @@ function onKey(e){
   if(!mod&&!e.altKey&&k.length===1){e.preventDefault();beginEdit(k);}
 }
 function wireTools(){
-  $('badd').onclick=()=>addRows(1);
+  $('badd').onclick=()=>addItems(1);
+  $('bact').onclick=addAction;
+  $('bsplit').onclick=splitAction;
   $('bins').onclick=insertAbove;
   $('bdel').onclick=deleteRows;
   $('bcopy').onclick=doCopy;
@@ -1128,6 +1418,7 @@ function wireTools(){
 async function startApp(){
   loadPrefs();
   await loadAll();
+  await loadLogCounts();
   paint();
   wireGrid(); wireTools(); wireResize();
   $('app').classList.add('ready');
@@ -1150,8 +1441,7 @@ async function boot(){
   };
   $('lpw').addEventListener('keydown',e=>{if(e.key==='Enter')$('lgo').click();});
   if(await resume()){
-    try{ await startApp(); return; }
-    catch(e){ console.error(e); }
+    try{await startApp();return;}catch(e){console.error(e);}
   }
   $('login').classList.add('on');
   $('lem').focus();
