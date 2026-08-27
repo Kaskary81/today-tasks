@@ -107,16 +107,21 @@ table.g thead th .fbtn.on{color:var(--violet);background:rgba(168,85,247,.18)}
 table.g td{height:var(--rowh);vertical-align:middle;font-size:13px}
 table.g td .cv{padding:0 9px;line-height:calc(var(--rowh) - 2px);white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
-table.g tbody tr:nth-child(even) td{background:rgba(255,255,255,.014)}
-table.g tbody tr:hover td{background:rgba(168,85,247,.045)}
-td.rowno,th.rowno{width:54px;text-align:center;color:var(--ink3);font-size:11.5px;
-  background:linear-gradient(90deg,#211838,#1c1431);position:sticky;left:0;z-index:4;
-  user-select:none;cursor:pointer}
-thead th.rowno{z-index:7}
-tr.picked td.rowno{background:rgba(168,85,247,.3);color:#e9d5ff}
-td.c-title{position:sticky;left:54px;z-index:3;background:#1a1230}
-thead th.c-title{left:54px;z-index:7}
-tr:nth-child(even) td.c-title{background:#1c1433}
+table.g tbody tr:nth-child(even) td:not(.c-title):not(.rowno){background:rgba(255,255,255,.014)}
+table.g tbody tr:hover td:not(.c-title):not(.rowno){background:rgba(168,85,247,.045)}
+table.g tbody tr:hover td.c-title{background:#241a3f}
+/* the two frozen columns: these selectors MUST out-specify
+   `table.g th,table.g td{position:relative}` above, or the browser leaves them
+   relative and the left offset shunts the whole cell sideways. */
+table.g td.rowno,table.g th.rowno{width:54px;text-align:center;color:var(--ink3);
+  font-size:11.5px;background:linear-gradient(90deg,#211838,#1c1431);
+  position:sticky;left:0;z-index:4;user-select:none;cursor:pointer}
+table.g thead th.rowno{z-index:7}
+table.g tbody tr.picked td.rowno{background:rgba(168,85,247,.3);color:#e9d5ff}
+table.g td.c-title{position:sticky;left:var(--nol,54px);z-index:3;background:#1a1230}
+table.g thead th.c-title{position:sticky;left:var(--nol,54px);z-index:7}
+table.g tbody tr:nth-child(even) td.c-title{background:#1c1433}
+table.g td.spacer,table.g th.spacer{border-right:0;background:transparent}
 table.g td.sel{background:rgba(168,85,247,.16)!important;
   box-shadow:inset 0 0 0 1px rgba(168,85,247,.24)}
 table.g td.cur{background:rgba(168,85,247,.22)!important;
@@ -294,7 +299,7 @@ select.cellin{padding:0 4px}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-27 · a1';
+const BUILD='ACTIONS 2026-08-27 · a2';
 
 let SESSION=null, ROWS=[], VIEW=[], BUSY=false;
 let SORT=null;                 /* {k,dir}  dir 1 asc, -1 desc              */
@@ -456,6 +461,10 @@ function head(){
       +(c.kind==='no'?'':'<div class="rsz" data-rsz="'+i+'"></div>')
       +'</th>';
   });
+  /* a width-less trailing column: under table-layout:fixed the leftover space
+     goes to columns with no width, so the real ones keep their exact px and the
+     frozen-column offsets stay true. */
+  h+='<th class="spacer"></th>';
   return h+'</tr>';
 }
 function stCls(s){
@@ -476,7 +485,7 @@ function cellHTML(row,c,ri){
 }
 function body(){
   if(!VIEW.length)
-    return '<tr><td colspan="'+COLS.length+'" style="height:120px;text-align:center;'
+    return '<tr><td colspan="'+(COLS.length+1)+'" style="height:120px;text-align:center;'
       +'color:var(--ink3)">Nothing to show. '
       +(Object.keys(FILT).length||SEARCH?'Clear the filters, or ':'')
       +'add a row.</td></tr>';
@@ -492,7 +501,7 @@ function body(){
                  inBox&&c.kind!=='no'?'sel':'', isCur?'cur':''].filter(Boolean).join(' ');
       h+='<td class="'+cls+'" data-r="'+ri+'" data-c="'+ci+'">'+cellHTML(row,c,ri)+'</td>';
     });
-    h+='</tr>';
+    h+='<td class="spacer"></td></tr>';
   });
   return h;
 }
@@ -500,10 +509,18 @@ function paint(){
   rebuild();
   $('ghead').innerHTML=head();
   $('gbody').innerHTML=body();
+  pinFrozen();
   sbar();
   $('bundo').disabled=!UNDO.length;
 }
-function repaintBody(){ $('gbody').innerHTML=body(); sbar(); }
+/* the Action column is frozen just right of the row numbers, so its sticky
+   offset must be that column's REAL width, not the 54 we asked for. */
+function pinFrozen(){
+  const th=$('ghead')&&$('ghead').querySelector('th.rowno');
+  const w=th&&th.offsetWidth;
+  if(w)document.documentElement.style.setProperty('--nol',w+'px');
+}
+function repaintBody(){ $('gbody').innerHTML=body(); pinFrozen(); sbar(); }
 
 function selBox(){
   return {r1:Math.min(CUR.r,ANC.r), r2:Math.max(CUR.r,ANC.r),
@@ -1005,7 +1022,7 @@ function wireGrid(){
   const gb=$('gbody');
   gb.addEventListener('mousedown',e=>{
     if(e.target.closest('.cellin'))return;
-    const td=e.target.closest('td'); if(!td)return;
+    const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const r=+td.dataset.r, c=+td.dataset.c;
     if(EDIT)commitEdit();
     if(COLS[c].kind==='no'){                       /* row number picks the row */
@@ -1017,13 +1034,14 @@ function wireGrid(){
   });
   gb.addEventListener('mouseover',e=>{
     if(!DRAG)return;
-    const td=e.target.closest('td'); if(!td)return;
+    const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const c=+td.dataset.c; if(COLS[c].kind==='no')return;
     CUR={r:+td.dataset.r,c}; repaintBody();
   });
   document.addEventListener('mouseup',()=>{DRAG=false;});
   gb.addEventListener('dblclick',e=>{
-    const td=e.target.closest('td'); if(!td||e.target.closest('.cellin'))return;
+    const td=e.target.closest('td');
+    if(!td||td.dataset.r===undefined||e.target.closest('.cellin'))return;
     CUR={r:+td.dataset.r,c:+td.dataset.c}; ANC={...CUR};
     repaintBody(); beginEdit();
   });
