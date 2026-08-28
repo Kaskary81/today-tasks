@@ -473,6 +473,7 @@ table.alist tr.done td.t{text-decoration:line-through;
 <div class="scrim" id="scrim"><div class="dlg" id="dlg"></div></div>
 <div id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 /* ============================================================
    Action list — a two-level register.
@@ -484,7 +485,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-27 · b5';
+const BUILD='ACTIONS 2026-08-28 · b6';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1913,7 +1914,212 @@ function sheetData(){
     :get(nd,c)));
   return [head,...rows];
 }
-function exportXLSX(){
+/* ============================================================
+   Excel export — the workbook is meant to look like the register:
+   the same violet, the same status colours, the actions numbered inside
+   one cell with the closed ones struck through. SheetJS's free build
+   drops all styling, so this is built with ExcelJS.
+   ============================================================ */
+const XC={                                   /* straight from the app's CSS */
+  head:'FF241A3F', headInk:'FFE9D5FF',
+  row:'FF171029', rowAlt:'FF1B1330', line:'FF332552',
+  ink:'FFF5F2FF', ink2:'FFBDB2D8', ink3:'FF8B81A8',
+  violet:'FFA855F7', good:'FF6EE7B7', warn:'FFFCD34D', hot:'FFFDA4AF', sky:'FF7DD3FC'
+};
+/* a translucent chip over the dark card, flattened to one solid colour */
+function blend(hex,a){
+  const base=[0x1B,0x13,0x30];
+  const c=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
+  return 'FF'+c.map((v,i)=>Math.round(base[i]*(1-a)+v*a).toString(16).padStart(2,'0'))
+               .join('').toUpperCase();
+}
+const XSTAT={
+  'Open':        {fg:XC.sky,  bg:blend('38BDF8',.15)},
+  'In progress': {fg:XC.warn, bg:blend('FBBF24',.15)},
+  'On hold':     {fg:'FFC4BCDA', bg:blend('8B81A8',.18)},
+  'Closed':      {fg:XC.good, bg:blend('34D399',.15)}
+};
+const XPRIO={1:{fg:XC.hot,bg:blend('F43F5E',.18)}, 2:{fg:'FFFDBA74',bg:blend('FB923C',.18)},
+             3:{fg:XC.sky,bg:blend('38BDF8',.16)}, 4:{fg:'FFB8B0CD',bg:blend('8B81A8',.16)}};
+const solid=argb=>({type:'pattern',pattern:'solid',fgColor:{argb}});
+const edge=()=>({top:{style:'thin',color:{argb:XC.line}},
+                 left:{style:'thin',color:{argb:XC.line}},
+                 bottom:{style:'thin',color:{argb:XC.line}},
+                 right:{style:'thin',color:{argb:XC.line}}});
+const colLetter=i=>{let s='',n=i+1;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;
+  n=Math.floor((n-1)/26);}return s;};
+
+function buildWorkbook(){
+  const EX=(typeof ExcelJS!=='undefined')?ExcelJS:(typeof window!=='undefined'&&window.ExcelJS);
+  if(!EX)return null;
+  const wb=new EX.Workbook();
+  wb.creator='Action list'; wb.created=new Date();
+  const ws=wb.addWorksheet('Action list',{
+    views:[{state:'frozen',xSplit:2,ySplit:1}],
+    properties:{defaultRowHeight:18}
+  });
+  const cols=COLS;
+  /* the header has to be declared WITH the columns — assigning ws.columns
+     afterwards blanks a header row that was added separately */
+  ws.columns=cols.map(c=>({header:c.lb,width:Math.max(6,Math.round(c.w/7.2))}));
+
+  const hr=ws.getRow(1);
+  hr.height=24;
+  hr.eachCell(cell=>{
+    cell.fill=solid(XC.head);
+    cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
+    cell.alignment={vertical:'middle',horizontal:'left'};
+    cell.border=edge();
+  });
+
+  const today=TODAY();
+  VIEW.forEach((nd,i)=>{
+    const r=nd.rec, acts=nd.acts||[];
+    const closed=r.status==='Closed';
+    const row=ws.addRow([]);
+    const put=(k,v)=>{ const ci=colOf(k)+1; row.getCell(ci).value=v; return row.getCell(ci); };
+
+    put('__no',nd.no).alignment={horizontal:'center',vertical:'top'};
+    const dc=put('description',r.description||'');
+    dc.font={bold:true,size:11,color:{argb:XC.ink},name:'Segoe UI'};
+    dc.alignment={wrapText:true,vertical:'top'};
+
+    /* the action list, numbered, in ONE cell — closed ones struck through,
+       overdue dates in red, exactly as the register draws them */
+    const ac=row.getCell(colOf('__acts')+1);
+    if(acts.length){
+      const rich=[];
+      acts.forEach((a,j)=>{
+        const ad=a.status==='Closed', od=!ad&&a.due&&a.due<today;
+        if(j)rich.push({font:{size:10,color:{argb:XC.ink3}},text:'\n'});
+        rich.push({font:{size:10,bold:true,
+          color:{argb:ad?XC.good:od?XC.hot:XC.violet},name:'Segoe UI'},text:(j+1)+'. '});
+        rich.push({font:{size:10,name:'Segoe UI',strike:ad,
+          color:{argb:ad?XC.ink3:XC.ink}},text:a.text||'—'});
+        if(a.due)rich.push({font:{size:9,name:'Segoe UI',
+          color:{argb:od?XC.hot:XC.ink3}},text:'   '+shortDay(a.due)});
+      });
+      ac.value={richText:rich};
+    }else{
+      ac.value='— no actions yet —';
+      ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Segoe UI'};
+    }
+    ac.alignment={wrapText:true,vertical:'top'};
+
+    put('project',r.project||'');
+    put('responsible',get(nd,COLS[colOf('responsible')]));
+    const pc=put('priority',r.priority?Number(r.priority):null);
+    const ps=XPRIO[r.priority]||XPRIO[4];
+    pc.fill=solid(ps.bg);
+    pc.font={bold:true,size:10,color:{argb:ps.fg},name:'Segoe UI'};
+    pc.alignment={horizontal:'center',vertical:'top'};
+
+    const sc=put('status',r.status||'Open');
+    const st=XSTAT[r.status]||XSTAT.Open;
+    sc.fill=solid(st.bg);
+    sc.font={bold:true,size:10,color:{argb:st.fg},name:'Segoe UI'};
+    sc.alignment={horizontal:'center',vertical:'top'};
+
+    put('raised',r.raised||'');
+    const du=put('due',r.due||'');
+    if(r.due&&!closed&&r.due<today)
+      du.font={bold:true,size:10,color:{argb:XC.hot},name:'Segoe UI'};
+    put('closed',r.done_at||'');
+    put('notes',r.notes||'').alignment={wrapText:true,vertical:'top'};
+
+    /* banding, borders, and the default ink for anything not set above */
+    row.eachCell({includeEmpty:true},cell=>{
+      if(!cell.fill)cell.fill=solid(i%2?XC.rowAlt:XC.row);
+      if(!cell.font)cell.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
+      if(!cell.alignment)cell.alignment={vertical:'top'};
+      cell.border=edge();
+    });
+    /* tall enough for the whole action list, like the row heights on screen */
+    const lines=Math.max(acts.length||1,String(r.description||'').split('\n').length,
+      Math.ceil((r.description||'').length/38));
+    row.height=Math.max(18,Math.min(240,lines*14.5+6));
+  });
+
+  const last=VIEW.length+1;
+  ws.autoFilter={from:{row:1,column:1},to:{row:last,column:cols.length}};
+
+  /* live rules, so the colours follow the sheet if it is edited in Excel */
+  if(VIEW.length){
+    const S=colLetter(colOf('status')), D=colLetter(colOf('due'));
+    const body='A2:'+colLetter(cols.length-1)+last;
+    ws.addConditionalFormatting({ref:S+'2:'+S+last,rules:
+      Object.keys(XSTAT).map((k,idx)=>({type:'cellIs',operator:'equal',priority:idx+1,
+        formulae:['"'+k+'"'],
+        style:{fill:solid(XSTAT[k].bg),font:{bold:true,color:{argb:XSTAT[k].fg}}}}))});
+    ws.addConditionalFormatting({ref:D+'2:'+D+last,rules:[
+      {type:'expression',priority:1,
+       formulae:['AND($'+D+'2<>"",$'+D+'2<TODAY(),$'+S+'2<>"Closed")'],
+       style:{font:{bold:true,color:{argb:XC.hot}}}},
+      {type:'expression',priority:2,
+       formulae:['AND($'+D+'2=TEXT(TODAY(),"yyyy-mm-dd"),$'+S+'2<>"Closed")'],
+       style:{font:{bold:true,color:{argb:XC.warn}}}}]});
+    ws.addConditionalFormatting({ref:body,rules:[
+      {type:'expression',priority:3,formulae:['$'+S+'2="Closed"'],
+       style:{font:{color:{argb:XC.ink3}}}}]});
+  }
+
+  /* the history, same treatment */
+  const anyLog=Object.keys(LOGS).length;
+  if(anyLog){
+    /* Excel reserves the sheet name "History" for change tracking and refuses
+       to open a workbook that uses it */
+    const hs=wb.addWorksheet('Action history',{views:[{state:'frozen',ySplit:1}]});
+    hs.columns=[{header:'Item',width:30},{header:'Action',width:34},
+      {header:'When',width:17},{header:'Kind',width:11},{header:'Entry',width:44}];
+    const h=hs.getRow(1);
+    h.height=22;
+    h.eachCell(c=>{c.fill=solid(XC.head);
+      c.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
+      c.border=edge();});
+    let k=0;
+    ACTS.forEach(a=>{
+      const it=ITEMS.find(i=>i.id===a.item_id)||{};
+      (LOGS[a.id]||[]).slice().reverse().forEach(l=>{
+        const row=hs.addRow([it.description||'',a.text||'',whenTxt(l.at),l.kind||'',l.note||'']);
+        const tint=l.kind==='closed'?XC.good:l.kind==='reopened'?XC.warn
+                  :l.kind==='note'?XC.violet:XC.ink3;
+        row.eachCell({includeEmpty:true},c=>{
+          c.fill=solid((k%2)?XC.rowAlt:XC.row);
+          c.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
+          c.alignment={wrapText:true,vertical:'top'};
+          c.border=edge();
+        });
+        row.getCell(4).font={size:10,bold:true,color:{argb:tint},name:'Segoe UI'};
+        k++;
+      });
+    });
+  }
+  return wb;
+}
+/* the log is normally read one action at a time, when a panel opens — the
+   export needs the lot, so fetch it here rather than on every page load */
+async function fetchAllLogs(){
+  try{
+    const rows=await api('task_action_log?select=id,action_id,at,kind,note&order=id.asc');
+    LOGS={};
+    (rows||[]).forEach(r=>{(LOGS[r.action_id]=LOGS[r.action_id]||[]).push(r);});
+  }catch(e){}
+}
+async function exportXLSX(){
+  if(ACTS.length)await fetchAllLogs();
+  const wb=buildWorkbook();
+  if(!wb)return toast('The spreadsheet library did not load — try again online');
+  try{
+    const buf=await wb.xlsx.writeBuffer();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([buf],
+      {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    a.download='Action list '+TODAY()+'.xlsx'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast('Exported '+VIEW.length+' rows');
+  }catch(e){ toast('Could not build the file: '+e.message); }
+}
+function exportXLSX_old(){
   if(typeof XLSX==='undefined')
     return toast('The spreadsheet library did not load — try again online');
   const ws=XLSX.utils.aoa_to_sheet(sheetData());
