@@ -484,7 +484,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-27 · b4';
+const BUILD='ACTIONS 2026-08-27 · b5';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -582,14 +582,19 @@ async function signIn(email,pw){
   SESSION=d; save(); return d;
 }
 const save=()=>{try{localStorage.setItem('task-session',JSON.stringify(SESSION));}catch(e){}};
+/* A dropped connection makes fetch REJECT rather than return a bad response.
+   Unguarded, that exception escaped boot() and neither the app nor the sign-in
+   screen was ever shown — a blank white page, and no way to tell why. */
 async function resume(){
   let s=null; try{s=JSON.parse(localStorage.getItem('task-session')||'null');}catch(e){}
   if(!s||!s.refresh_token)return false;
-  const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
-    method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({refresh_token:s.refresh_token})});
-  if(!r.ok)return false;
-  SESSION=await r.json(); save(); return true;
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:s.refresh_token})});
+    if(!r.ok)return false;
+    SESSION=await r.json(); save(); return true;
+  }catch(e){ throw new Error('offline'); }
 }
 function loadPrefs(){
   try{const p=JSON.parse(localStorage.getItem('task-prefs')||'null');
@@ -2208,13 +2213,36 @@ async function boot(){
     }
   };
   $('lpw').addEventListener('keydown',e=>{if(e.key==='Enter')$('lgo').click();});
-  if(await resume()){
-    try{await startApp();return;}catch(e){console.error(e);}
+  let why='';
+  try{
+    if(await resume()){
+      try{await startApp();return;}
+      catch(e){console.error(e);why=offlineish(e)
+        ?'Could not reach the server. Check the connection and sign in again.'
+        :('Could not load your list: '+(e&&e.message||e));}
+    }
+  }catch(e){
+    console.error(e);
+    why='Could not reach the server. Check the connection, then sign in.';
   }
   $('login').classList.add('on');
+  if(why)$('lerr').textContent=why;
   $('lem').focus();
 }
-boot();
+const offlineish=e=>/offline|failed to fetch|networkerror|load failed/i.test(
+  String(e&&e.message||e));
+/* whatever happens, the person must end up looking at SOMETHING */
+boot().catch(err=>{
+  console.error(err);
+  try{
+    $('login').classList.add('on');
+    $('lerr').textContent='Something went wrong starting up: '
+      +(err&&err.message||err)+'. Reload to try again.';
+  }catch(e){
+    document.body.innerHTML='<p style="color:#f5f2ff;font:15px sans-serif;padding:28px">'
+      +'The app could not start. Reload the page.</p>';
+  }
+});
 </script>
 </body>
 </html>
