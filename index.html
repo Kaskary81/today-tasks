@@ -335,7 +335,16 @@ table.alist tr.done td.t{text-decoration:line-through;
    phone gets cards over the same data instead.
    ============================================================ */
 #mob{display:none}
+#mmore{display:none}
 @media (max-width:900px){
+  #mmore{display:inline-flex;font-size:18px;line-height:1;padding:7px 12px}
+  .msheet .mrow{display:flex;align-items:center;gap:12px;width:100%;padding:14px 4px;
+    border-bottom:1px solid rgba(51,37,82,.6);font-size:14.5px;color:var(--ink2);
+    text-align:left}
+  .msheet .mrow:last-child{border-bottom:0}
+  .msheet .mrow .ic{width:26px;text-align:center;font-size:16px;color:var(--violet)}
+  .msheet .mrow small{display:block;color:var(--ink3);font-size:11.5px;margin-top:2px}
+  .msheet .mrow.danger .ic{color:var(--hot)}
   body{overflow:hidden}
   header{padding:11px 13px 7px;gap:9px}
   .brand small{display:none}
@@ -429,6 +438,7 @@ table.alist tr.done td.t{text-decoration:line-through;
       <input id="q" placeholder="Search items and actions…  Ctrl+F" autocomplete="off">
       <button class="x" id="qx" title="Clear">×</button>
     </div>
+    <button class="tbtn" id="mmore" title="More">⋯</button>
     <button class="tbtn" id="signout" title="Sign out">⎋</button>
   </header>
 
@@ -485,7 +495,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-28 · b6';
+const BUILD='ACTIONS 2026-08-28 · b7';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1380,7 +1390,7 @@ async function openActions(itemId,focusForm,back){
   const it=ITEMS.find(i=>i.id===itemId); if(!it)return;
   PANEL_ITEM=itemId; PANEL=null; BACK_TO_ITEM=back||null;
   const acts=kidsOf(itemId).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
-  const sh=$('sheet');
+  const sh=$('sheet'); sh.className='sheet';
   sh.innerHTML=
      '<div class="sh">'
     +(back?'<button class="tbtn" id="iback">‹ Item</button>':'')
@@ -1493,7 +1503,7 @@ async function openAction(actionId,backTo){
   const a=ACTS.find(x=>x.id===actionId); if(!a)return;
   const it=ITEMS.find(i=>i.id===a.item_id)||{};
   PANEL=actionId;
-  const sh=$('sheet');
+  const sh=$('sheet'); sh.className='sheet';
   sh.innerHTML=
      '<div class="sh">'
     +(backTo?'<button class="tbtn" id="hback">‹ All actions</button>':'')
@@ -1669,7 +1679,46 @@ function mobPaint(){
   $('madd').onclick=addItemMobile;
   $('mundo').onclick=undo;
 }
+/* everything the desktop toolbar offers, reachable under a thumb */
+function openMoreMenu(){
+  const sh=$('sheet');
+  const busy=(msg)=>{const t=$('sheet').querySelector('#mbusy');
+    if(t)t.textContent=msg||'';};
+  sh.className='sheet msheet on';
+  sh.innerHTML=
+     '<div class="sh"><b>More</b><span class="hgrow"></span>'
+    +'<button class="tbtn" id="mclose">Close</button></div>'
+    +'<div class="sb">'
+    +'<button class="mrow" id="mxl"><span class="ic">▦</span>'
+    +'<span>Export to Excel<small>the register as it looks here, with the history</small></span></button>'
+    +'<button class="mrow" id="mcsv"><span class="ic">▤</span>'
+    +'<span>Export as CSV<small>plain text, opens anywhere</small></span></button>'
+    +'<button class="mrow" id="mimp"><span class="ic">▲</span>'
+    +'<span>Import a spreadsheet<small>adds rows at the bottom</small></span></button>'
+    +'<button class="mrow" id="mclear"><span class="ic">⌦</span>'
+    +'<span>Clear the search and filters</span></button>'
+    +'<button class="mrow danger" id="mout"><span class="ic">⎋</span>'
+    +'<span>Sign out</span></button>'
+    +'<p id="mbusy" style="color:var(--ink3);font-size:12.5px;margin:14px 0 0"></p>'
+    +'</div>';
+  const close=()=>{sh.classList.remove('on');sh.className='sheet';};
+  $('mclose').onclick=close;
+  $('mxl').onclick=async()=>{
+    busy('Building the workbook…');
+    try{ await exportXLSX(); busy('Saved to your downloads.'); }
+    catch(e){ busy('That failed: '+(e.message||e)); }
+  };
+  $('mcsv').onclick=()=>{exportCSV();busy('Saved to your downloads.');};
+  $('mimp').onclick=()=>{close();$('fimp').click();};
+  $('mclear').onclick=()=>{FILT={};SEARCH='';SORT=null;$('q').value='';
+    MFILT='open';paint();close();};
+  $('mout').onclick=()=>{
+    try{localStorage.removeItem('task-session');}catch(e){}
+    location.reload();
+  };
+}
 function wireMobile(){
+  $('mmore').onclick=openMoreMenu;
   $('mchips').addEventListener('click',e=>{
     const c=e.target.closest('[data-mf]'); if(!c)return;
     MFILT=c.dataset.mf; mobPaint();
@@ -1703,7 +1752,7 @@ async function openItem(itemId,fresh){
   const it=ITEMS.find(r=>r.id===itemId); if(!it)return;
   const node=VIEW.find(nd=>nd.rec.id===itemId)||{rec:it,acts:kidsOf(itemId),kids:0,no:0};
   const has=(node.acts||[]).length;
-  const sh=$('sheet');
+  const sh=$('sheet'); sh.className='sheet';
   sh.innerHTML=
      '<div class="sh"><b>Item '+node.no+'</b><span class="hgrow"></span>'
     +'<button class="tbtn" id="iclose">Close</button></div>'
