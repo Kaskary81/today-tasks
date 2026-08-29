@@ -1247,7 +1247,7 @@ const isoDay=d=>{const x=(d instanceof Date)?d:new Date(d);
          String(x.getDate()).padStart(2,'0');};
 const today=isoDay(new Date());
 const SHORT_DISC={};
-const BUILD='LOD 2026-08-30 · v58';
+const BUILD='LOD 2026-08-30 · v60';
 const SNAPSHOT=[];
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -4032,6 +4032,8 @@ function mobRender(){
   if(mb){
     mb.querySelectorAll('[data-leg]').forEach(b=>b.onclick=()=>{
       LEG=b.dataset.leg; mobRender(); });
+    if(MOB.view==='dash'&&(LEG==='hesco'||LEG==='maaden'))
+      wireLegDash({body:mb}, LEG);
     mb.querySelectorAll('.rctbl tr[data-go]').forEach(tr=>{
       tr.style.cursor='pointer';
       tr.onclick=()=>{ MOB.view='one'; MOB.id=+tr.dataset.go; mobRender(); };});
@@ -4041,25 +4043,39 @@ function mobRender(){
 const offBar=()=>LIVE?'':`<div class="offbar"><b>Saved snapshot.</b> This copy cannot reach the
   database, so the figures are as at 14 Aug 2026 and editing is off.</div>`;
 function mobDash(){
-  /* The phone shows the same dashboard as the desktop — the same leg switch,
-     the same five figures, the same three sections. It had been left behind on
-     an older layout of ten tiles and seven panels, which meant the two devices
-     told different stories about the same project. */
+  /* The phone draws whatever the desktop would draw for the same leg:
+     "Everything" gets the five figures, the recovery plan, ball in court and
+     the discipline split; a leg gets its own cards — the partition that closes
+     at 100% — plus turnaround and that leg's discipline chart. Previously the
+     phone always drew the Everything layout, so the leg cards never appeared. */
   const legbar=`<div class="legbar">
     ${[['all','Everything','both legs'],
-       ['hesco','HESCO → AWPT','internal review'],
-       ['maaden','AWPT → Maaden','to the Client']]
+       ['hesco','HESCO → AWPT','148 submittals'],
+       ['maaden','AWPT → Maaden','130 Client submittals']]
       .map(([k,t,sub])=>`<button class="legtab${LEG===k?' on':''}" data-leg="${k}">
         <b>${t}</b><span>${sub}</span></button>`).join('')}</div>`;
+  if(LEG==='hesco'||LEG==='maaden')
+    return offBar()+legbar+legDashHTML(LEG);
   return offBar()+legbar+
-    `<div class="mkpi">${kpiHTML()}</div>
-     <div class="panel"><h3>Recovery plan — committed against submitted</h3>
-       ${recoveryHTML()}</div>
-     <div class="panel"><h3>Ball in court</h3>${ballChart()}</div>
-     <div class="panel"><h3>By discipline</h3>${disciplineChart()}</div>`;
+    `<div class="dash">
+       <div class="kpis">${kpiHTML()}</div>
+       <div class="panel"><h3>Recovery plan — committed against submitted</h3>
+         ${recoveryHTML()}</div>
+       <div class="panel"><h3>Ball in court</h3>${ballChart()}</div>
+       <div class="panel"><h3>By discipline</h3>${disciplineChart()}</div></div>`;
 }
 
 function mobFilters(){
+  if(LEG==='hesco'||LEG==='maaden'){
+    const set=legRows(AB), lab=v=>(LEG==='maaden'&&MAADEN_GRADE[v])
+      ? MAADEN_GRADE[v].g+' '+MAADEN_GRADE[v].t : v;
+    const F=[['','All',set.length]].concat(
+      LEGSTATUSES[LEG].map(v=>[v,lab(v),set.filter(r=>legState(r,LEG)===v).length])
+        .filter(x=>x[2]));
+    return `<div class="mfilt">${F.map(([v,l,n])=>
+      `<button class="${(MOB.fs||'')===v&&(v||!MOB.f)?'on':''}" data-mfs="${esc(v)}">${
+        esc(l)}<b>${n}</b></button>`).join('')}</div>`;
+  }
   const F=[['','All',()=>AB.length],
     ['open','Open',()=>AB.filter(isOpen).length],
     ['hesco','HESCO',()=>AB.filter(r=>r.holder==='HESCO').length],
@@ -4072,14 +4088,18 @@ function mobFilters(){
 }
 function mobRows(){
   const q=MOB.q.toLowerCase();
-  return AB.filter(r=>{
+  /* the phone was counting all 148 whatever leg was chosen, and filtering by
+     holder rather than by the leg's own states */
+  return legRows(AB).filter(r=>{
     if(q&&!((r.ref||'')+' '+(r.title||'')).toLowerCase().includes(q))return false;
     if(MOB.f==='open'&&!isOpen(r))return false;
     if(MOB.f==='hesco'&&r.holder!=='HESCO')return false;
     if(MOB.f==='awpt'&&r.holder!=='AWPT')return false;
     if(MOB.f==='maaden'&&r.holder!=="Maaden")return false;
     if(MOB.f==='ns'&&r.status!=='Not issued')return false;
-    if(MOB.fs&&(r.status||'Not Submitted')!==MOB.fs)return false;
+    if(MOB.fs){
+      const st=(LEG==='hesco'||LEG==='maaden')?legState(r,LEG):(r.status||'Not issued');
+      if(st!==MOB.fs)return false; }
     if(MOB.fd&&r.discipline!==MOB.fd)return false;
     if(MOB.fage){ const a=heldDays(r); if(a==null)return false;
       if(a<MOB.fage[0]||a>MOB.fage[1])return false; }
@@ -4097,16 +4117,34 @@ function card(r,i){
       <h3 class="dc-t">${esc(r.title)}</h3>
       <div class="dc-m">${esc(SHORT_DISC[r.discipline]||r.discipline||'—')}</div></article>`;
   }
-  const k=r.status||'Not issued';
+  const onLeg=(LEG==='hesco'||LEG==='maaden');
+  const k=onLeg?legState(r,LEG):(r.status||'Not issued');
   const late=(r.holder!=='Closed'&&r.plannedDate&&r.plannedDate<today)?days(r.plannedDate,today):0;
   const out=heldDays(r)||0;
   const meta=[r.discipline||'—'];
   if(r.reviewClass)meta.push('<span class="rev">'+esc(r.reviewClass)+'</span>');
   if(r.scope==='Optional')meta.push('Optional');
+  if(onLeg){
+    /* the same three things the desktop leg register shows: which revision,
+       when it went and how long that cycle took */
+    const lg=LEG==='hesco'?'HESCO':'Maaden';
+    const rev=legRev(r,lg), sent=legSent(r,lg), back=legReplied(r,lg);
+    if(rev)meta.push('<span class="rev">'+esc(rev)+'</span>');
+    if(sent)meta.push('sent '+esc(sent));
+    if(sent&&back)meta.push(days(sent,back)+'d');
+    else if(sent)meta.push(days(sent,today)+'d*');
+  }
   return `<article class="dcard" data-mo="${r.id}"
-      style="animation-delay:${Math.min(i||0,12)*26}ms;--edge:${HCOLOR[r.holder]||'#b9bfc7'}">
-    <div class="dc-h"><span class="dc-no">${esc(r.holder||'')}</span>
-      <span class="dc-code" style="background:${COLOR[k]}22;color:${COLOR[k]};border-color:${COLOR[k]}55">${esc(k)}</span></div>
+      style="animation-delay:${Math.min(i||0,12)*26}ms;--edge:${
+        onLeg?(COLOR[k]||LCOLOR[k]||'#b9bfc7'):(HCOLOR[r.holder]||'#b9bfc7')}">
+    <div class="dc-h"><span class="dc-no">${esc(onLeg?(r.ref||''):(r.holder||''))}</span>
+      ${(()=>{ /* the leg's own vocabulary and colours, with Maaden's grade letters */
+        const col=COLOR[k]||LCOLOR[k]||'#8c9aa8';
+        const g=(onLeg&&LEG==='maaden'&&MAADEN_GRADE[k])
+          ? MAADEN_GRADE[k].g+' — '+MAADEN_GRADE[k].t : k;
+        const inf=onLeg&&LEG==='hesco'&&isInferred(lastCycle(r,'HESCO'))?' ~':'';
+        return `<span class="dc-code" title="${esc(inf?'inferred from the resubmission':g)}"
+          style="background:${col}22;color:${col};border-color:${col}55">${esc(g+inf)}</span>`;})()}</div>
     <h3 class="dc-t">${esc(r.title)}</h3>
     <div class="dc-m">${meta.join('<i class="sep"></i>')}
       ${out?`<span class="out">${out}d held</span>`
@@ -4486,6 +4524,9 @@ function wireMob(){
   if(pn)pn.onclick=()=>mobPlanNew();
   b.querySelectorAll('[data-mf]').forEach(el=>el.onclick=()=>{
     MOB.f=el.dataset.mf;MOB.fs='';MOB.fd='';MOB.fage=null;MOB.fageL='';mobRender();});
+  /* on a leg the chips are that leg's own states */
+  b.querySelectorAll('[data-mfs]').forEach(el=>el.onclick=()=>{
+    MOB.fs=el.dataset.mfs; MOB.f=''; MOB.fage=null; MOB.fageL=''; mobRender();});
   const mp=document.getElementById('mpdf'); if(mp)mp.onclick=exportPDF;
   const mc=document.getElementById('mclear');
   if(mc)mc.onclick=()=>{MOB.fs='';MOB.fd='';MOB.f='';MOB.q='';MOB.fage=null;MOB.fageL='';mobRender();};
