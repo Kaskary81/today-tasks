@@ -1247,7 +1247,7 @@ const isoDay=d=>{const x=(d instanceof Date)?d:new Date(d);
          String(x.getDate()).padStart(2,'0');};
 const today=isoDay(new Date());
 const SHORT_DISC={};
-const BUILD='LOD 2026-08-30 · v60';
+const BUILD='LOD 2026-08-30 · v61';
 const SNAPSHOT=[];
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -3749,16 +3749,29 @@ function legDashHTML(leg){
     <div class="panel"><h3>By discipline</h3>${legDiscipline(leg)}</div></div>`;
 }
 function wireLegDash(w,leg){
-  const go=st=>{ const rw=openRegister(leg); const g=rw.grid; if(!g)return;
-    GRID=g; g.q=''; g.fd=''; g.fh=''; g.fx=''; g.fage=null; g.fageL='';
+  /* On the phone there are no windows to open — the same click has to set the
+     mobile register's own filters and switch to it, exactly as drillTo does. */
+  const go=(st,disc)=>{
+    if(MOBILE){
+      LEG=leg; MOB.stack=[]; MOB.view='reg'; MOB.id=null; MOB.q=''; MOB.f='';
+      MOB.fage=null; MOB.fageL='';
+      MOB.fs=(st==='__other'||!st)?'':st;
+      MOB.fd=disc||'';
+      const b=document.getElementById('mbody'); if(b)b.scrollTop=0;
+      mobRender(); return;
+    }
+    const rw=openRegister(leg); const g=rw.grid; if(!g)return;
+    GRID=g; g.q=''; g.fd=disc||''; g.fh=''; g.fx=''; g.fage=null; g.fageL='';
     g.fs=(st==='__other'?'':st); renderGrid(g); focusWin(rw.id); };
   w.body.querySelectorAll('[data-lstate]').forEach(el=>{
     el.style.cursor='pointer';
-    el.onclick=()=>go(el.dataset.lstate);});
+    el.onclick=()=>go(el.dataset.lstate, el.dataset.d||'');});
   w.body.querySelectorAll('.rctbl tr[data-go]').forEach(tr=>{
     tr.style.cursor='pointer';
     tr.onclick=()=>{ const r=AB.find(x=>x.id===+tr.dataset.go);
-      if(!r)return; const rw=openRegister(leg); const g=rw.grid; if(!g)return;
+      if(!r)return;
+      if(MOBILE){ MOB.view='one'; MOB.id=r.id; mobRender(); return; }
+      const rw=openRegister(leg); const g=rw.grid; if(!g)return;
       GRID=g; setTimeout(()=>{ const i=g.rows.findIndex(x=>x.id===r.id);
         if(i>=0){ g.cur={r:i,c:0}; g.sel={r1:i,c1:0,r2:i,c2:0}; paintSel(); } },250); };});
 }
