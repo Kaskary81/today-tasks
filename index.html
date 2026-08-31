@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b15';
+const BUILD='ACTIONS 2026-08-31 · b16';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2070,6 +2070,17 @@ const XSTAT={
 const XPRIO={1:{fg:'FFB3261E',bg:'FFFBECEA'}, 2:{fg:'FF8A6100',bg:'FFFFF6E0'},
              3:{fg:'FF1B4E86',bg:'FFEDF3FA'}, 4:{fg:'FF3C3C3C',bg:'FFFFFFFF'}};
 const solid=argb=>({type:'pattern',pattern:'solid',fgColor:{argb}});
+/* Excel wants a real date, not the text "2026-09-07", so it can sort, filter
+   and calculate with it. Written as Excel's own day number rather than a Date
+   object: it carries no timezone, so the day cannot slip, and it is what the
+   file format stores anyway. Day 1 is 1 Jan 1900, with Excel's 1900 leap-year
+   quirk making 30 Dec 1899 the zero point. */
+function xdate(v){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v||'').trim());
+  if(!m)return '';
+  return Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/86400000);
+}
+const XDFMT='dd-mmm-yyyy';
 const edge=()=>({top:{style:'thin',color:{argb:XC.line}},
                  left:{style:'thin',color:{argb:XC.line}},
                  bottom:{style:'thin',color:{argb:XC.line}},
@@ -2156,10 +2167,10 @@ function buildWorkbook(){
     sc.font={size:10,color:{argb:st.fg},name:'Calibri'};
     sc.alignment=MID;
 
-    const du=put('due',r.due||''); du.alignment=MID;
+    const du=put('due',xdate(r.due)); du.alignment=MID; du.numFmt=XDFMT;
     if(r.due&&!closed&&r.due<today)
       du.font={bold:true,size:10,color:{argb:XC.hot},name:'Calibri'};
-    put('closed',r.done_at||'').alignment=MID;
+    const cc=put('closed',xdate(r.done_at)); cc.alignment=MID; cc.numFmt=XDFMT;
     put('notes',r.notes||'').alignment=LEFT;
 
     /* banding, borders, and the default ink for anything not set above */
@@ -2198,7 +2209,7 @@ function buildWorkbook(){
        formulae:['AND($'+D+'2<>"",$'+D+'2<TODAY(),$'+S+'2<>"Closed")'],
        style:{font:{bold:true,color:{argb:XC.hot}}}},
       {type:'expression',priority:2,
-       formulae:['AND($'+D+'2=TEXT(TODAY(),"yyyy-mm-dd"),$'+S+'2<>"Closed")'],
+       formulae:['AND($'+D+'2=TODAY(),$'+S+'2<>"Closed")'],
        style:{font:{bold:true,color:{argb:XC.warn}}}}]});
     ws.addConditionalFormatting({ref:body,rules:[
       {type:'expression',priority:3,formulae:['$'+S+'2="Closed"'],
@@ -2222,12 +2233,16 @@ function buildWorkbook(){
     ACTS.forEach(a=>{
       const it=ITEMS.find(i=>i.id===a.item_id)||{};
       (LOGS[a.id]||[]).slice().reverse().forEach(l=>{
-        const row=hs.addRow([it.description||'',a.text||'',whenTxt(l.at),l.kind||'',l.note||'']);
+        const t=l.at?Date.parse(l.at):NaN;
+        const when=isNaN(t)?whenTxt(l.at)
+          :(t-Date.UTC(1899,11,30))/86400000;      /* the same day number, with a time */
+        const row=hs.addRow([it.description||'',a.text||'',when,l.kind||'',l.note||'']);
+        if(typeof when==='number')row.getCell(3).numFmt='dd-mmm-yyyy hh:mm';
         const tint=l.kind==='closed'?XC.good:l.kind==='reopened'?XC.warn
                   :l.kind==='note'?XC.violet:XC.ink3;
         row.eachCell({includeEmpty:true},c=>{
-          c.fill=solid((k%2)?XC.rowAlt:XC.row);
-          c.font={size:10,color:{argb:XC.ink2},name:'Calibri'};
+          c.fill=solid(XC.row);
+          c.font={size:10,color:{argb:XC.ink},name:'Calibri'};
           c.alignment={wrapText:true,vertical:'top'};
           c.border=edge();
         });
