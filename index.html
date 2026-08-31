@@ -411,6 +411,12 @@ table.alist tr.done td.t{text-decoration:line-through;
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;transition-duration:.06s!important}
 }
+
+/* who an action is with, shown beside it */
+.aline .aw{display:inline-block;margin-left:7px;padding:0 6px;border-radius:20px;
+  font-size:10.5px;line-height:16px;white-space:nowrap;vertical-align:1px;
+  background:var(--chip,#2a2140);color:var(--muted,#9aa0b5)}
+.aline.done .aw{opacity:.55}
 </style>
 </head>
 <body>
@@ -495,7 +501,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-28 · b7';
+const BUILD='ACTIONS 2026-08-31 · b8';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -771,10 +777,21 @@ function actsHTML(node){
     return '<span class="aline'+(closed?' done':'')+'">'
       +'<button class="an'+(overdue?' od':'')+(closed?' ok':'')+'" data-act="'+a.id+'" '
       +'title="Open this action">'+(i+1)+'</button>'
-      +'<span class="at">'+esc(a.text||'—')+'</span>'
+      +'<span class="at">'+esc(a.text||'—')
+        +(a.responsible?'<span class="aw" title="With '+esc(a.responsible)+'">'
+            +esc(shortName(a.responsible))+'</span>':'')
+      +'</span>'
       +(a.due?'<span class="ad'+(overdue?' od':'')+'">'+esc(shortDay(a.due))+'</span>':'')
       +'</span>';
   }).join('')+'</span>';
+}
+/* "Kenan M. Alnamous" -> "Kenan A." so the name fits beside the action */
+function shortName(v){
+  const p=String(v||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length)return '';
+  if(p.length===1)return p[0];
+  const last=p[p.length-1];
+  return p[0]+' '+last[0].toUpperCase()+'.';
 }
 function cellHTML(node,c){
   if(c.kind==='no')
