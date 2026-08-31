@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b12';
+const BUILD='ACTIONS 2026-08-31 · b13';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2049,27 +2049,23 @@ function sheetData(){
    one cell with the closed ones struck through. SheetJS's free build
    drops all styling, so this is built with ExcelJS.
    ============================================================ */
-const XC={                                   /* straight from the app's CSS */
-  head:'FF241A3F', headInk:'FFE9D5FF',
-  row:'FF171029', rowAlt:'FF1B1330', line:'FF332552',
-  ink:'FFF5F2FF', ink2:'FFBDB2D8', ink3:'FF8B81A8',
-  violet:'FFA855F7', good:'FF6EE7B7', warn:'FFFCD34D', hot:'FFFDA4AF', sky:'FF7DD3FC'
+/* The workbook is a document people print, forward and read in Excel — so it is
+   plain: black on white, a light grey heading, thin grey rules, one accent
+   colour for a date that has passed. The dark theme belongs on screen only. */
+const XC={
+  head:'FFEFEFEF', headInk:'FF000000',
+  row:'FFFFFFFF', rowAlt:'FFF7F7F7', line:'FFB6B6B6',
+  ink:'FF000000', ink2:'FF3C3C3C', ink3:'FF6E6E6E',
+  violet:'FF000000', good:'FF17683A', warn:'FF8A6100', hot:'FFB3261E', sky:'FF1B4E86'
 };
-/* a translucent chip over the dark card, flattened to one solid colour */
-function blend(hex,a){
-  const base=[0x1B,0x13,0x30];
-  const c=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
-  return 'FF'+c.map((v,i)=>Math.round(base[i]*(1-a)+v*a).toString(16).padStart(2,'0'))
-               .join('').toUpperCase();
-}
 const XSTAT={
-  'Open':        {fg:XC.sky,  bg:blend('38BDF8',.15)},
-  'In progress': {fg:XC.warn, bg:blend('FBBF24',.15)},
-  'On hold':     {fg:'FFC4BCDA', bg:blend('8B81A8',.18)},
-  'Closed':      {fg:XC.good, bg:blend('34D399',.15)}
+  'Open':        {fg:'FF000000', bg:'FFFFFFFF'},
+  'In progress': {fg:'FF8A6100', bg:'FFFFF6E0'},
+  'On hold':     {fg:'FF6E6E6E', bg:'FFF0F0F0'},
+  'Closed':      {fg:'FF17683A', bg:'FFEAF5EE'}
 };
-const XPRIO={1:{fg:XC.hot,bg:blend('F43F5E',.18)}, 2:{fg:'FFFDBA74',bg:blend('FB923C',.18)},
-             3:{fg:XC.sky,bg:blend('38BDF8',.16)}, 4:{fg:'FFB8B0CD',bg:blend('8B81A8',.16)}};
+const XPRIO={1:{fg:'FFB3261E',bg:'FFFBECEA'}, 2:{fg:'FF8A6100',bg:'FFFFF6E0'},
+             3:{fg:'FF1B4E86',bg:'FFEDF3FA'}, 4:{fg:'FF3C3C3C',bg:'FFFFFFFF'}};
 const solid=argb=>({type:'pattern',pattern:'solid',fgColor:{argb}});
 const edge=()=>({top:{style:'thin',color:{argb:XC.line}},
                  left:{style:'thin',color:{argb:XC.line}},
@@ -2093,10 +2089,10 @@ function buildWorkbook(){
   ws.columns=cols.map(c=>({header:c.lb,width:Math.max(6,Math.round(c.w/7.2))}));
 
   const hr=ws.getRow(1);
-  hr.height=24;
+  hr.height=22;
   hr.eachCell(cell=>{
     cell.fill=solid(XC.head);
-    cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
+    cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Calibri'};
     cell.alignment={vertical:'middle',horizontal:'left'};
     cell.border=edge();
   });
@@ -2110,7 +2106,7 @@ function buildWorkbook(){
 
     put('__no',nd.no).alignment={horizontal:'center',vertical:'top'};
     const dc=put('description',r.description||'');
-    dc.font={bold:true,size:11,color:{argb:XC.ink},name:'Segoe UI'};
+    dc.font={bold:true,size:10.5,color:{argb:XC.ink},name:'Calibri'};
     dc.alignment={wrapText:true,vertical:'top'};
 
     /* the action list, numbered, in ONE cell — closed ones struck through,
@@ -2122,16 +2118,16 @@ function buildWorkbook(){
         const ad=a.status==='Closed', od=!ad&&a.due&&a.due<today;
         if(j)rich.push({font:{size:10,color:{argb:XC.ink3}},text:'\n'});
         rich.push({font:{size:10,bold:true,
-          color:{argb:ad?XC.good:od?XC.hot:XC.violet},name:'Segoe UI'},text:(j+1)+'. '});
-        rich.push({font:{size:10,name:'Segoe UI',strike:ad,
+          color:{argb:ad?XC.ink3:od?XC.hot:XC.ink},name:'Calibri'},text:(j+1)+'. '});
+        rich.push({font:{size:10,name:'Calibri',strike:ad,
           color:{argb:ad?XC.ink3:XC.ink}},text:a.text||'—'});
-        if(a.due)rich.push({font:{size:9,name:'Segoe UI',
+        if(a.due)rich.push({font:{size:9,name:'Calibri',
           color:{argb:od?XC.hot:XC.ink3}},text:'   '+shortDay(a.due)});
       });
       ac.value={richText:rich};
     }else{
       ac.value='— no actions yet —';
-      ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Segoe UI'};
+      ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Calibri'};
     }
     ac.alignment={wrapText:true,vertical:'top'};
 
@@ -2139,26 +2135,26 @@ function buildWorkbook(){
     put('responsible',get(nd,COLS[colOf('responsible')]));
     const pc=put('priority',r.priority?Number(r.priority):null);
     const ps=XPRIO[r.priority]||XPRIO[4];
-    pc.fill=solid(ps.bg);
-    pc.font={bold:true,size:10,color:{argb:ps.fg},name:'Segoe UI'};
+    if(Number(r.priority)<=2)pc.fill=solid(ps.bg);
+    pc.font={bold:Number(r.priority)<=2,size:10,color:{argb:ps.fg},name:'Calibri'};
     pc.alignment={horizontal:'center',vertical:'top'};
 
     const sc=put('status',r.status||'Open');
     const st=XSTAT[r.status]||XSTAT.Open;
-    sc.fill=solid(st.bg);
-    sc.font={bold:true,size:10,color:{argb:st.fg},name:'Segoe UI'};
+    if(st.bg!=='FFFFFFFF')sc.fill=solid(st.bg);
+    sc.font={size:10,color:{argb:st.fg},name:'Calibri'};
     sc.alignment={horizontal:'center',vertical:'top'};
 
     const du=put('due',r.due||'');
     if(r.due&&!closed&&r.due<today)
-      du.font={bold:true,size:10,color:{argb:XC.hot},name:'Segoe UI'};
+      du.font={bold:true,size:10,color:{argb:XC.hot},name:'Calibri'};
     put('closed',r.done_at||'');
     put('notes',r.notes||'').alignment={wrapText:true,vertical:'top'};
 
     /* banding, borders, and the default ink for anything not set above */
     row.eachCell({includeEmpty:true},cell=>{
-      if(!cell.fill)cell.fill=solid(i%2?XC.rowAlt:XC.row);
-      if(!cell.font)cell.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
+      if(!cell.fill)cell.fill=solid(XC.row);
+      if(!cell.font)cell.font={size:10,color:{argb:XC.ink},name:'Calibri'};
       if(!cell.alignment)cell.alignment={vertical:'top'};
       cell.border=edge();
     });
@@ -2170,6 +2166,13 @@ function buildWorkbook(){
 
   const last=VIEW.length+1;
   ws.autoFilter={from:{row:1,column:1},to:{row:last,column:cols.length}};
+  /* so it prints as a document: headings repeat on every page, the sheet fits
+     the paper width, and the heading row stays put while scrolling */
+  ws.views=[{state:'frozen',ySplit:1}];
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,
+    paperSize:9,margins:{left:0.4,right:0.4,top:0.5,bottom:0.5,header:0.2,footer:0.2},
+    printTitlesRow:'1:1'};
+  ws.headerFooter={oddFooter:'&L&"Calibri"Action list&C&"Calibri"&P of &N&R&"Calibri"&D'};
 
   /* live rules, so the colours follow the sheet if it is edited in Excel */
   if(VIEW.length){
@@ -2202,7 +2205,7 @@ function buildWorkbook(){
     const h=hs.getRow(1);
     h.height=22;
     h.eachCell(c=>{c.fill=solid(XC.head);
-      c.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
+      c.font={bold:true,size:10,color:{argb:XC.headInk},name:'Calibri'};
       c.border=edge();});
     let k=0;
     ACTS.forEach(a=>{
@@ -2213,11 +2216,11 @@ function buildWorkbook(){
                   :l.kind==='note'?XC.violet:XC.ink3;
         row.eachCell({includeEmpty:true},c=>{
           c.fill=solid((k%2)?XC.rowAlt:XC.row);
-          c.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
+          c.font={size:10,color:{argb:XC.ink2},name:'Calibri'};
           c.alignment={wrapText:true,vertical:'top'};
           c.border=edge();
         });
-        row.getCell(4).font={size:10,bold:true,color:{argb:tint},name:'Segoe UI'};
+        row.getCell(4).font={size:10,bold:true,color:{argb:tint},name:'Calibri'};
         k++;
       });
     });
