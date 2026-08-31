@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b13';
+const BUILD='ACTIONS 2026-08-31 · b14';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2086,28 +2086,36 @@ function buildWorkbook(){
   const cols=COLS;
   /* the header has to be declared WITH the columns — assigning ws.columns
      afterwards blanks a header row that was added separately */
-  ws.columns=cols.map(c=>({header:c.lb,width:Math.max(6,Math.round(c.w/7.2))}));
+  const WIDE={responsible:26,project:16,status:12,due:12,closed:12,priority:9,__no:6};
+  ws.columns=cols.map(c=>({header:c.lb,
+    width:WIDE[c.k]||Math.max(6,Math.round(c.w/7.2))}));
 
   const hr=ws.getRow(1);
   hr.height=22;
   hr.eachCell(cell=>{
     cell.fill=solid(XC.head);
     cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Calibri'};
-    cell.alignment={vertical:'middle',horizontal:'left'};
+    cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
     cell.border=edge();
   });
 
   const today=TODAY();
-  VIEW.forEach((nd,i)=>{
+  /* the workbook is read to decide what to chase first, so it comes out in
+     priority order, 1 to 4, keeping the register's order within each band */
+  const rows=VIEW.slice().sort((a,b)=>
+    (Number(a.rec.priority)||9)-(Number(b.rec.priority)||9) || a.no-b.no);
+  rows.forEach((nd,i)=>{
     const r=nd.rec, acts=nd.acts||[];
     const closed=r.status==='Closed';
     const row=ws.addRow([]);
     const put=(k,v)=>{ const ci=colOf(k)+1; row.getCell(ci).value=v; return row.getCell(ci); };
 
-    put('__no',nd.no).alignment={horizontal:'center',vertical:'top'};
+    const MID={horizontal:'center',vertical:'middle',wrapText:true};
+    const LEFT={horizontal:'left',vertical:'top',wrapText:true};
+    put('__no',nd.no).alignment=MID;
     const dc=put('description',r.description||'');
     dc.font={bold:true,size:10.5,color:{argb:XC.ink},name:'Calibri'};
-    dc.alignment={wrapText:true,vertical:'top'};
+    dc.alignment=LEFT;
 
     /* the action list, numbered, in ONE cell — closed ones struck through,
        overdue dates in red, exactly as the register draws them */
@@ -2129,33 +2137,33 @@ function buildWorkbook(){
       ac.value='— no actions yet —';
       ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Calibri'};
     }
-    ac.alignment={wrapText:true,vertical:'top'};
+    ac.alignment=LEFT;
 
-    put('project',r.project||'');
-    put('responsible',get(nd,COLS[colOf('responsible')]));
+    put('project',r.project||'').alignment=MID;
+    put('responsible',get(nd,COLS[colOf('responsible')])).alignment=MID;
     const pc=put('priority',r.priority?Number(r.priority):null);
     const ps=XPRIO[r.priority]||XPRIO[4];
     if(Number(r.priority)<=2)pc.fill=solid(ps.bg);
     pc.font={bold:Number(r.priority)<=2,size:10,color:{argb:ps.fg},name:'Calibri'};
-    pc.alignment={horizontal:'center',vertical:'top'};
+    pc.alignment=MID;
 
     const sc=put('status',r.status||'Open');
     const st=XSTAT[r.status]||XSTAT.Open;
     if(st.bg!=='FFFFFFFF')sc.fill=solid(st.bg);
     sc.font={size:10,color:{argb:st.fg},name:'Calibri'};
-    sc.alignment={horizontal:'center',vertical:'top'};
+    sc.alignment=MID;
 
-    const du=put('due',r.due||'');
+    const du=put('due',r.due||''); du.alignment=MID;
     if(r.due&&!closed&&r.due<today)
       du.font={bold:true,size:10,color:{argb:XC.hot},name:'Calibri'};
-    put('closed',r.done_at||'');
-    put('notes',r.notes||'').alignment={wrapText:true,vertical:'top'};
+    put('closed',r.done_at||'').alignment=MID;
+    put('notes',r.notes||'').alignment=LEFT;
 
     /* banding, borders, and the default ink for anything not set above */
     row.eachCell({includeEmpty:true},cell=>{
       if(!cell.fill)cell.fill=solid(XC.row);
       if(!cell.font)cell.font={size:10,color:{argb:XC.ink},name:'Calibri'};
-      if(!cell.alignment)cell.alignment={vertical:'top'};
+      if(!cell.alignment)cell.alignment=MID;
       cell.border=edge();
     });
     /* tall enough for the whole action list, like the row heights on screen */
