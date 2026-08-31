@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b11';
+const BUILD='ACTIONS 2026-08-31 · b12';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -540,7 +540,6 @@ const COLS=[
   {k:'responsible', lb:'Responsible', w:145, kind:'text', suggest:true},
   {k:'priority',    lb:'Priority',    w:86,  kind:'sel',  opts:['1','2','3','4']},
   {k:'status',      lb:'Status',      w:124, kind:'sel',  opts:STATUSES},
-  {k:'raised',      lb:'Raised on',   w:110, kind:'date'},
   {k:'due',         lb:'Due',         w:110, kind:'date'},
   {k:'closed',      lb:'Closed on',   w:110, kind:'date'},
   {k:'notes',       lb:'Notes',       w:240, kind:'text'}
@@ -2150,7 +2149,6 @@ function buildWorkbook(){
     sc.font={bold:true,size:10,color:{argb:st.fg},name:'Segoe UI'};
     sc.alignment={horizontal:'center',vertical:'top'};
 
-    put('raised',r.raised||'');
     const du=put('due',r.due||'');
     if(r.due&&!closed&&r.due<today)
       du.font={bold:true,size:10,color:{argb:XC.hot},name:'Segoe UI'};
