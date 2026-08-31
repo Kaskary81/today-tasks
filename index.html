@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b10';
+const BUILD='ACTIONS 2026-08-31 · b11';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1647,8 +1647,8 @@ async function openAction(actionId,backTo){
   };
   $('ptext').onblur=()=>{const v=$('ptext').value.trim();
     if(v!==(a.text||''))patch({text:v});};
-  $('pres').onblur=()=>{const v=$('pres').value.trim();
-    if(v!==(a.responsible||''))patch({responsible:v});};
+  $('pres').onchange=()=>{const v=$('pres').value.trim();
+    if(v!==(a.responsible||'')){a.responsible=v;patch({responsible:v});}};
   /* A date input raises `change` on EVERY keystroke of the year, so typing 2026
      went through 0002, 0020 and 0202 first — each one saved, each one logged, and
      the year 2 briefly stored. Only take a whole, sane date, and only once the
