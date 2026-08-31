@@ -417,6 +417,18 @@ table.alist tr.done td.t{text-decoration:line-through;
   font-size:10.5px;line-height:16px;white-space:nowrap;vertical-align:1px;
   background:var(--chip,#2a2140);color:var(--muted,#9aa0b5)}
 .aline.done .aw{opacity:.55}
+
+/* several people on one action */
+.people{display:flex;flex-wrap:wrap;gap:5px;align-items:center;
+  border:1px solid var(--line,#3a2f55);border-radius:9px;padding:5px 6px;min-height:34px;
+  background:var(--field,#191231)}
+.ptag{display:inline-flex;align-items:center;gap:4px;background:var(--chip,#2a2140);
+  border-radius:20px;padding:2px 4px 2px 9px;font-size:12px;color:var(--text,#e9e6f5)}
+.ptag button{border:none;background:none;color:var(--muted,#9aa0b5);cursor:pointer;
+  font-size:14px;line-height:1;padding:0 3px}
+.ptag button:hover{color:var(--critical,#ff6b81)}
+.people .padd{flex:1;min-width:90px;border:none;background:transparent;outline:none;
+  color:inherit;font:inherit;padding:2px}
 </style>
 </head>
 <body>
@@ -501,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b8';
+const BUILD='ACTIONS 2026-08-31 · b9';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -778,8 +790,8 @@ function actsHTML(node){
       +'<button class="an'+(overdue?' od':'')+(closed?' ok':'')+'" data-act="'+a.id+'" '
       +'title="Open this action">'+(i+1)+'</button>'
       +'<span class="at">'+esc(a.text||'—')
-        +(a.responsible?'<span class="aw" title="With '+esc(a.responsible)+'">'
-            +esc(shortName(a.responsible))+'</span>':'')
+        +(a.responsible?nameList(a.responsible).map(n=>
+            '<span class="aw" title="With '+esc(n)+'">'+esc(shortName(n))+'</span>').join(''):'')
       +'</span>'
       +(a.due?'<span class="ad'+(overdue?' od':'')+'">'+esc(shortDay(a.due))+'</span>':'')
       +'</span>';
@@ -1422,7 +1434,8 @@ async function openActions(itemId,focusForm,back){
     +'placeholder="What has to be done"></textarea></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Responsible</label>'
-    +'<input id="nres" list="dl-responsible" value="'+esc(it.responsible||'')+'"></div>'
+    +'<input id="nres" type="hidden" value="'+esc(it.responsible||'')+'">'
+    +'<div class="people" id="nresbox"></div></div>'
     +'<div class="fld"><label>Due</label><input id="ndue" type="date"></div></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Status</label><select id="nst">'
@@ -1441,6 +1454,7 @@ async function openActions(itemId,focusForm,back){
   const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
     x.id='dl-responsible';document.body.appendChild(x);return x;})();
   dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  wirePeople('nres','nresbox'); wirePeople('pres','presbox');
   $('hclose').onclick=()=>{sh.classList.remove('on');PANEL_ITEM=null;BACK_TO_ITEM=null;
     if(!isMobile())$('gwrap').focus();};
   if($('iback'))$('iback').onclick=()=>{const b=back;BACK_TO_ITEM=null;b();};
@@ -1510,6 +1524,53 @@ function dateField(el,save,ms=450){
   el.addEventListener('blur',fire);
   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fire();}});
 }
+
+/* Several people can share an action. The names live in one field separated by
+   ", " — which the column filter already understands — so this adds the way to
+   pick them rather than a new shape of data. */
+function nameList(v){
+  return String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+}
+function nameJoin(list){
+  const seen=new Set(), out=[];
+  list.forEach(v=>{const t=String(v||'').trim();
+    if(t&&!seen.has(t.toLowerCase())){seen.add(t.toLowerCase());out.push(t);}});
+  return out.join(', ');
+}
+/* a field that shows each name as a chip you can remove, with a box that
+   suggests the people already on the register */
+function wirePeople(inputId, boxId){
+  const inp=$(inputId), box=$(boxId);
+  if(!inp||!box)return;
+  const draw=()=>{
+    const list=nameList(inp.value);
+    box.innerHTML=list.map((n,i)=>'<span class="ptag">'+esc(n)+
+      '<button type="button" data-rm="'+i+'" title="Remove">×</button></span>').join('')
+      +'<input class="padd" list="dl-responsible" placeholder="'+
+        (list.length?'add another…':'name…')+'">';
+    const add=box.querySelector('.padd');
+    const commit=()=>{
+      const v=add.value.trim(); if(!v)return;
+      inp.value=nameJoin(nameList(inp.value).concat([v]));
+      draw(); box.querySelector('.padd').focus();
+      inp.dispatchEvent(new Event('change'));
+    };
+    add.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===','){e.preventDefault();commit();}
+      else if(e.key==='Backspace'&&!add.value&&nameList(inp.value).length){
+        const l=nameList(inp.value); l.pop(); inp.value=nameJoin(l); draw();
+        box.querySelector('.padd').focus();
+        inp.dispatchEvent(new Event('change'));}
+    });
+    add.addEventListener('blur',commit);
+    add.addEventListener('change',commit);
+    box.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{
+      const l=nameList(inp.value); l.splice(+b.dataset.rm,1);
+      inp.value=nameJoin(l); draw(); inp.dispatchEvent(new Event('change'));});
+  };
+  draw();
+}
+
 function closedHint(a){
   return a.status==='Closed'
     ? 'Closed on is set to today when you close an action — change it here if it '
@@ -1532,7 +1593,8 @@ async function openAction(actionId,backTo){
     +'<textarea id="ptext" rows="3">'+esc(a.text||'')+'</textarea></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Responsible</label>'
-    +'<input id="pres" value="'+esc(a.responsible||'')+'" list="dl-responsible"></div>'
+    +'<input id="pres" type="hidden" value="'+esc(a.responsible||'')+'">'
+    +'<div class="people" id="presbox"></div></div>'
     +'<div class="fld"><label>Due</label>'
     +'<input id="pdue" type="date" value="'+esc(a.due||'')+'"></div></div>'
     +'<div class="two">'
@@ -1554,6 +1616,7 @@ async function openAction(actionId,backTo){
   const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
     x.id='dl-responsible';document.body.appendChild(x);return x;})();
   dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  wirePeople('pres','presbox');
   const close=()=>{sh.classList.remove('on');PANEL=null;
     if(!isMobile())$('gwrap').focus();};
   $('hclose').onclick=close;
