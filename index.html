@@ -513,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b14';
+const BUILD='ACTIONS 2026-08-31 · b15';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -551,16 +551,19 @@ function get(node,c){
   if(c.kind==='no')return '';
   if(c.kind==='acts')return (node.acts||[]).map(a=>a.text||'').join('\n');
   if(c.k==='closed')return node.rec.done_at||'';
-  /* once a row has actions, Responsible is whoever the OPEN ones are with —
-     several names run together, each listed once, in list order */
+  /* once a row has actions, Responsible is everyone named on them — each
+     person once, in action order, whether their action is finished or not.
+     It used to list only the open ones, so a closed item showed nobody. */
   if(c.k==='responsible'&&(node.acts||[]).length)return openNames(node.acts);
   return node.rec[c.k]==null?'':String(node.rec[c.k]);
 }
 function openNames(acts){
   const seen=new Set(), out=[];
-  acts.filter(a=>a.status!=='Closed').forEach(a=>{
-    const v=(a.responsible||'').trim();
-    if(v&&!seen.has(v)){seen.add(v);out.push(v);}
+  acts.forEach(a=>{
+    nameList(a.responsible).forEach(v=>{
+      const k=v.toLowerCase();
+      if(!seen.has(k)){seen.add(k);out.push(v);}
+    });
   });
   return out.join(', ');
 }
