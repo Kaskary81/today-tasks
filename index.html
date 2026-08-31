@@ -104,9 +104,24 @@ table.g thead th .fbtn.on{color:var(--violet);background:rgba(168,85,247,.18)}
 .rsz{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:8}
 .rsz:hover{background:rgba(168,85,247,.45)}
 
-table.g td{height:var(--rowh);vertical-align:middle;font-size:13px}
-table.g td .cv{padding:0 9px;line-height:calc(var(--rowh) - 2px);white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis}
+/* the height must sit on the CELLS — on a <tr> it is ignored, on a td it acts
+   as a minimum. --rh is the per-row override, --rowh the default. */
+table.g td{height:var(--rh,var(--rowh));vertical-align:middle;font-size:13px}
+table.g td .cv{padding:0 9px;line-height:calc(var(--rh,var(--rowh)) - 2px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* wrapped: the row height decides how many lines show */
+body.wrap table.g td{vertical-align:top}
+body.wrap table.g td .cv{white-space:normal;line-height:17px;padding-top:6px;
+  padding-bottom:5px;display:-webkit-box;-webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--rl,var(--rowlines,2));overflow:hidden;text-overflow:clip}
+body.wrap table.g td .cv.nocell{display:flex}
+body.wrap table.g td .cv.acts{-webkit-line-clamp:unset}
+body.wrap table.g td .st,body.wrap table.g td .pr,body.wrap table.g td .hbtn{
+  margin-top:1px}
+/* the grip that drags a row taller */
+.rgrip{position:absolute;left:0;right:0;bottom:-3px;height:7px;cursor:row-resize;z-index:5}
+.rgrip:hover{background:rgba(168,85,247,.45)}
+.tbtn.active{border-color:var(--violet);color:#e9d5ff;background:rgba(168,85,247,.16)}
 table.g tbody tr:nth-child(even) td:not(.c-title):not(.rowno){background:rgba(255,255,255,.014)}
 table.g tbody tr:hover td:not(.c-title):not(.rowno){background:rgba(168,85,247,.045)}
 table.g tbody tr:hover td.c-title{background:#241a3f}
@@ -123,25 +138,38 @@ table.g thead th.c-title{position:sticky;left:var(--nol,54px);z-index:7}
 table.g tbody tr:nth-child(even) td.c-title{background:#1c1433}
 table.g td.spacer,table.g th.spacer{border-right:0;background:transparent}
 
-/* an item row reads as a heading, an action row is indented beneath it */
-table.g tr.irow td{font-weight:600}
-table.g tr.irow td.c-title .cv{color:var(--ink)}
-table.g tr.arow td{font-weight:400}
-table.g tr.arow td.rowno{color:var(--ink3);font-size:11px}
-table.g td.na{background:rgba(0,0,0,.16)}
-table.g tr.arow td.na{background:rgba(0,0,0,.2)}
+table.g td.c-title .cv{color:var(--ink);font-weight:600}
 table.g td.ro .cv{color:var(--ink3)}
-table.g td.ro.calc .cv{font-style:italic}
-.nocell{display:flex;align-items:center;gap:3px;justify-content:flex-start;padding:0 6px}
-.nocell.sub{justify-content:flex-end;padding-right:10px;color:var(--ink3);font-size:11px}
-.car{width:15px;flex:none;color:var(--ink3);font-size:9px;line-height:1;text-align:center}
-button.car:hover{color:var(--violet)}
-.actiontext{padding-left:20px!important;position:relative}
-.actiontext:before{content:"";position:absolute;left:8px;top:50%;width:7px;height:1px;
-  background:var(--line2)}
-.hbtn{font-size:11px;color:var(--ink3);border:1px solid var(--line2);border-radius:7px;
-  padding:1px 8px;line-height:18px;font-variant-numeric:tabular-nums}
-.hbtn:hover{border-color:var(--violet);color:#e9d5ff;background:rgba(168,85,247,.12)}
+.nocell{display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ---- the numbered action list, drawn inside the item's cell ---- */
+.cv.acts{white-space:normal!important;display:block!important;padding:5px 9px 4px;
+  line-height:17px;overflow:hidden;text-overflow:clip}
+.cv.acts.empty{color:var(--ink3);font-style:italic;font-size:12px}
+.aline{display:flex;align-items:flex-start;gap:7px;line-height:17px;
+  padding:0;font-weight:400}
+.aline .an{flex:none;min-width:17px;height:15px;margin-top:1px;border-radius:5px;
+  background:var(--chip);color:var(--ink2);font-size:10.5px;line-height:15px;
+  text-align:center;font-variant-numeric:tabular-nums;border:1px solid transparent;
+  transition:.15s var(--ease)}
+.aline .an:hover{background:var(--violet);color:#fff;transform:scale(1.08)}
+.aline .an.od{background:rgba(244,63,94,.22);color:#fda4af}
+.aline .an.ok{background:rgba(52,211,153,.18);color:#6ee7b7}
+.aline .at{flex:1;min-width:0;color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.aline .ad{flex:none;font-size:10.5px;color:var(--ink3);margin-top:1px;
+  font-variant-numeric:tabular-nums}
+.aline .ad.od{color:#fda4af}
+.aline .ah{flex:none;font-size:10px;color:var(--ink3);margin-top:1px}
+.aline.done .at{color:var(--ink3);text-decoration:line-through;
+  text-decoration-color:rgba(139,129,168,.6)}
+.aline.done .ad{color:var(--ink3);text-decoration:none}
+textarea.cellin.textin{height:auto;min-height:100%;resize:none;
+  line-height:17px;padding:5px 8px;white-space:pre-wrap;font-family:inherit;
+  overflow:auto}
+/* a cell holding line breaks shows them; --rh keeps the room for them */
+.cv.multi{white-space:pre!important;line-height:17px!important;padding-top:6px;
+  padding-bottom:5px;display:block;text-overflow:clip}
+body.wrap .cv.multi{white-space:pre-wrap!important}
 table.g td.sel{background:rgba(168,85,247,.16)!important;
   box-shadow:inset 0 0 0 1px rgba(168,85,247,.24)}
 table.g td.cur{background:rgba(168,85,247,.22)!important;
@@ -229,6 +257,39 @@ select.cellin{padding:0 4px}
   border-bottom:1px solid var(--line);font-size:15px}
 .sheet .sb{flex:1;overflow:auto;padding:16px 18px}
 .sheet .hd{margin:0 0 14px;font-size:14px;color:var(--ink);line-height:1.5}
+.sheet .under{margin:0 0 16px;font-size:12px;color:var(--ink3);
+  border-left:2px solid var(--line2);padding-left:10px;line-height:1.5}
+.sheet .fld{margin-bottom:14px}
+.sheet label{display:block;font-size:10px;font-weight:700;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.sheet input,.sheet select,.sheet textarea{width:100%;background:rgba(18,12,33,.85);
+  border:1px solid var(--line2);border-radius:10px;padding:9px 12px;outline:none;
+  font-size:13px;font-family:inherit;resize:vertical}
+.sheet input:focus,.sheet select:focus,.sheet textarea:focus{border-color:var(--violet);
+  box-shadow:0 0 0 3px rgba(168,85,247,.15)}
+.sheet input:disabled{color:var(--ink3);background:rgba(18,12,33,.4)}
+.sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .prow{display:flex;gap:8px;margin:4px 0 6px}
+.sheet .prow .tbtn{flex:1;justify-content:center}
+/* the actions register inside the window */
+table.alist{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:18px}
+table.alist th{text-align:left;font-size:9.5px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink3);padding:0 8px 7px;white-space:nowrap}
+table.alist td{padding:8px;border-top:1px solid rgba(51,37,82,.7);vertical-align:top;
+  color:var(--ink2)}
+table.alist tbody tr{cursor:pointer;transition:.15s var(--ease)}
+table.alist tbody tr:hover td{background:rgba(168,85,247,.09)}
+table.alist td.n{width:24px;color:var(--ink3);font-variant-numeric:tabular-nums}
+table.alist td.t{color:var(--ink);line-height:1.45}
+table.alist td.late{color:#fda4af}
+table.alist tr.done td{color:var(--ink3)}
+table.alist tr.done td.t{text-decoration:line-through;
+  text-decoration-color:rgba(139,129,168,.65)}
+.sheet .none{color:var(--ink3);font-size:12.5px;font-style:italic;margin:0 0 18px}
+.sheet .addbox{border-top:1px solid var(--line);padding-top:16px}
+.sheet .addbox>label{font-size:11px;color:var(--ink2);margin-bottom:10px}
+.sheet .hint{font-size:11.5px;color:var(--ink3);line-height:1.5;margin:12px 0 0}
+.sheet .sh .tbtn{padding:5px 9px;font-size:11.5px}
 .sheet .sf{display:flex;gap:8px;padding:12px 18px calc(14px + var(--safe-b));
   border-top:1px solid var(--line)}
 .sheet .sf input{flex:1;background:rgba(18,12,33,.85);border:1px solid var(--line2);
@@ -312,7 +373,7 @@ select.cellin{padding:0 4px}
   <div class="tools">
     <button class="tbtn primary" id="badd">+ Item</button>
     <button class="tbtn" id="bact">+ Action</button>
-    <button class="tbtn" id="bsplit">Split out</button>
+    <button class="tbtn" id="bsplit">Split action</button>
     <button class="tbtn" id="bins">Insert above</button>
     <button class="tbtn danger" id="bdel">Delete rows</button>
     <div class="tsep"></div>
@@ -327,6 +388,7 @@ select.cellin{padding:0 4px}
     <div class="tsep"></div>
     <button class="tbtn" id="bclear">Clear filters</button>
     <button class="tbtn" id="bfit">Autofit</button>
+    <button class="tbtn" id="bwrap">Wrap text</button>
     <input type="file" id="fimp" accept=".xlsx,.xls,.csv" style="display:none">
   </div>
 
@@ -353,13 +415,13 @@ select.cellin{padding:0 4px}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-27 · a3';
+const BUILD='ACTIONS 2026-08-27 · b2';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
 let CUR={r:0,c:1}, ANC={r:0,c:1};
 let EDIT=null, UNDO=[], SHUT=new Set();
-let PREFS={w:{},rowh:32};
+let PREFS={w:{},rowh:32,wrap:false,rowhs:{}};
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const $=id=>document.getElementById(id);
@@ -373,34 +435,45 @@ const TODAY=()=>isoDay(new Date());
    this row's kind is greyed and cannot be typed into. */
 const STATUSES=['Open','In progress','On hold','Closed'];
 const COLS=[
-  {k:'__no',        lb:'No.',         w:66,  ro:true, kind:'no',   on:'both'},
-  {k:'description', lb:'Description', w:300, kind:'text', on:'item'},
-  {k:'text',        lb:'Action',      w:300, kind:'text', on:'action'},
-  {k:'project',     lb:'Project',     w:130, kind:'text', on:'item',   suggest:true},
-  {k:'responsible', lb:'Responsible', w:145, kind:'text', on:'both',   suggest:true},
-  {k:'priority',    lb:'Priority',    w:86,  kind:'sel',  on:'item',   opts:['1','2','3','4']},
-  {k:'status',      lb:'Status',      w:124, kind:'sel',  on:'both',   opts:STATUSES},
-  {k:'raised',      lb:'Raised on',   w:110, kind:'date', on:'item'},
-  {k:'due',         lb:'Due',         w:110, kind:'date', on:'both'},
-  {k:'closed',      lb:'Closed on',   w:110, kind:'date', on:'both', ro:true},
-  {k:'__hist',      lb:'History',     w:92,  kind:'hist', on:'action', ro:true},
-  {k:'notes',       lb:'Notes',       w:260, kind:'text', on:'item'}
+  {k:'__no',        lb:'No.',         w:54,  ro:true, kind:'no'},
+  {k:'description', lb:'Description', w:280, kind:'text'},
+  {k:'__acts',      lb:'Actions',     w:360, kind:'acts'},
+  {k:'project',     lb:'Project',     w:130, kind:'text', suggest:true},
+  {k:'responsible', lb:'Responsible', w:145, kind:'text', suggest:true},
+  {k:'priority',    lb:'Priority',    w:86,  kind:'sel',  opts:['1','2','3','4']},
+  {k:'status',      lb:'Status',      w:124, kind:'sel',  opts:STATUSES},
+  {k:'raised',      lb:'Raised on',   w:110, kind:'date'},
+  {k:'due',         lb:'Due',         w:110, kind:'date'},
+  {k:'closed',      lb:'Closed on',   w:110, kind:'date'},
+  {k:'notes',       lb:'Notes',       w:240, kind:'text'}
 ];
 const colOf=k=>COLS.findIndex(c=>c.k===k);
 const FIRSTC=1;
 
 function get(node,c){
-  if(c.kind==='no'||c.kind==='hist')return '';
-  if(c.on!=='both'&&c.on!==node.kind)return '';
-  const rec=node.rec;
-  if(c.k==='closed')return node.kind==='item'?(rec.done_at||''):(rec.closed_at||'');
-  return rec[c.k]==null?'':String(rec[c.k]);
+  if(c.kind==='no')return '';
+  if(c.kind==='acts')return (node.acts||[]).map(a=>a.text||'').join('\n');
+  if(c.k==='closed')return node.rec.done_at||'';
+  /* once a row has actions, Responsible is whoever the OPEN ones are with —
+     several names run together, each listed once, in list order */
+  if(c.k==='responsible'&&(node.acts||[]).length)return openNames(node.acts);
+  return node.rec[c.k]==null?'':String(node.rec[c.k]);
+}
+function openNames(acts){
+  const seen=new Set(), out=[];
+  acts.filter(a=>a.status!=='Closed').forEach(a=>{
+    const v=(a.responsible||'').trim();
+    if(v&&!seen.has(v)){seen.add(v);out.push(v);}
+  });
+  return out.join(', ');
 }
 /* an item that owns actions has its due date and status computed for it */
 function locked(node,c){
-  if(c.ro||c.kind==='no'||c.kind==='hist')return true;
-  if(c.on!=='both'&&c.on!==node.kind)return true;
-  if(node.kind==='item'&&node.kids>0&&(c.k==='due'||c.k==='status'))return true;
+  if(c.ro||c.kind==='no')return true;
+  if(node.kids>0&&(c.k==='due'||c.k==='status'||c.k==='responsible'||c.k==='closed'))
+    return true;
+  /* a row that is not closed has no closing date to set */
+  if(c.k==='closed'&&node.rec.status!=='Closed')return true;
   return false;
 }
 
@@ -453,12 +526,67 @@ function loadPrefs(){
   try{const p=JSON.parse(localStorage.getItem('task-prefs')||'null');
     if(p&&p.w)PREFS=Object.assign(PREFS,p);
     if(p&&p.shut)SHUT=new Set(p.shut);}catch(e){}
+  if(!PREFS.rowhs)PREFS.rowhs={};
   COLS.forEach(c=>{if(PREFS.w[c.k])c.w=PREFS.w[c.k];});
-  document.documentElement.style.setProperty('--rowh',(PREFS.rowh||32)+'px');
+  applyWrap();
 }
 function savePrefs(){
   PREFS.w={}; COLS.forEach(c=>PREFS.w[c.k]=c.w); PREFS.shut=[...SHUT];
   try{localStorage.setItem('task-prefs',JSON.stringify(PREFS));}catch(e){}
+}
+/* --- wrapped text and row heights ---------------------------------------
+   Height has to go on the CELLS: min-height does nothing on a <tr>, and on a
+   td a height behaves as a minimum. The number of lines shown is derived from
+   the height, so a taller row reveals more text instead of more white space. */
+const LINEH=17, PADV=11;
+const rowKey=node=>'item:'+node.rec.id;
+function linesFor(h){ return Math.max(1,Math.floor((h-PADV)/LINEH)); }
+function applyWrap(){
+  const r=document.documentElement;
+  r.style.setProperty('--rowh',(PREFS.rowh||32)+'px');
+  r.style.setProperty('--rowlines',linesFor(PREFS.rowh||32));
+  document.body.classList.toggle('wrap',!!PREFS.wrap);
+  const b=$('bwrap'); if(b)b.classList.toggle('active',!!PREFS.wrap);
+}
+/* a row must be tall enough to show its whole action list, unless the user has
+   set that row's height by hand */
+function naturalH(node){
+  const n=(node.acts||[]).length;
+  let lines=1;
+  COLS.forEach(c=>{
+    if(c.kind!=='text')return;
+    const v=get(node,c);
+    if(v)lines=Math.max(lines,v.split('\n').length);
+  });
+  return Math.max(PREFS.rowh||32, n?n*LINEH+PADV:0, lines>1?lines*LINEH+PADV:0);
+}
+function applyRowSizes(){
+  const gb=$('gbody'); if(!gb)return;
+  gb.querySelectorAll('tr[data-r]').forEach(tr=>{
+    const node=VIEW[+tr.dataset.r]; if(!node)return;
+    const h=PREFS.rowhs[rowKey(node)]||naturalH(node);
+    tr.style.setProperty('--rh',h+'px');
+    tr.style.setProperty('--rl',linesFor(h));
+  });
+}
+function setRowH(node,h,all){
+  h=Math.max(24,Math.min(400,Math.round(h)));
+  if(all){PREFS.rowh=h;PREFS.rowhs={};applyWrap();}
+  else PREFS.rowhs[rowKey(node)]=h;
+  savePrefs(); applyRowSizes();
+}
+function resetRowH(node,all){
+  if(all){PREFS.rowh=32;PREFS.rowhs={};applyWrap();}
+  else delete PREFS.rowhs[rowKey(node)];
+  savePrefs(); applyRowSizes();
+}
+function toggleWrap(){
+  PREFS.wrap=!PREFS.wrap;
+  if(PREFS.wrap&&(PREFS.rowh||32)<50)PREFS.rowh=66;   /* room for ~3 lines */
+  if(!PREFS.wrap)PREFS.rowh=32;
+  applyWrap(); savePrefs(); applyRowSizes();
+  toast(PREFS.wrap?'Text wraps — drag a row number\u2019s bottom edge to change the height'
+                  :'Text on one line');
 }
 
 const IFIELDS='id,description,title,project,responsible,priority,status,raised,due,done,done_at,notes,sort,deleted_at';
@@ -477,15 +605,17 @@ const kidsOf=id=>ACTS.filter(a=>a.item_id===id);
    Filtering, sorting, flattening
    ============================================================ */
 function textOf(node){
-  return COLS.filter(c=>c.kind!=='no'&&c.kind!=='hist')
-             .map(c=>get(node,c)).join(' ').toLowerCase();
+  return COLS.filter(c=>c.kind!=='no').map(c=>get(node,c)).join(' ').toLowerCase();
 }
 function matches(node){
   if(SEARCH&&!textOf(node).includes(SEARCH))return false;
   for(const k in FILT){
     const f=FILT[k]; if(!f)continue;
     const v=get(node,COLS[colOf(k)]);
-    if(f.vals&&!f.vals.has(v))return false;
+    if(f.vals){
+      const parts=k==='responsible'?(v?v.split(', '):['']):[v];
+      if(!parts.some(p=>f.vals.has(p)))return false;
+    }
     if(f.text&&!v.toLowerCase().includes(f.text.toLowerCase()))return false;
   }
   return true;
@@ -494,8 +624,9 @@ function rebuild(){
   const items=ITEMS.slice();
   if(SORT){
     const c=COLS[colOf(SORT.k)];
+    const nd=r=>({kind:'item',rec:r,kids:0,acts:kidsOf(r.id)});
     items.sort((a,b)=>{
-      let x=get({kind:'item',rec:a,kids:0},c), y=get({kind:'item',rec:b,kids:0},c);
+      let x=get(nd(a),c), y=get(nd(b),c);
       if(c.k==='priority'){x=+x||9;y=+y||9;}
       else if(c.kind==='date'){x=x||'9999';y=y||'9999';}
       else {x=x.toLowerCase();y=y.toLowerCase();}
@@ -505,17 +636,11 @@ function rebuild(){
 
   VIEW=[];
   items.forEach(it=>{
-    const kids=kidsOf(it.id).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
-    const inode={kind:'item',rec:it,kids:kids.length,no:0};
-    const anodes=kids.map((a,j)=>({kind:'action',rec:a,parent:it,kids:0,sub:j+1}));
-    const keptKids=anodes.filter(matches);
-    if(!(matches(inode)||keptKids.length))return;
-    VIEW.push(inode);
-    if(!SHUT.has(it.id))
-      (matches(inode)?anodes:keptKids).forEach(n=>VIEW.push(n));
+    const acts=kidsOf(it.id).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
+    const node={kind:'item',rec:it,acts,kids:acts.length,no:0};
+    if(matches(node))VIEW.push(node);
   });
-  let n=0;
-  VIEW.forEach(node=>{ if(node.kind==='item')node.no=++n; else node.no=n; });
+  VIEW.forEach((node,i)=>node.no=i+1);
   if(CUR.r>=VIEW.length)CUR.r=Math.max(0,VIEW.length-1);
   if(ANC.r>=VIEW.length)ANC.r=CUR.r;
 }
@@ -545,22 +670,34 @@ function head(){
 }
 const stCls=s=>s==='Closed'?'st-closed':s==='In progress'?'st-prog'
               :s==='On hold'?'st-hold':'st-open';
+const shortDay=d=>{
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||''); if(!m)return '';
+  return m[3]+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[2]-1];
+};
+/* the actions sit inside the item's cell as a numbered list; the number itself
+   is the button that opens that action's detail and history */
+function actsHTML(node){
+  const acts=node.acts||[];
+  if(!acts.length)
+    return '<span class="cv acts empty">— no actions yet —</span>';
+  return '<span class="cv acts">'+acts.map((a,i)=>{
+    const closed=a.status==='Closed';
+    const overdue=!closed&&a.due&&a.due<TODAY();
+    const notes=(LOGS[a.id]||[]).length;
+    return '<span class="aline'+(closed?' done':'')+'">'
+      +'<button class="an'+(overdue?' od':'')+(closed?' ok':'')+'" data-act="'+a.id+'" '
+      +'title="Open this action">'+(i+1)+'</button>'
+      +'<span class="at">'+esc(a.text||'—')+'</span>'
+      +(a.due?'<span class="ad'+(overdue?' od':'')+'">'+esc(shortDay(a.due))+'</span>':'')
+      +(notes>1?'<span class="ah">⏱'+notes+'</span>':'')
+      +'</span>';
+  }).join('')+'</span>';
+}
 function cellHTML(node,c){
-  if(c.kind==='no'){
-    if(node.kind==='item'){
-      const car=node.kids?'<button class="car" data-shut="'+node.rec.id+'">'
-        +(SHUT.has(node.rec.id)?'▸':'▾')+'</button>':'<span class="car"></span>';
-      return '<span class="cv nocell">'+car+'<b>'+node.no+'</b></span>';
-    }
-    return '<span class="cv nocell sub">'+node.no+'.'+node.sub+'</span>';
-  }
-  if(c.kind==='hist'){
-    if(node.kind!=='action')return '<span class="cv"></span>';
-    const n=(LOGS[node.rec.id]||[]).length;
-    return '<span class="cv"><button class="hbtn" data-hist="'+node.rec.id+'">⏱ '
-      +(n||'')+'</button></span>';
-  }
-  if(c.on!=='both'&&c.on!==node.kind)return '<span class="cv"></span>';
+  if(c.kind==='no')
+    return '<span class="cv nocell"><b>'+node.no+'</b></span>'
+      +'<i class="rgrip" data-rgrip="1"></i>';
+  if(c.kind==='acts')return actsHTML(node);
   const v=get(node,c);
   if(c.k==='status')
     return '<span class="cv"><span class="st '+stCls(v)+'">'+esc(v||'Open')+'</span></span>';
@@ -570,8 +707,8 @@ function cellHTML(node,c){
     const cls=v<TODAY()?'late':v===TODAY()?'duetoday':'';
     return '<span class="cv '+cls+'">'+esc(v)+'</span>';
   }
-  if(c.k==='text')return '<span class="cv actiontext">'+esc(v)+'</span>';
-  return '<span class="cv">'+esc(v)+'</span>';
+  const multi=v.indexOf('\n')>=0;
+  return '<span class="cv'+(multi?' multi':'')+'">'+esc(v)+'</span>';
 }
 function body(){
   if(!VIEW.length)
@@ -582,14 +719,12 @@ function body(){
   let h='';
   VIEW.forEach((node,ri)=>{
     const picked=ri>=box.r1&&ri<=box.r2;
-    h+='<tr class="'+(node.kind==='action'?'arow':'irow')+(picked?' picked':'')
-      +'" data-r="'+ri+'">';
+    h+='<tr class="irow'+(picked?' picked':'')+'" data-r="'+ri+'">';
     COLS.forEach((c,ci)=>{
       const inBox=ri>=box.r1&&ri<=box.r2&&ci>=box.c1&&ci<=box.c2;
       const isCur=ri===CUR.r&&ci===CUR.c;
       const cls=[c.kind==='no'?'rowno':'', c.k==='description'?'c-title':'',
                  locked(node,c)?'ro':'',
-                 (c.on!=='both'&&c.on!==node.kind)?'na':'',
                  inBox&&c.kind!=='no'?'sel':'', isCur?'cur':''].filter(Boolean).join(' ');
       h+='<td class="'+cls+'" data-r="'+ri+'" data-c="'+ci+'">'+cellHTML(node,c)+'</td>';
     });
@@ -600,17 +735,35 @@ function body(){
 function armButtons(){
   const node=VIEW[CUR.r];
   $('bact').disabled=!node;
-  $('bsplit').disabled=!node||node.kind!=='action';
+  $('bsplit').disabled=!node||!(node.acts||[]).length;
   $('bundo').disabled=!UNDO.length;
 }
 function paint(){
   rebuild();
   $('ghead').innerHTML=head();
   $('gbody').innerHTML=body();
-  pinFrozen(); sbar(); armButtons();
+  pinFrozen(); applyRowSizes(); sbar(); armButtons();
 }
 function repaintBody(){
-  $('gbody').innerHTML=body(); pinFrozen(); sbar(); armButtons();
+  $('gbody').innerHTML=body(); pinFrozen(); applyRowSizes(); sbar(); armButtons();
+}
+/* Selection changes must NOT rebuild the table. Replacing the tbody on
+   mousedown destroys the element the mouseup would land on, so the browser
+   never raises the click or the double-click and no cell can be opened.
+   Toggle the classes on the existing cells instead. */
+function paintSel(){
+  const box=selBox(), gb=$('gbody');
+  gb.querySelectorAll('tr[data-r]').forEach(tr=>{
+    const r=+tr.dataset.r;
+    tr.classList.toggle('picked',r>=box.r1&&r<=box.r2);
+  });
+  gb.querySelectorAll('td[data-r]').forEach(td=>{
+    const r=+td.dataset.r, c=+td.dataset.c;
+    td.classList.toggle('sel',
+      r>=box.r1&&r<=box.r2&&c>=box.c1&&c<=box.c2&&COLS[c].kind!=='no');
+    td.classList.toggle('cur',r===CUR.r&&c===CUR.c);
+  });
+  sbar(); armButtons();
 }
 /* the Description column is frozen just right of the row numbers, so its sticky
    offset must be that column's REAL width, not the value we asked for. */
@@ -625,6 +778,7 @@ function selBox(){
 }
 function sbar(){
   const openI=ITEMS.filter(r=>r.status!=='Closed').length;
+  void 0;
   const openA=ACTS.filter(a=>a.status!=='Closed').length;
   const late=ACTS.filter(a=>a.status!=='Closed'&&a.due&&a.due<TODAY()).length
     +ITEMS.filter(r=>r.status!=='Closed'&&r.due&&r.due<TODAY()&&!kidsOf(r.id).length).length;
@@ -642,8 +796,9 @@ function sbar(){
       +late+'</b></span>':'')
     +'<span class="hgrow"></span>'
     +(VIEW.length?'<span>'+(n>1?n+' cells selected'
-        :(node?(node.kind==='action'?'Action ':'Item ')+node.no
-          +(node.sub?'.'+node.sub:'')+' · '+COLS[CUR.c].lb:''))+'</span>':'')
+        :(node?'Row '+node.no+' · '+COLS[CUR.c].lb
+           +(node.acts&&node.acts.length?' · '+node.acts.length+' action'
+             +(node.acts.length>1?'s':''):''):''))+'</span>':'')
     +'<span style="opacity:.55">'+BUILD+'</span>';
 }
 
@@ -651,8 +806,12 @@ function sbar(){
    Writing
    ============================================================ */
 function coerce(c,val){
-  let v=String(val==null?'':val).trim();
-  if(c.kind==='date')return v?(parseDate(v)||v):'';
+  let v=String(val==null?'':val).replace(/\r/g,'').trim();
+  if(c.kind==='date'){
+    if(!v)return '';
+    const d=parseDate(v)||v;
+    return sensibleDate(d)?d:'';           /* never store a half-typed year */
+  }
   if(c.k==='priority'){const n=parseInt(v,10);return (n>=1&&n<=4)?n:4;}
   if(c.k==='status'){
     if(!v)return 'Open';
@@ -685,11 +844,12 @@ async function applyEdits(list,label){
     const c=COLS[e.c], node=e.node;
     if(locked(node,c))return;
     const nv=coerce(c,e.v);
-    if(String(node.rec[c.k]??'')===String(nv))return;
-    back.push({kind:node.kind,id:node.rec.id,k:c.k,v:node.rec[c.k]});
-    node.rec[c.k]=nv;
+    const f=(c.k==='closed')?'done_at':c.k;      /* the column is stored as done_at */
+    if(String(node.rec[f]??'')===String(nv))return;
+    back.push({kind:node.kind,id:node.rec.id,k:f,v:node.rec[f]});
+    node.rec[f]=nv;
     const key=node.kind+':'+node.rec.id;
-    (pend[key]=pend[key]||{})[c.k]=nv;
+    (pend[key]=pend[key]||{})[f]=nv;
   });
   if(!back.length)return;
   UNDO.push({t:'cells',back,label:label||'edit'});
@@ -745,6 +905,17 @@ async function undo(){
         body:JSON.stringify({deleted_at:null})});}catch(e){}
     }
     await loadAll();
+  }else if(step.t==='acts'){
+    for(const id of step.created)
+      try{await api('task_actions?id=eq.'+id,{method:'PATCH',
+        body:JSON.stringify({deleted_at:new Date().toISOString()})});}catch(e){}
+    for(const id of step.deleted)
+      try{await api('task_actions?id=eq.'+id,{method:'PATCH',
+        body:JSON.stringify({deleted_at:null})});}catch(e){}
+    for(const b of step.textBack)
+      try{await api('task_actions?id=eq.'+b.id,{method:'PATCH',
+        body:JSON.stringify({text:b.text})});}catch(e){}
+    await loadAll(); await loadLogCounts();
   }else if(step.t==='split'){
     try{await api('task_actions?id=eq.'+step.actionId,{method:'PATCH',
       body:JSON.stringify({item_id:step.fromItem})});}catch(e){}
@@ -765,12 +936,27 @@ function suggestions(k){
   ACTS.forEach(r=>{const v=(r[k]||'').trim(); if(v)s.add(v);});
   return [...s].sort();
 }
+/* the filter menu should offer single names, not the run-together strings */
+function nameValues(){
+  const s=new Set();
+  VIEW.forEach(nd=>{
+    if((nd.acts||[]).length)
+      nd.acts.filter(a=>a.status!=='Closed')
+        .forEach(a=>{const v=(a.responsible||'').trim(); s.add(v);});
+    else s.add((nd.rec.responsible||'').trim());
+  });
+  return [...s];
+}
 function beginEdit(seed){
   if(EDIT)return;
   const c=COLS[CUR.c], node=VIEW[CUR.r];
   if(!node||locked(node,c))return;
   const td=tdAt(CUR.r,CUR.c); if(!td)return;
   let el;
+  if(c.kind==='acts'){
+    openActions(node.rec.id,seed!=null);   /* a window, not a text box */
+    return;
+  }
   if(c.kind==='sel'){
     el=document.createElement('select'); el.className='cellin';
     const cur=get(node,c);
@@ -778,22 +964,37 @@ function beginEdit(seed){
       const op=document.createElement('option'); op.value=o; op.textContent=o;
       if(o===cur)op.selected=true; el.appendChild(op);
     });
-  }else{
-    el=document.createElement('input'); el.className='cellin';
-    el.type=c.kind==='date'?'date':'text';
+  }else if(c.kind==='text'){
+    /* a box rather than a single-line input, so Alt+Enter can break the line
+       the way it does in Excel. Enter still commits. */
+    el=document.createElement('textarea');
+    el.className='cellin textin';
     el.value=seed!=null?seed:get(node,c);
+    el.rows=Math.max(1,el.value.split('\n').length);
     if(c.suggest){
       const id='dl-'+c.k; let dl=$(id);
       if(!dl){dl=document.createElement('datalist');dl.id=id;document.body.appendChild(dl);}
       dl.innerHTML=suggestions(c.k).map(v=>'<option value="'+esc(v)+'">').join('');
       el.setAttribute('list',id);
     }
+  }else{
+    el=document.createElement('input'); el.className='cellin';
+    el.type='date';
+    el.value=seed!=null?seed:get(node,c);
   }
   td.appendChild(el);
   EDIT={r:CUR.r,c:CUR.c,el,node};
   el.focus();
-  if(el.tagName==='INPUT'&&seed==null&&el.type==='text')el.select();
+  if(el.tagName==='TEXTAREA'&&seed==null)el.select();
   el.addEventListener('keydown',ev=>{
+    if(ev.key==='Enter'&&(ev.altKey||ev.shiftKey)&&el.tagName==='TEXTAREA'){
+      ev.preventDefault();
+      const a=el.selectionStart, b=el.selectionEnd;
+      el.value=el.value.slice(0,a)+'\n'+el.value.slice(b);
+      el.selectionStart=el.selectionEnd=a+1;
+      el.rows=Math.max(1,el.value.split('\n').length);
+      ev.stopPropagation(); return;
+    }
     if(ev.key==='Enter'){ev.preventDefault();commitEdit();move(1,0,false);}
     else if(ev.key==='Escape'){ev.preventDefault();cancelEdit();}
     else if(ev.key==='Tab'){ev.preventDefault();commitEdit();move(0,ev.shiftKey?-1:1,false);}
@@ -810,11 +1011,56 @@ function commitEdit(){
   applyEdits([{node,c:ci,v}]);
   $('gwrap').focus();
 }
+/* Reconcile the typed list against the actions already stored.
+   Lines are matched to actions IN ORDER: an existing line keeps its action —
+   and therefore its dates and its history — a new line creates one, and a line
+   you removed soft-deletes its action so Undo can bring it back intact. */
+async function syncActions(it,lines){
+  const cur=kidsOf(it.id).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
+  const want=lines.map(t=>String(t).replace(/^\s*\d+\s*[.)\-]\s*/,'').trim())
+                  .filter(t=>t.length);
+  const step={t:'acts',created:[],deleted:[],textBack:[]};
+  const stamp=new Date().toISOString();
+  let touched=false;
+  for(let i=0;i<Math.max(want.length,cur.length);i++){
+    const t=want[i], a=cur[i];
+    try{
+      if(a&&t!==undefined){
+        if(a.text!==t){
+          step.textBack.push({id:a.id,text:a.text});
+          const out=await api('task_actions?id=eq.'+a.id,{method:'PATCH',
+            body:JSON.stringify({text:t,sort:i+1})});
+          if(out&&out[0])Object.assign(a,out[0]);
+          touched=true;
+        }else if(a.sort!==i+1){
+          await api('task_actions?id=eq.'+a.id,{method:'PATCH',
+            body:JSON.stringify({sort:i+1})});
+          a.sort=i+1;
+        }
+      }else if(!a&&t!==undefined){
+        const out=await api('task_actions',{method:'POST',body:JSON.stringify([{
+          item_id:it.id,text:t,status:'Open',responsible:it.responsible||'',
+          due:'',sort:i+1}])});
+        if(out&&out[0]){ACTS.push(out[0]);step.created.push(out[0].id);touched=true;}
+      }else if(a&&t===undefined){
+        await api('task_actions?id=eq.'+a.id,{method:'PATCH',
+          body:JSON.stringify({deleted_at:stamp})});
+        step.deleted.push(a.id);
+        ACTS=ACTS.filter(x=>x.id!==a.id);
+        touched=true;
+      }
+    }catch(e){toast('Could not save the actions: '+e.message);}
+  }
+  if(!touched)return;
+  UNDO.push(step);
+  if(UNDO.length>60)UNDO.shift();
+  await refreshItems(); await loadLogCounts(); paint();
+}
 function cancelEdit(){
   if(!EDIT)return;
   const el=EDIT.el; EDIT=null;
   if(el.parentNode)el.parentNode.removeChild(el);
-  repaintBody(); $('gwrap').focus();
+  paintSel(); $('gwrap').focus();
 }
 
 /* ============================================================
@@ -824,12 +1070,12 @@ function move(dr,dc,extend){
   const r=Math.max(0,Math.min(VIEW.length-1,CUR.r+dr));
   const c=Math.max(FIRSTC,Math.min(COLS.length-1,CUR.c+dc));
   CUR={r,c}; if(!extend)ANC={r,c};
-  repaintBody(); scrollIntoView();
+  paintSel(); scrollIntoView();
 }
 function goto_(r,c,extend){
   CUR={r:Math.max(0,Math.min(VIEW.length-1,r)),c:Math.max(FIRSTC,Math.min(COLS.length-1,c))};
   if(!extend)ANC={...CUR};
-  repaintBody(); scrollIntoView();
+  paintSel(); scrollIntoView();
 }
 function scrollIntoView(){
   const td=tdAt(CUR.r,CUR.c); if(!td||!td.getBoundingClientRect)return;
@@ -849,9 +1095,9 @@ function selTSV(){
     const line=[], node=VIEW[r];
     for(let c=b.c1;c<=b.c2;c++){
       const col=COLS[c];
-      const v=col.kind==='no'?(node?node.no+(node.sub?'.'+node.sub:''):'')
+      const v=col.kind==='no'?(node?String(node.no):'')
               :(node?get(node,col):'');
-      line.push(String(v).replace(/\t/g,' ').replace(/\r?\n/g,' '));
+      line.push(String(v).replace(/\t/g,' ').replace(/\r?\n/g,'; '));
     }
     out.push(line.join('\t'));
   }
@@ -872,20 +1118,25 @@ async function doPasteText(text){
   const b=selBox();
   const need=b.r1+grid.length-VIEW.length;
   if(need>0){await addItems(need,false);rebuild();}
-  const edits=[];
+  const edits=[], actEdits=[];
   grid.forEach((line,i)=>{
     const node=VIEW[b.r1+i]; if(!node)return;
     line.forEach((v,j)=>{
       const ci=b.c1+j; if(ci>=COLS.length)return;
       if(locked(node,COLS[ci]))return;
+      if(COLS[ci].kind==='acts'){
+        actEdits.push({it:node.rec,lines:String(v).split(/\s*;\s*/)});
+        return;
+      }
       edits.push({node,c:ci,v});
     });
   });
   await applyEdits(edits,'paste');
+  for(const ae of actEdits)await syncActions(ae.it,ae.lines);
   ANC={r:b.r1,c:b.c1};
   CUR={r:Math.min(VIEW.length-1,b.r1+grid.length-1),
        c:Math.min(COLS.length-1,b.c1+grid[0].length-1)};
-  repaintBody();
+  paintSel();
   toast('Pasted '+grid.length+' row'+(grid.length>1?'s':''));
 }
 async function doPasteButton(){
@@ -893,12 +1144,14 @@ async function doPasteButton(){
   catch(e){toast('Press Ctrl+V (or ⌘V) — the browser will not let a button read the clipboard');}
 }
 async function clearSel(){
-  const b=selBox(), edits=[];
+  const b=selBox(), edits=[], wipe=[];
   for(let r=b.r1;r<=b.r2;r++)for(let c=b.c1;c<=b.c2;c++){
     const node=VIEW[r]; if(!node||locked(node,COLS[c]))continue;
+    if(COLS[c].kind==='acts'){ if((node.acts||[]).length)wipe.push(node.rec); continue; }
     edits.push({node,c,v:''});
   }
   await applyEdits(edits,'clear');
+  for(const it of wipe)await syncActions(it,[]);
 }
 async function fillDown(){
   const b=selBox(); if(b.r2===b.r1)return;
@@ -906,6 +1159,7 @@ async function fillDown(){
   for(let c=b.c1;c<=b.c2;c++){
     const top=VIEW[b.r1]; if(!top)continue;
     const src=get(top,COLS[c]);
+    if(COLS[c].kind==='acts')continue;      /* an action list is not copyable */
     for(let r=b.r1+1;r<=b.r2;r++){
       const node=VIEW[r]; if(!node||locked(node,COLS[c]))continue;
       edits.push({node,c,v:src});
@@ -940,36 +1194,25 @@ async function addItems(n,focus=true,at){
 async function insertAbove(){
   const node=VIEW[CUR.r];
   if(!node)return addItems(1);
-  const it=node.kind==='item'?node.rec:node.parent;
+  const it=node.rec;
   const idx=ITEMS.findIndex(r=>r.id===it.id);
   const prev=idx>0?ITEMS[idx-1]:null;
   await addItems(1,true,prev?(prev.sort+it.sort)/2-0.5:it.sort-1);
 }
 /* an action always belongs to the item of whichever row you are standing on */
-async function addAction(){
+/* open the item's actions window with the form ready to fill in */
+function addAction(){
   const node=VIEW[CUR.r]; if(!node)return;
-  const it=node.kind==='item'?node.rec:node.parent;
-  const sibs=kidsOf(it.id);
-  const base=sibs.length?Math.max(...sibs.map(a=>a.sort||0)):0;
-  try{
-    const out=await api('task_actions',{method:'POST',body:JSON.stringify([
-      {item_id:it.id,text:'',status:'Open',responsible:it.responsible||'',
-       due:it.due||'',sort:base+1}])});
-    if(!out||!out[0])throw new Error('nothing came back');
-    ACTS.push(out[0]);
-    UNDO.push({t:'add',made:[{kind:'action',id:out[0].id}]});
-    SHUT.delete(it.id); savePrefs();
-    await refreshItems(); rebuild();
-    const ri=VIEW.findIndex(nd=>nd.kind==='action'&&nd.rec.id===out[0].id);
-    if(ri>=0){CUR={r:ri,c:colOf('text')};ANC={...CUR};}
-    paint(); scrollIntoView(); beginEdit('');
-  }catch(e){toast('Could not add the action: '+e.message);}
+  if(EDIT)commitEdit();
+  CUR={r:CUR.r,c:colOf('__acts')}; ANC={...CUR};
+  paintSel(); scrollIntoView();
+  openActions(node.rec.id,true);
 }
 /* promote an action to an item of its own, history and all */
-async function splitAction(){
-  const node=VIEW[CUR.r];
-  if(!node||node.kind!=='action')return toast('Stand on an action row first');
-  const a=node.rec, from=a.item_id, parent=node.parent||{};
+async function splitAction(actionId){
+  const a=ACTS.find(x=>x.id===actionId);
+  if(!a)return toast('Open an action first — click its number');
+  const from=a.item_id, parent=ITEMS.find(i=>i.id===from)||{};
   const ok=await confirmBox('Split this action into its own item?',
     'It leaves "'+(parent.description||'the item')
     +'" and becomes a row of its own, keeping its dates and its history.');
@@ -985,9 +1228,9 @@ async function splitAction(){
     await api('task_actions?id=eq.'+a.id,{method:'PATCH',
       body:JSON.stringify({item_id:made[0].id})});
     UNDO.push({t:'split',actionId:a.id,fromItem:from,newItem:made[0].id});
-    await loadAll(); paint();
-    const ri=VIEW.findIndex(nd=>nd.kind==='item'&&nd.rec.id===made[0].id);
-    if(ri>=0){CUR={r:ri,c:colOf('description')};ANC={...CUR};repaintBody();scrollIntoView();}
+    await loadAll(); await loadLogCounts(); paint();
+    const ri=VIEW.findIndex(nd=>nd.rec.id===made[0].id);
+    if(ri>=0){CUR={r:ri,c:colOf('description')};ANC={...CUR};paintSel();scrollIntoView();}
     toast('Split out as its own item','Undo',undo);
   }catch(e){toast('Could not split: '+e.message);}
 }
@@ -995,32 +1238,25 @@ async function deleteRows(){
   const b=selBox();
   const nodes=VIEW.slice(b.r1,b.r2+1);
   if(!nodes.length)return;
-  const items=nodes.filter(n=>n.kind==='item').length;
-  const acts=nodes.filter(n=>n.kind==='action').length;
-  const bits=[];
-  if(items)bits.push(items+' item'+(items>1?'s':''));
-  if(acts)bits.push(acts+' action'+(acts>1?'s':''));
-  const ok=await confirmBox('Delete '+bits.join(' and ')+'?',
-    (items?'Deleting an item takes its actions with it. ':'')
+  const nAct=nodes.reduce((t,n)=>t+(n.acts||[]).length,0);
+  const ok=await confirmBox('Delete '+nodes.length+' row'+(nodes.length>1?'s':'')+'?',
+    (nAct?'That takes '+nAct+' action'+(nAct>1?'s':'')+' with it. ':'')
     +'Everything goes to the bin — Undo brings it straight back.');
   if(!ok)return;
   const keep=[], stamp=new Date().toISOString();
   for(const n of nodes){
-    const tbl=n.kind==='item'?'task_items':'task_actions';
-    try{await api(tbl+'?id=eq.'+n.rec.id,{method:'PATCH',
+    try{await api('task_items?id=eq.'+n.rec.id,{method:'PATCH',
       body:JSON.stringify({deleted_at:stamp})});}catch(e){}
-    keep.push({kind:n.kind,id:n.rec.id});
-    if(n.kind==='item'){
-      for(const k of kidsOf(n.rec.id)){
-        try{await api('task_actions?id=eq.'+k.id,{method:'PATCH',
-          body:JSON.stringify({deleted_at:stamp})});}catch(e){}
-        keep.push({kind:'action',id:k.id});
-      }
+    keep.push({kind:'item',id:n.rec.id});
+    for(const k of kidsOf(n.rec.id)){
+      try{await api('task_actions?id=eq.'+k.id,{method:'PATCH',
+        body:JSON.stringify({deleted_at:stamp})});}catch(e){}
+      keep.push({kind:'action',id:k.id});
     }
   }
   UNDO.push({t:'del',rows:keep});
-  await loadAll(); paint();
-  toast('Deleted '+bits.join(' and '),'Undo',undo);
+  await loadAll(); await loadLogCounts(); paint();
+  toast('Deleted '+nodes.length+' row'+(nodes.length>1?'s':''),'Undo',undo);
 }
 
 /* ============================================================
@@ -1048,17 +1284,179 @@ function whenTxt(iso){
   return isoDay(d)+'  '+String(d.getHours()).padStart(2,'0')+':'
         +String(d.getMinutes()).padStart(2,'0');
 }
-async function openHistory(actionId){
-  const a=ACTS.find(x=>x.id===actionId); if(!a)return;
+/* ============================================================
+   The actions window — the register of an item's actions, filled in
+   through a form, the way a submission is logged in the LOD app.
+   ============================================================ */
+let PANEL=null, PANEL_ITEM=null;
+function actRowsHTML(acts){
+  if(!acts.length)
+    return '<p class="none">No actions logged yet. Fill the form below.</p>';
+  return '<table class="alist"><thead><tr>'
+    +'<th>#</th><th>Action</th><th>Responsible</th><th>Due</th>'
+    +'<th>Status</th><th>Closed</th></tr></thead><tbody>'
+    +acts.map((a,i)=>{
+      const closed=a.status==='Closed';
+      const od=!closed&&a.due&&a.due<TODAY();
+      return '<tr class="'+(closed?'done':'')+'" data-open="'+a.id+'">'
+        +'<td class="n">'+(i+1)+'</td>'
+        +'<td class="t">'+esc(a.text||'—')+'</td>'
+        +'<td>'+esc(a.responsible||'—')+'</td>'
+        +'<td class="'+(od?'late':'')+'">'+esc(a.due||'—')+'</td>'
+        +'<td><span class="st '+stCls(a.status)+'">'+esc(a.status||'Open')+'</span></td>'
+        +'<td>'+esc(a.closed_at||'—')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+}
+async function openActions(itemId,focusForm){
+  const it=ITEMS.find(i=>i.id===itemId); if(!it)return;
+  PANEL_ITEM=itemId; PANEL=null;
+  const acts=kidsOf(itemId).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id));
   const sh=$('sheet');
-  sh.innerHTML='<div class="sh"><b>History</b><span class="hgrow"></span>'
+  sh.innerHTML=
+     '<div class="sh"><b>Actions</b><span class="hgrow"></span>'
     +'<button class="tbtn" id="hclose">Close</button></div>'
-    +'<div class="sb"><p class="hd">'+esc(a.text||'(untitled action)')+'</p>'
+    +'<div class="sb">'
+    +'<p class="under">'+esc(it.description||'(no description yet)')+'</p>'
+    +'<div id="alist">'+actRowsHTML(acts)+'</div>'
+    +'<div class="addbox">'
+    +'<label>Log an action</label>'
+    +'<div class="fld"><textarea id="ntext" rows="2" '
+    +'placeholder="What has to be done"></textarea></div>'
+    +'<div class="two">'
+    +'<div class="fld"><label>Responsible</label>'
+    +'<input id="nres" list="dl-responsible" value="'+esc(it.responsible||'')+'"></div>'
+    +'<div class="fld"><label>Due</label><input id="ndue" type="date"></div></div>'
+    +'<div class="two">'
+    +'<div class="fld"><label>Status</label><select id="nst">'
+    +STATUSES.map(o=>'<option'+(o==='Open'?' selected':'')+'>'+o+'</option>').join('')
+    +'</select></div>'
+    +'<div class="fld" id="nclosewrap" style="display:none"><label>Closed on</label>'
+    +'<input id="nclosed" type="date"></div></div>'
+    +'<div class="fld">'
+    +'<button class="tbtn primary" id="nadd" style="width:100%;justify-content:center">'
+    +'Add action</button></div>'
+    +'<p class="hint">The row\u2019s due date takes the longest of the open ones, '
+    +'its Responsible lists whoever the open ones are with, and the row closes '
+    +'itself when the last action closes.</p>'
+    +'</div></div>';
+  sh.classList.add('on');
+  const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
+    x.id='dl-responsible';document.body.appendChild(x);return x;})();
+  dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  $('hclose').onclick=()=>{sh.classList.remove('on');PANEL_ITEM=null;$('gwrap').focus();};
+  $('alist').onclick=e=>{
+    const tr=e.target.closest('[data-open]');
+    if(tr)openAction(+tr.dataset.open,itemId);
+  };
+  const add=async()=>{
+    const t=$('ntext').value.trim();
+    if(!t)return toast('Type the action first');
+    const sibs=kidsOf(itemId);
+    const base=sibs.length?Math.max(...sibs.map(a=>a.sort||0)):0;
+    $('nadd').disabled=true;
+    try{
+      const out=await api('task_actions',{method:'POST',body:JSON.stringify([{
+        item_id:itemId,text:t,responsible:$('nres').value.trim(),
+        due:$('ndue').value||'',status:$('nst').value,
+        closed_at:($('nst').value==='Closed'?($('nclosed').value||''):''),
+        sort:base+1}])});
+      if(out&&out[0]){
+        ACTS.push(out[0]);
+        UNDO.push({t:'acts',created:[out[0].id],deleted:[],textBack:[]});
+        await refreshItems(); await loadLogCounts(); paint();
+        $('ntext').value=''; $('ndue').value=''; $('nst').value='Open';
+        $('nclosed').value=''; $('nclosewrap').style.display='none';
+        $('alist').innerHTML=actRowsHTML(
+          kidsOf(itemId).slice().sort((a,b)=>(a.sort-b.sort)||(a.id-b.id)));
+        $('ntext').focus();
+      }
+    }catch(e){toast('Could not add the action: '+e.message);}
+    $('nadd').disabled=false;
+  };
+  $('nadd').onclick=add;
+  $('nst').onchange=()=>{
+    const on=$('nst').value==='Closed';
+    $('nclosewrap').style.display=on?'':'none';
+    if(on&&!$('nclosed').value)$('nclosed').value=TODAY();
+  };
+  $('ntext').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();add();}
+  });
+  if(focusForm)$('ntext').focus();
+}
+
+/* One action's detail: its own responsible, due date, status, closure and
+   history — everything that no longer fits on the item's single row. */
+/* wait for a complete date, then a beat, before saving it */
+const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+function sensibleDate(v){
+  if(!v)return true;                       /* clearing is allowed */
+  if(!DATE_RE.test(v))return false;
+  const y=+v.slice(0,4);
+  return y>=2000&&y<=2100;
+}
+function dateField(el,save,ms=450){
+  if(!el)return;
+  let t=null, last=el.value;
+  const fire=()=>{
+    clearTimeout(t); t=null;
+    const v=el.value;
+    if(v===last)return;
+    if(!sensibleDate(v))return;            /* still half-typed */
+    last=v; save(v);
+  };
+  el.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(fire,ms);});
+  el.addEventListener('change',()=>{clearTimeout(t);t=setTimeout(fire,ms);});
+  el.addEventListener('blur',fire);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fire();}});
+}
+function closedHint(a){
+  return a.status==='Closed'
+    ? 'Closed on is set to today when you close an action — change it here if it '
+      +'was really finished on another day.'
+    : 'Closed on fills in when the status becomes Closed.';
+}
+async function openAction(actionId,backTo){
+  const a=ACTS.find(x=>x.id===actionId); if(!a)return;
+  const it=ITEMS.find(i=>i.id===a.item_id)||{};
+  PANEL=actionId;
+  const sh=$('sheet');
+  sh.innerHTML=
+     '<div class="sh">'
+    +(backTo?'<button class="tbtn" id="hback">‹ All actions</button>':'')
+    +'<b>Action</b><span class="hgrow"></span>'
+    +'<button class="tbtn" id="hclose">Close</button></div>'
+    +'<div class="sb">'
+    +'<p class="under">'+esc(it.description||'')+'</p>'
+    +'<div class="fld"><label>Action</label>'
+    +'<textarea id="ptext" rows="3">'+esc(a.text||'')+'</textarea></div>'
+    +'<div class="two">'
+    +'<div class="fld"><label>Responsible</label>'
+    +'<input id="pres" value="'+esc(a.responsible||'')+'" list="dl-responsible"></div>'
+    +'<div class="fld"><label>Due</label>'
+    +'<input id="pdue" type="date" value="'+esc(a.due||'')+'"></div></div>'
+    +'<div class="two">'
+    +'<div class="fld"><label>Status</label><select id="pst">'
+    +STATUSES.map(o=>'<option'+(o===a.status?' selected':'')+'>'+o+'</option>').join('')
+    +'</select></div>'
+    +'<div class="fld"><label>Closed on</label>'
+    +'<input id="pclosed" type="date" value="'+esc(a.closed_at||'')+'"'
+    +(a.status==='Closed'?'':' disabled')+'></div></div>'
+    +'<p class="hint" id="phint">'+closedHint(a)+'</p>'
+    +'<div class="prow">'
+    +'<button class="tbtn" id="psplit">Split into its own item</button>'
+    +'<button class="tbtn danger" id="pdel">Delete action</button></div>'
+    +'<label style="margin-top:20px">History</label>'
     +'<div id="hlist" style="color:var(--ink3)">Loading…</div></div>'
     +'<div class="sf"><input id="hnote" placeholder="Add a note to the history…">'
     +'<button class="tbtn primary" id="hadd">Add</button></div>';
   sh.classList.add('on');
-  $('hclose').onclick=()=>{sh.classList.remove('on');$('gwrap').focus();};
+  const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
+    x.id='dl-responsible';document.body.appendChild(x);return x;})();
+  dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  const close=()=>{sh.classList.remove('on');PANEL=null;$('gwrap').focus();};
+  $('hclose').onclick=close;
+  if($('hback'))$('hback').onclick=()=>openActions(backTo);
   const draw=()=>{
     const rows=LOGS[actionId]||[];
     $('hlist').innerHTML=rows.length?rows.map(r=>
@@ -1066,22 +1464,64 @@ async function openHistory(actionId){
       +'<div class="hn">'+esc(r.note)+'</div>'
       +'<div class="ht">'+esc(whenTxt(r.at))+'</div></div></div>').join('')
       :'<p style="color:var(--ink3)">Nothing recorded yet.</p>';
-    const btn=$('gbody').querySelector('[data-hist="'+actionId+'"]');
-    if(btn)btn.textContent='⏱ '+(rows.length||'');
   };
   await loadLog(actionId); draw();
+  const patch=async(fields)=>{
+    try{
+      const out=await api('task_actions?id=eq.'+actionId,{method:'PATCH',
+        body:JSON.stringify(fields)});
+      if(out&&out[0])Object.assign(a,out[0]);
+      await refreshItems(); await loadLog(actionId); draw(); paint();
+      const cl=$('sheet').querySelector('#pst');
+      if(cl)cl.value=a.status;
+      const cd=$('sheet').querySelector('#pclosed');
+      if(cd){cd.value=a.closed_at||'';cd.disabled=(a.status!=='Closed');}
+      const ph=$('sheet').querySelector('#phint');
+      if(ph)ph.innerHTML=closedHint(a);
+    }catch(e){toast('Could not save: '+e.message);}
+  };
+  $('ptext').onblur=()=>{const v=$('ptext').value.trim();
+    if(v!==(a.text||''))patch({text:v});};
+  $('pres').onblur=()=>{const v=$('pres').value.trim();
+    if(v!==(a.responsible||''))patch({responsible:v});};
+  /* A date input raises `change` on EVERY keystroke of the year, so typing 2026
+     went through 0002, 0020 and 0202 first — each one saved, each one logged, and
+     the year 2 briefly stored. Only take a whole, sane date, and only once the
+     typing has stopped. */
+  dateField($('pdue'),v=>patch({due:v}));
+  dateField($('pclosed'),v=>{
+    if($('pst').value!=='Closed')return toast('Set the status to Closed first');
+    if(!v)return toast('A closed action needs a date — reopen it instead');
+    patch({closed_at:v});
+  });
+  $('pst').onchange=()=>patch({status:$('pst').value});
+  $('psplit').onclick=async()=>{close();await splitAction(actionId);};
+  $('pdel').onclick=async()=>{
+    const ok=await confirmBox('Delete this action?',
+      'It goes to the bin with its history — Undo brings it back.');
+    if(!ok)return;
+    try{
+      await api('task_actions?id=eq.'+actionId,{method:'PATCH',
+        body:JSON.stringify({deleted_at:new Date().toISOString()})});
+      ACTS=ACTS.filter(x=>x.id!==actionId);
+      UNDO.push({t:'acts',created:[],deleted:[actionId],textBack:[]});
+      await refreshItems(); await loadLogCounts(); paint();
+      if(backTo)openActions(backTo); else close();
+      toast('Action deleted','Undo',undo);
+    }catch(e){toast('Could not delete: '+e.message);}
+  };
   const add=async()=>{
     const v=$('hnote').value.trim(); if(!v)return;
     $('hnote').value='';
     try{
       await api('task_action_log',{method:'POST',
         body:JSON.stringify([{action_id:actionId,kind:'note',note:v}])});
-      await loadLog(actionId); draw();
+      await loadLog(actionId); draw(); paint();
     }catch(e){toast('Could not add the note: '+e.message);}
   };
   $('hadd').onclick=add;
   $('hnote').addEventListener('keydown',e=>{if(e.key==='Enter')add();});
-  $('hnote').focus();
+  $('ptext').focus();
 }
 
 /* ============================================================
@@ -1105,6 +1545,25 @@ function autofit(i){
   setW(i,w);
 }
 function autofitAll(){COLS.forEach((c,i)=>{if(c.kind!=='no')autofit(i);});toast('Columns fitted');}
+function wireRowResize(){
+  const gb=$('gbody');
+  gb.addEventListener('mousedown',e=>{
+    const g=e.target.closest('[data-rgrip]'); if(!g)return;
+    e.preventDefault(); e.stopPropagation();
+    const tr=g.closest('tr'), node=VIEW[+tr.dataset.r]; if(!node)return;
+    const all=e.shiftKey, y0=e.clientY, h0=tr.getBoundingClientRect().height;
+    const mv=ev=>setRowH(node,h0+(ev.clientY-y0),all);
+    const up=()=>{document.removeEventListener('mousemove',mv);
+      document.removeEventListener('mouseup',up);};
+    document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up);
+  });
+  gb.addEventListener('dblclick',e=>{
+    const g=e.target.closest('[data-rgrip]'); if(!g)return;
+    e.preventDefault(); e.stopPropagation();
+    const tr=g.closest('tr'), node=VIEW[+tr.dataset.r]; if(!node)return;
+    resetRowH(node,e.shiftKey);
+  });
+}
 function wireResize(){
   $('ghead').addEventListener('mousedown',e=>{
     const h=e.target.closest('[data-rsz]'); if(!h)return;
@@ -1128,12 +1587,8 @@ let MENUK=null;
 function openMenu(k,anchor){
   MENUK=k;
   const c=COLS[colOf(k)];
-  const seen=new Set();
-  if(c.on==='both'||c.on==='item')
-    ITEMS.forEach(r=>seen.add(get({kind:'item',rec:r,kids:0},c)));
-  if(c.on==='both'||c.on==='action')
-    ACTS.forEach(r=>seen.add(get({kind:'action',rec:r,kids:0},c)));
-  const vals=[...seen].sort();
+  const vals=(k==='responsible'?nameValues()
+    :[...new Set(ITEMS.map(r=>get({kind:'item',rec:r,kids:0,acts:kidsOf(r.id)},c)))]).sort();
   const f=FILT[k]||{vals:null,text:''};
   let h='<button class="mi" data-act="asc">▲ Sort A → Z</button>'
        +'<button class="mi" data-act="desc">▼ Sort Z → A</button>'
@@ -1175,20 +1630,29 @@ function menuAct(act){
 /* ============================================================
    Export and import
    ============================================================ */
-const EXCOLS=()=>COLS.filter(c=>c.kind!=='hist');
+const EXCOLS=()=>COLS;
 function sheetData(){
-  const head=['Level',...EXCOLS().map(c=>c.lb)];
-  const rows=VIEW.map(nd=>[nd.kind==='item'?'Item':'Action',
-    ...EXCOLS().map(c=>c.kind==='no'?(nd.no+(nd.sub?'.'+nd.sub:'')):get(nd,c))]);
+  const head=EXCOLS().map(c=>c.lb);
+  const rows=VIEW.map(nd=>EXCOLS().map(c=>
+    c.kind==='no'?nd.no
+    :c.kind==='acts'?(nd.acts||[]).map((a,i)=>(i+1)+'. '+(a.text||'')
+        +(a.due?'  (due '+a.due+')':'')+(a.status==='Closed'?'  ✓':'')).join('\n')
+    :get(nd,c)));
   return [head,...rows];
 }
 function exportXLSX(){
   if(typeof XLSX==='undefined')
     return toast('The spreadsheet library did not load — try again online');
   const ws=XLSX.utils.aoa_to_sheet(sheetData());
-  ws['!cols']=[{wpx:70},...EXCOLS().map(c=>({wpx:c.w}))];
+  ws['!cols']=EXCOLS().map(c=>({wpx:c.w}));
   ws['!autofilter']={ref:XLSX.utils.encode_range(
-    {s:{r:0,c:0},e:{r:VIEW.length,c:EXCOLS().length}})};
+    {s:{r:0,c:0},e:{r:VIEW.length,c:EXCOLS().length-1}})};
+  /* Actions, Description and Notes can all hold several lines — let Excel wrap */
+  const multiCols=[colOf('__acts'),colOf('description'),colOf('notes')];
+  VIEW.forEach((nd,i)=>multiCols.forEach(c=>{
+    const ref=XLSX.utils.encode_cell({r:i+1,c});
+    if(ws[ref])ws[ref].s={alignment:{wrapText:true,vertical:'top'}};
+  }));
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Action list');
   const hist=[['Item','Action','When','Kind','Entry']];
@@ -1224,52 +1688,59 @@ async function importFile(file){
     {header:1,raw:false,defval:''});
   if(!aoa.length)return toast('That file looks empty');
   const norm=s=>String(s||'').toLowerCase().replace(/[^a-z]/g,'');
-  let levelCol=-1;
+  let actsCol=-1;
   const map=aoa[0].map((h,i)=>{
     const n=norm(h);
-    if(n==='level'){levelCol=i;return -1;}
+    if(n==='level')return -1;
+    if(n==='actions'||n==='action'){actsCol=i;return -1;}
     const c=COLS.find(c=>norm(c.lb)===n||norm(c.k)===n
       ||(n==='task'&&c.k==='description')||(n==='item'&&c.k==='description')
       ||(n==='owner'&&c.k==='responsible')||(n==='duedate'&&c.k==='due'));
-    return (c&&c.kind!=='no'&&c.kind!=='hist'&&!c.ro)?colOf(c.k):-1;
+    return (c&&c.kind!=='no'&&c.kind!=='acts'&&!c.ro)?colOf(c.k):-1;
   });
-  if(!map.some(i=>i>=0))
+  if(!map.some(i=>i>=0)&&actsCol<0)
     return toast('No matching column headings — the first row must name the columns');
   const lines=aoa.slice(1).filter(r=>r.some(v=>String(v).trim()!==''));
   if(!lines.length)return toast('No rows to import');
-  const asAction=r=>levelCol>=0&&/^action$/i.test(String(r[levelCol]||'').trim());
-  const nAct=lines.filter(asAction).length;
+  const nAct=lines.reduce((t,l)=>t+(actsCol>=0
+    ?String(l[actsCol]||'').split(/\n|\s*;\s*/).filter(x=>x.trim()).length:0),0);
   const ok=await confirmBox('Import '+lines.length+' row'+(lines.length>1?'s':'')+'?',
-    (nAct?nAct+' of them are marked Action and will hang under the item above them. ':'')
+    (nAct?'Their Actions cells hold '+nAct+' action'+(nAct>1?'s':'')
+      +', which are created too. ':'')
     +'Everything is added at the bottom; nothing already here is changed.');
   if(!ok)return;
   const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
-  const made=[]; let lastItem=null, n=0, asort=0;
+  const made=[]; let n=0;
   for(const line of lines){
     const vals={};
     map.forEach((ci,j)=>{if(ci<0)return;const c=COLS[ci];vals[c.k]=coerce(c,line[j]);});
     try{
-      if(asAction(line)&&lastItem){
-        const out=await api('task_actions',{method:'POST',body:JSON.stringify([{
-          item_id:lastItem,text:vals.text||vals.description||'',
-          responsible:vals.responsible||'',due:vals.due||'',
-          status:vals.status||'Open',sort:++asort}])});
-        if(out&&out[0])made.push({kind:'action',id:out[0].id});
-      }else{
-        const d=vals.description||vals.text||'';
-        const out=await api('task_items',{method:'POST',body:JSON.stringify([{
-          description:d,title:d,project:vals.project||'',
-          responsible:vals.responsible||'',priority:vals.priority||4,
-          status:vals.status||'Open',raised:vals.raised||TODAY(),
-          due:vals.due||'',notes:vals.notes||'',sort:base+(++n)}])});
-        if(out&&out[0]){made.push({kind:'item',id:out[0].id});
-          lastItem=out[0].id; asort=0;}
+      const d=vals.description||'';
+      const out=await api('task_items',{method:'POST',body:JSON.stringify([{
+        description:d,title:d,project:vals.project||'',
+        responsible:vals.responsible||'',priority:vals.priority||4,
+        status:vals.status||'Open',raised:vals.raised||TODAY(),
+        due:vals.due||'',notes:vals.notes||'',sort:base+(++n)}])});
+      if(!out||!out[0])continue;
+      made.push({kind:'item',id:out[0].id});
+      if(actsCol>=0){
+        const acts=String(line[actsCol]||'').split(/\n|\s*;\s*/)
+          .map(t=>t.replace(/^\s*\d+\s*[.)\-]\s*/,'').replace(/\s*\(due [^)]*\)/,'')
+                   .replace(/\s*✓\s*$/,'').trim())
+          .filter(t=>t.length);
+        let k=0;
+        for(const t of acts){
+          const a=await api('task_actions',{method:'POST',body:JSON.stringify([{
+            item_id:out[0].id,text:t,status:'Open',
+            responsible:vals.responsible||'',due:'',sort:++k}])});
+          if(a&&a[0])made.push({kind:'action',id:a[0].id});
+        }
       }
     }catch(e){toast('Import stopped: '+e.message);break;}
   }
   UNDO.push({t:'add',made});
   await loadAll(); await loadLogCounts(); paint();
-  toast('Imported '+made.length+' rows','Undo',undo);
+  toast('Imported '+n+' rows','Undo',undo);
 }
 
 /* ============================================================
@@ -1299,41 +1770,57 @@ function confirmBox(title,note){
 /* ============================================================
    Wiring
    ============================================================ */
-let DRAG=false;
+let DRAG=false, DOWN=null;
+/* is this element somewhere text is being typed, rather than the grid? */
+function typing(el){
+  if(!el||!el.closest)return false;
+  if(el.closest('.cellin'))return false;          /* the grid's own editor */
+  if(el.isContentEditable)return true;
+  const tag=(el.tagName||'').toUpperCase();
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return true;
+  return !!el.closest('#sheet, #scrim, #menu');   /* any panel or dialog */
+}
 function wireGrid(){
   const gb=$('gbody');
   gb.addEventListener('mousedown',e=>{
     if(e.target.closest('.cellin'))return;
-    const car=e.target.closest('[data-shut]');
-    if(car){
-      const id=+car.dataset.shut;
-      SHUT.has(id)?SHUT.delete(id):SHUT.add(id);
-      savePrefs(); paint(); return;
-    }
-    if(e.target.closest('[data-hist]'))return;
+    if(e.target.closest('[data-act]'))return;
     const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const r=+td.dataset.r, c=+td.dataset.c;
     if(EDIT)commitEdit();
-    if(COLS[c].kind==='no'){CUR={r,c:FIRSTC};ANC={r,c:COLS.length-1};repaintBody();return;}
+    if(COLS[c].kind==='no'){CUR={r,c:FIRSTC};ANC={r,c:COLS.length-1};paintSel();return;}
+    const was=(CUR.r===r&&CUR.c===c);
     if(e.shiftKey)CUR={r,c}; else {CUR={r,c};ANC={r,c};}
-    DRAG=true; repaintBody(); $('gwrap').focus();
+    DOWN={r,c,x:e.clientX,y:e.clientY,was:was&&!e.shiftKey};
+    DRAG=true; paintSel(); $('gwrap').focus();
   });
+  /* a click that did not move and landed on the cell already under the cursor
+     opens it, the way a second click does in a spreadsheet */
   gb.addEventListener('click',e=>{
-    const hb=e.target.closest('[data-hist]');
-    if(hb){e.stopPropagation();openHistory(+hb.dataset.hist);}
+    const ab=e.target.closest('[data-act]');
+    if(ab){e.stopPropagation();
+      const a=ACTS.find(x=>x.id===+ab.dataset.act);
+      openAction(+ab.dataset.act,a?a.item_id:null); return;}
+    if(e.target.closest('.cellin'))return;
+    const td=e.target.closest('td');
+    if(!td||td.dataset.r===undefined||!DOWN)return;
+    const moved=Math.abs(e.clientX-DOWN.x)>4||Math.abs(e.clientY-DOWN.y)>4;
+    const same=+td.dataset.r===DOWN.r&&+td.dataset.c===DOWN.c;
+    if(DOWN.was&&same&&!moved&&!EDIT)beginEdit();
+    DOWN=null;
   });
   gb.addEventListener('mouseover',e=>{
     if(!DRAG)return;
     const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const c=+td.dataset.c; if(COLS[c].kind==='no')return;
-    CUR={r:+td.dataset.r,c}; repaintBody();
+    CUR={r:+td.dataset.r,c}; paintSel();
   });
   document.addEventListener('mouseup',()=>{DRAG=false;});
   gb.addEventListener('dblclick',e=>{
     const td=e.target.closest('td');
     if(!td||td.dataset.r===undefined||e.target.closest('.cellin'))return;
     CUR={r:+td.dataset.r,c:+td.dataset.c}; ANC={...CUR};
-    repaintBody(); beginEdit();
+    paintSel(); beginEdit();
   });
   $('ghead').addEventListener('click',e=>{
     const mb=e.target.closest('[data-menu]');
@@ -1353,10 +1840,13 @@ function wireGrid(){
     if(!e.target.closest('#menu')&&!e.target.closest('[data-menu]'))closeMenu();
   });
   $('gwrap').addEventListener('keydown',onKey);
+  /* The grid only claims a paste when nothing else is taking typing. Naming
+     the few fields to skip was wrong — every new box in a panel had to be
+     remembered, and any one forgotten dumped the clipboard into the grid.
+     Ask what has focus instead. */
   document.addEventListener('paste',e=>{
     if(EDIT)return;
-    const ae=document.activeElement;
-    if(ae&&(ae.id==='q'||ae.id==='hnote'))return;
+    if(typing(e.target)||typing(document.activeElement))return;
     const t=(e.clipboardData||window.clipboardData).getData('text');
     if(t){e.preventDefault();doPasteText(t);}
   });
@@ -1365,12 +1855,14 @@ function onKey(e){
   if(EDIT)return;
   const mod=e.ctrlKey||e.metaKey, k=e.key;
   if(mod&&k==='Enter'){e.preventDefault();addAction();return;}
+  if(k==='Escape'&&$('sheet').classList.contains('on')){
+    $('sheet').classList.remove('on');return;}
   if(mod&&(k==='c'||k==='C')){e.preventDefault();doCopy();return;}
   if(mod&&(k==='x'||k==='X')){e.preventDefault();doCopy().then(clearSel);return;}
   if(mod&&(k==='z'||k==='Z')){e.preventDefault();undo();return;}
   if(mod&&(k==='d'||k==='D')){e.preventDefault();fillDown();return;}
   if(mod&&(k==='a'||k==='A')){e.preventDefault();ANC={r:0,c:FIRSTC};
-    CUR={r:VIEW.length-1,c:COLS.length-1};repaintBody();return;}
+    CUR={r:VIEW.length-1,c:COLS.length-1};paintSel();return;}
   if(mod&&(k==='f'||k==='F')){e.preventDefault();$('q').focus();return;}
   if(k==='ArrowUp'){e.preventDefault();move(-1,0,e.shiftKey);return;}
   if(k==='ArrowDown'){e.preventDefault();move(1,0,e.shiftKey);return;}
@@ -1383,13 +1875,20 @@ function onKey(e){
   if(k==='PageUp'){e.preventDefault();move(-12,0,e.shiftKey);return;}
   if(k==='Enter'||k==='F2'){e.preventDefault();beginEdit();return;}
   if(k==='Delete'||k==='Backspace'){e.preventDefault();clearSel();return;}
-  if(k==='Escape'){ANC={...CUR};repaintBody();return;}
+  if(k==='Escape'){ANC={...CUR};paintSel();return;}
   if(!mod&&!e.altKey&&k.length===1){e.preventDefault();beginEdit(k);}
 }
 function wireTools(){
   $('badd').onclick=()=>addItems(1);
   $('bact').onclick=addAction;
-  $('bsplit').onclick=splitAction;
+  $('bsplit').onclick=()=>{
+    const node=VIEW[CUR.r];
+    if(!node||!(node.acts||[]).length)
+      return toast('That row has no actions to split out');
+    if(node.acts.length===1)return splitAction(node.acts[0].id);
+    openAction(node.acts[0].id);
+    toast('Open the action you want, then use Split in the panel');
+  };
   $('bins').onclick=insertAbove;
   $('bdel').onclick=deleteRows;
   $('bcopy').onclick=doCopy;
@@ -1401,6 +1900,7 @@ function wireTools(){
   $('bimp').onclick=()=>$('fimp').click();
   $('fimp').onchange=e=>{importFile(e.target.files[0]);e.target.value='';};
   $('bfit').onclick=autofitAll;
+  $('bwrap').onclick=toggleWrap;
   $('bclear').onclick=()=>{FILT={};SEARCH='';SORT=null;$('q').value='';paint();};
   let qt=null;
   $('q').oninput=e=>{clearTimeout(qt);qt=setTimeout(()=>{
@@ -1420,7 +1920,7 @@ async function startApp(){
   await loadAll();
   await loadLogCounts();
   paint();
-  wireGrid(); wireTools(); wireResize();
+  wireGrid(); wireTools(); wireResize(); wireRowResize();
   $('app').classList.add('ready');
   $('gwrap').focus();
 }
