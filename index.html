@@ -689,6 +689,7 @@ body.mobile .kindtab.on{background:var(--accent-soft);border-color:var(--accent)
     border-bottom:.7pt solid #c3ced9;padding:3.5pt 4pt;
     page-break-after:avoid;break-after:avoid}
   table.rtbl tr.grp b{color:#12304f;font-size:7.2pt;letter-spacing:.01em}
+  table.rtbl tr.grp i{color:#5c6b7a;font-style:normal;font-weight:500;font-size:6.6pt}
   table.rtbl tr.grp span{color:#5c6b7a;font-weight:600;float:right;
     font-variant-numeric:tabular-nums}
   table.rtbl tbody tr.grp:nth-child(even) td{background:#e7edf3!important}
@@ -1522,7 +1523,7 @@ const today=isoDay(new Date());
    carry the revision and the age as well. */
 const SHORT_DISC={Mechanical:'MECH',Electric:'ELEC',Structural:'STRUCT',
   'Project Management':'PM','ICT/Mech':'ICT/MECH','Mech/ELC':'MECH/ELEC'};
-const BUILD='LOD 2026-08-31 · v102';
+const BUILD='LOD 2026-08-31 · v103';
 const SNAPSHOT=[];
 
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -3668,12 +3669,20 @@ function buildPlanAnalysis(kind){
      made the reader do the sorting: what is late is what the meeting is about,
      and it was scattered through the table. Within a group the oldest committed
      date still leads, so the worst case in each group is the first line of it. */
-  const GRP=[['overdue','Overdue — committed date passed, nothing sent'],
-             ['due','Due — the committed date has not passed yet'],
+  const GRP=[['overdue','Overdue — the committed revision has not been sent'],
+             ['due','Due — the committed revision is not sent yet'],
              ['pending','Planned — the week has not started'],
              ['late','Submitted late — sent after the committed date'],
              ['done','Submitted on time'],
              ['nodate','No committed date']];
+  /* WHY THE TWO FIGURES DIFFER, SAID ON THE PAGE.
+     The donut counts a document as submitted if ANY revision is on record;
+     Due and Overdue count the revision this plan asked for. A document sent in
+     May and returned RWC is in both — submitted, and still owed. Reading
+     "Due + Overdue = 19" against "Not submitted = 12" without that stated is
+     the single most confusing thing in this report, so each band now splits
+     itself between the two. */
+  const nosub=x=>((x.doc&&x.doc.awptSubmitted)||'').trim()==='';
   const rank=k=>{const i=GRP.findIndex(g=>g[0]===k);return i<0?GRP.length:i;};
   const ord=rows.slice().sort((a,b)=>{
     const ra=rank(a.st.k), rb=rank(b.st.k);
@@ -3691,7 +3700,15 @@ function buildPlanAnalysis(kind){
       lastK=st.k;
       const g=GRP.find(y=>y[0]===st.k);
       const cnt=ord.filter(y=>y.st.k===st.k).length;
-      head=`<tr class="grp"><td colspan="10"><b>${esc(g?g[1]:(SHORT[st.k]||st.k))}</b>
+      const mine=ord.filter(y=>y.st.k===st.k);
+      const none=mine.filter(nosub).length, earlier=cnt-none;
+      /* only the two owing groups need the split; elsewhere it says nothing */
+      const split=(st.k==='overdue'||st.k==='due')&&earlier
+        ? ` — ${none} never submitted at all, ${earlier} ${earlier===1?'has':'have'} an
+            earlier revision on record that AWPT returned`
+        : '';
+      head=`<tr class="grp"><td colspan="10"><b>${esc(g?g[1]:(SHORT[st.k]||st.k))}</b>${
+        split?`<i>${split}</i>`:''}
         <span>${cnt} of ${T.n} · ${T.n?Math.round(cnt/T.n*100):0}%</span></td></tr>`;
     }
     const rowHead=head;
