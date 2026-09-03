@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#eef1f4">
+<meta name="theme-color" content="#24272c">
 <title>Action list</title>
 <style>
 /* ============================================================
@@ -12,25 +12,34 @@
    ============================================================ */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
-  /* the same palette as the LOD tracker, so the two read as one set of tools */
-  color-scheme:light;
-  --page1:#eef1f4; --page2:#e4e9ee;
-  --surface:#fcfcfb; --card:#fcfcfb; --card2:#f0efec; --chip:#f0efec;
-  --field:#ffffff; --glass:rgba(252,252,251,.94);
-  --line:#e1e0d9; --line2:#cfcec6;
-  --ink:#0b0b0b; --ink2:#52514e; --ink3:#898781;
-  --violet:#2a78d6; --violet2:#1f5fae; --violetDim:rgba(42,120,214,.10);
-  --good:#0ca30c; --warn:#fab219; --hot:#d03b3b; --sky:#2a78d6;
-  --p1:#d03b3b; --p2:#ec835a; --p3:#2a78d6; --p4:#898781;
-  --grid:#e1e0d9; --ring:rgba(11,11,11,.09);
-  --sel:rgba(42,120,214,.14); --selb:#2a78d6;
-  --shadow:0 10px 34px rgba(15,20,30,.16),0 2px 8px rgba(15,20,30,.08);
-  --glow:0 0 0 1px rgba(42,120,214,.22),0 18px 50px rgba(15,20,30,.18);
+  /* Soft dark: one charcoal surface lit from the top left, so a raised control
+     carries a dark shadow below and a faint light edge above, and anything you
+     type into is pressed in. Blue is the only accent. */
+  color-scheme:dark;
+  --page1:#31353b; --page2:#24272c;
+  --surface:#2e3238; --card:#2e3238; --card2:#333840; --chip:#383d45;
+  --field:#282c31; --glass:rgba(46,50,56,.94);
+  --line:#3b4048; --line2:#464c56;
+  --ink:#e8eaee; --ink2:#aab1ba; --ink3:#7e858f;
+  --violet:#1e9bf0; --violet2:#1583cf; --violetDim:rgba(30,155,240,.16);
+  --good:#3ec97a; --warn:#e8b13c; --hot:#f0616e; --sky:#1e9bf0;
+  --p1:#f0616e; --p2:#f0954a; --p3:#1e9bf0; --p4:#7e858f;
+  --grid:#3b4048; --ring:rgba(0,0,0,.35);
+  --sel:rgba(30,155,240,.20); --selb:#1e9bf0;
+  /* the two lights that make the surface look moulded */
+  --dark:rgba(0,0,0,.50); --light:rgba(255,255,255,.045);
+  --up:6px 6px 13px var(--dark), -5px -5px 11px var(--light);
+  --up-sm:3px 3px 7px var(--dark), -3px -3px 6px var(--light);
+  --in:inset 4px 4px 9px var(--dark), inset -3px -3px 7px var(--light);
+  --in-sm:inset 2px 2px 5px var(--dark), inset -2px -2px 4px var(--light);
+  --shadow:var(--up);
+  --glow:0 0 0 1px rgba(30,155,240,.35), 0 10px 26px rgba(0,0,0,.5);
   --ease:cubic-bezier(.22,1,.36,1);
   --spring:cubic-bezier(.34,1.56,.64,1);
   --rowh:32px;
   --safe-b:env(safe-area-inset-bottom,0px);
 }
+
 
 html,body{height:100%;margin:0}
 body{
@@ -435,6 +444,31 @@ table.alist tr.done td.t{text-decoration:line-through;
 .ptag button:hover{color:var(--critical,var(--hot))}
 .people .padd{flex:1;min-width:90px;border:none;background:transparent;outline:none;
   color:inherit;font:inherit;padding:2px}
+
+/* ---- soft-dark surfaces ------------------------------------------------ */
+body{background:radial-gradient(1200px 800px at 20% -10%,var(--page1),var(--page2) 70%)
+  fixed,var(--page2)}
+.tbtn,.btn,button.tb,.mchip,.pill{border:none !important;background:var(--surface);
+  box-shadow:var(--up-sm);border-radius:11px;transition:box-shadow .16s var(--ease),
+  transform .16s var(--ease),color .16s}
+.tbtn:hover,.btn:hover,.mchip:hover{box-shadow:var(--up);transform:translateY(-1px)}
+.tbtn:active,.btn:active,.mchip:active{box-shadow:var(--in-sm);transform:translateY(0)}
+.tbtn.primary,.mchip.on{background:linear-gradient(180deg,var(--violet),var(--violet2));
+  color:#fff;box-shadow:var(--up-sm),0 0 0 1px rgba(30,155,240,.28)}
+.tbtn[disabled]{box-shadow:none;background:var(--field);color:var(--ink3)}
+input,select,textarea,.people,.cellin{background:var(--field) !important;
+  border:none !important;box-shadow:var(--in-sm);border-radius:10px}
+input:focus,select:focus,textarea:focus,.cellin:focus{outline:none;
+  box-shadow:var(--in-sm),0 0 0 2px rgba(30,155,240,.45)}
+.sheet,.card,.panel,.win,.msheetcard{background:var(--surface);border:none;
+  box-shadow:var(--up);border-radius:16px}
+.ptag,.aline .aw,.badge{background:var(--chip);box-shadow:var(--up-sm);border:none}
+table.g thead th{background:var(--surface);box-shadow:inset 0 -1px 0 var(--line)}
+table.g tbody td{border-color:var(--line)}
+table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink3)}
+::-webkit-scrollbar-track{background:transparent}
 </style>
 </head>
 <body>
@@ -519,7 +553,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b17';
+const BUILD='ACTIONS 2026-08-31 · b18';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
