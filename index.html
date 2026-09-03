@@ -411,6 +411,24 @@ table.alist tr.done td.t{text-decoration:line-through;
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;transition-duration:.06s!important}
 }
+
+/* who an action is with, shown beside it */
+.aline .aw{display:inline-block;margin-left:7px;padding:0 7px;border-radius:20px;
+  font-size:10.5px;line-height:16px;vertical-align:1px;
+  background:var(--chip,#2a2140);color:var(--muted,#9aa0b5)}
+.aline.done .aw{opacity:.55}
+
+/* several people on one action */
+.people{display:flex;flex-wrap:wrap;gap:5px;align-items:center;
+  border:1px solid var(--line,#3a2f55);border-radius:9px;padding:5px 6px;min-height:34px;
+  background:var(--field,#191231)}
+.ptag{display:inline-flex;align-items:center;gap:4px;background:var(--chip,#2a2140);
+  border-radius:20px;padding:2px 4px 2px 9px;font-size:12px;color:var(--text,#e9e6f5)}
+.ptag button{border:none;background:none;color:var(--muted,#9aa0b5);cursor:pointer;
+  font-size:14px;line-height:1;padding:0 3px}
+.ptag button:hover{color:var(--critical,#ff6b81)}
+.people .padd{flex:1;min-width:90px;border:none;background:transparent;outline:none;
+  color:inherit;font:inherit;padding:2px}
 </style>
 </head>
 <body>
@@ -495,7 +513,7 @@ table.alist tr.done td.t{text-decoration:line-through;
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-28 · b7';
+const BUILD='ACTIONS 2026-08-31 · b16';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -522,7 +540,6 @@ const COLS=[
   {k:'responsible', lb:'Responsible', w:145, kind:'text', suggest:true},
   {k:'priority',    lb:'Priority',    w:86,  kind:'sel',  opts:['1','2','3','4']},
   {k:'status',      lb:'Status',      w:124, kind:'sel',  opts:STATUSES},
-  {k:'raised',      lb:'Raised on',   w:110, kind:'date'},
   {k:'due',         lb:'Due',         w:110, kind:'date'},
   {k:'closed',      lb:'Closed on',   w:110, kind:'date'},
   {k:'notes',       lb:'Notes',       w:240, kind:'text'}
@@ -534,16 +551,19 @@ function get(node,c){
   if(c.kind==='no')return '';
   if(c.kind==='acts')return (node.acts||[]).map(a=>a.text||'').join('\n');
   if(c.k==='closed')return node.rec.done_at||'';
-  /* once a row has actions, Responsible is whoever the OPEN ones are with —
-     several names run together, each listed once, in list order */
+  /* once a row has actions, Responsible is everyone named on them — each
+     person once, in action order, whether their action is finished or not.
+     It used to list only the open ones, so a closed item showed nobody. */
   if(c.k==='responsible'&&(node.acts||[]).length)return openNames(node.acts);
   return node.rec[c.k]==null?'':String(node.rec[c.k]);
 }
 function openNames(acts){
   const seen=new Set(), out=[];
-  acts.filter(a=>a.status!=='Closed').forEach(a=>{
-    const v=(a.responsible||'').trim();
-    if(v&&!seen.has(v)){seen.add(v);out.push(v);}
+  acts.forEach(a=>{
+    nameList(a.responsible).forEach(v=>{
+      const k=v.toLowerCase();
+      if(!seen.has(k)){seen.add(k);out.push(v);}
+    });
   });
   return out.join(', ');
 }
@@ -771,10 +791,22 @@ function actsHTML(node){
     return '<span class="aline'+(closed?' done':'')+'">'
       +'<button class="an'+(overdue?' od':'')+(closed?' ok':'')+'" data-act="'+a.id+'" '
       +'title="Open this action">'+(i+1)+'</button>'
-      +'<span class="at">'+esc(a.text||'—')+'</span>'
+      +'<span class="at">'+esc(a.text||'—')
+        +(a.responsible?nameList(a.responsible).map(n=>
+            '<span class="aw" title="With '+esc(n)+'">'+esc(n)+'</span>').join(''):'')
+      +'</span>'
       +(a.due?'<span class="ad'+(overdue?' od':'')+'">'+esc(shortDay(a.due))+'</span>':'')
       +'</span>';
   }).join('')+'</span>';
+}
+/* kept for anywhere that needs a compact name; the action chips show the
+   whole name, which is what gets read in a meeting */
+function shortName(v){
+  const p=String(v||'').trim().split(/\s+/).filter(Boolean);
+  if(!p.length)return '';
+  if(p.length===1)return p[0];
+  const last=p[p.length-1];
+  return p[0]+' '+last[0].toUpperCase()+'.';
 }
 function cellHTML(node,c){
   if(c.kind==='no')
@@ -1405,7 +1437,8 @@ async function openActions(itemId,focusForm,back){
     +'placeholder="What has to be done"></textarea></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Responsible</label>'
-    +'<input id="nres" list="dl-responsible" value="'+esc(it.responsible||'')+'"></div>'
+    +'<input id="nres" type="hidden" value="'+esc(it.responsible||'')+'">'
+    +'<div class="people" id="nresbox"></div></div>'
     +'<div class="fld"><label>Due</label><input id="ndue" type="date"></div></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Status</label><select id="nst">'
@@ -1424,6 +1457,7 @@ async function openActions(itemId,focusForm,back){
   const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
     x.id='dl-responsible';document.body.appendChild(x);return x;})();
   dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  wirePeople('nres','nresbox'); wirePeople('pres','presbox');
   $('hclose').onclick=()=>{sh.classList.remove('on');PANEL_ITEM=null;BACK_TO_ITEM=null;
     if(!isMobile())$('gwrap').focus();};
   if($('iback'))$('iback').onclick=()=>{const b=back;BACK_TO_ITEM=null;b();};
@@ -1493,6 +1527,53 @@ function dateField(el,save,ms=450){
   el.addEventListener('blur',fire);
   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fire();}});
 }
+
+/* Several people can share an action. The names live in one field separated by
+   ", " — which the column filter already understands — so this adds the way to
+   pick them rather than a new shape of data. */
+function nameList(v){
+  return String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+}
+function nameJoin(list){
+  const seen=new Set(), out=[];
+  list.forEach(v=>{const t=String(v||'').trim();
+    if(t&&!seen.has(t.toLowerCase())){seen.add(t.toLowerCase());out.push(t);}});
+  return out.join(', ');
+}
+/* a field that shows each name as a chip you can remove, with a box that
+   suggests the people already on the register */
+function wirePeople(inputId, boxId){
+  const inp=$(inputId), box=$(boxId);
+  if(!inp||!box)return;
+  const draw=()=>{
+    const list=nameList(inp.value);
+    box.innerHTML=list.map((n,i)=>'<span class="ptag">'+esc(n)+
+      '<button type="button" data-rm="'+i+'" title="Remove">×</button></span>').join('')
+      +'<input class="padd" list="dl-responsible" placeholder="'+
+        (list.length?'add another…':'name…')+'">';
+    const add=box.querySelector('.padd');
+    const commit=()=>{
+      const v=add.value.trim(); if(!v)return;
+      inp.value=nameJoin(nameList(inp.value).concat([v]));
+      draw(); box.querySelector('.padd').focus();
+      inp.dispatchEvent(new Event('change'));
+    };
+    add.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===','){e.preventDefault();commit();}
+      else if(e.key==='Backspace'&&!add.value&&nameList(inp.value).length){
+        const l=nameList(inp.value); l.pop(); inp.value=nameJoin(l); draw();
+        box.querySelector('.padd').focus();
+        inp.dispatchEvent(new Event('change'));}
+    });
+    add.addEventListener('blur',commit);
+    add.addEventListener('change',commit);
+    box.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{
+      const l=nameList(inp.value); l.splice(+b.dataset.rm,1);
+      inp.value=nameJoin(l); draw(); inp.dispatchEvent(new Event('change'));});
+  };
+  draw();
+}
+
 function closedHint(a){
   return a.status==='Closed'
     ? 'Closed on is set to today when you close an action — change it here if it '
@@ -1515,7 +1596,8 @@ async function openAction(actionId,backTo){
     +'<textarea id="ptext" rows="3">'+esc(a.text||'')+'</textarea></div>'
     +'<div class="two">'
     +'<div class="fld"><label>Responsible</label>'
-    +'<input id="pres" value="'+esc(a.responsible||'')+'" list="dl-responsible"></div>'
+    +'<input id="pres" type="hidden" value="'+esc(a.responsible||'')+'">'
+    +'<div class="people" id="presbox"></div></div>'
     +'<div class="fld"><label>Due</label>'
     +'<input id="pdue" type="date" value="'+esc(a.due||'')+'"></div></div>'
     +'<div class="two">'
@@ -1537,6 +1619,7 @@ async function openAction(actionId,backTo){
   const dl=$('dl-responsible')||(()=>{const x=document.createElement('datalist');
     x.id='dl-responsible';document.body.appendChild(x);return x;})();
   dl.innerHTML=suggestions('responsible').map(v=>'<option value="'+esc(v)+'">').join('');
+  wirePeople('pres','presbox');
   const close=()=>{sh.classList.remove('on');PANEL=null;
     if(!isMobile())$('gwrap').focus();};
   $('hclose').onclick=close;
@@ -1566,8 +1649,8 @@ async function openAction(actionId,backTo){
   };
   $('ptext').onblur=()=>{const v=$('ptext').value.trim();
     if(v!==(a.text||''))patch({text:v});};
-  $('pres').onblur=()=>{const v=$('pres').value.trim();
-    if(v!==(a.responsible||''))patch({responsible:v});};
+  $('pres').onchange=()=>{const v=$('pres').value.trim();
+    if(v!==(a.responsible||'')){a.responsible=v;patch({responsible:v});}};
   /* A date input raises `change` on EVERY keystroke of the year, so typing 2026
      went through 0002, 0020 and 0202 first — each one saved, each one logged, and
      the year 2 briefly stored. Only take a whole, sane date, and only once the
@@ -1969,28 +2052,35 @@ function sheetData(){
    one cell with the closed ones struck through. SheetJS's free build
    drops all styling, so this is built with ExcelJS.
    ============================================================ */
-const XC={                                   /* straight from the app's CSS */
-  head:'FF241A3F', headInk:'FFE9D5FF',
-  row:'FF171029', rowAlt:'FF1B1330', line:'FF332552',
-  ink:'FFF5F2FF', ink2:'FFBDB2D8', ink3:'FF8B81A8',
-  violet:'FFA855F7', good:'FF6EE7B7', warn:'FFFCD34D', hot:'FFFDA4AF', sky:'FF7DD3FC'
+/* The workbook is a document people print, forward and read in Excel — so it is
+   plain: black on white, a light grey heading, thin grey rules, one accent
+   colour for a date that has passed. The dark theme belongs on screen only. */
+const XC={
+  head:'FFEFEFEF', headInk:'FF000000',
+  row:'FFFFFFFF', rowAlt:'FFF7F7F7', line:'FFB6B6B6',
+  ink:'FF000000', ink2:'FF3C3C3C', ink3:'FF6E6E6E',
+  violet:'FF000000', good:'FF17683A', warn:'FF8A6100', hot:'FFB3261E', sky:'FF1B4E86'
 };
-/* a translucent chip over the dark card, flattened to one solid colour */
-function blend(hex,a){
-  const base=[0x1B,0x13,0x30];
-  const c=[parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16)];
-  return 'FF'+c.map((v,i)=>Math.round(base[i]*(1-a)+v*a).toString(16).padStart(2,'0'))
-               .join('').toUpperCase();
-}
 const XSTAT={
-  'Open':        {fg:XC.sky,  bg:blend('38BDF8',.15)},
-  'In progress': {fg:XC.warn, bg:blend('FBBF24',.15)},
-  'On hold':     {fg:'FFC4BCDA', bg:blend('8B81A8',.18)},
-  'Closed':      {fg:XC.good, bg:blend('34D399',.15)}
+  'Open':        {fg:'FF000000', bg:'FFFFFFFF'},
+  'In progress': {fg:'FF8A6100', bg:'FFFFF6E0'},
+  'On hold':     {fg:'FF6E6E6E', bg:'FFF0F0F0'},
+  'Closed':      {fg:'FF17683A', bg:'FFEAF5EE'}
 };
-const XPRIO={1:{fg:XC.hot,bg:blend('F43F5E',.18)}, 2:{fg:'FFFDBA74',bg:blend('FB923C',.18)},
-             3:{fg:XC.sky,bg:blend('38BDF8',.16)}, 4:{fg:'FFB8B0CD',bg:blend('8B81A8',.16)}};
+const XPRIO={1:{fg:'FFB3261E',bg:'FFFBECEA'}, 2:{fg:'FF8A6100',bg:'FFFFF6E0'},
+             3:{fg:'FF1B4E86',bg:'FFEDF3FA'}, 4:{fg:'FF3C3C3C',bg:'FFFFFFFF'}};
 const solid=argb=>({type:'pattern',pattern:'solid',fgColor:{argb}});
+/* Excel wants a real date, not the text "2026-09-07", so it can sort, filter
+   and calculate with it. Written as Excel's own day number rather than a Date
+   object: it carries no timezone, so the day cannot slip, and it is what the
+   file format stores anyway. Day 1 is 1 Jan 1900, with Excel's 1900 leap-year
+   quirk making 30 Dec 1899 the zero point. */
+function xdate(v){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v||'').trim());
+  if(!m)return '';
+  return Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/86400000);
+}
+const XDFMT='dd-mmm-yyyy';
 const edge=()=>({top:{style:'thin',color:{argb:XC.line}},
                  left:{style:'thin',color:{argb:XC.line}},
                  bottom:{style:'thin',color:{argb:XC.line}},
@@ -2010,28 +2100,36 @@ function buildWorkbook(){
   const cols=COLS;
   /* the header has to be declared WITH the columns — assigning ws.columns
      afterwards blanks a header row that was added separately */
-  ws.columns=cols.map(c=>({header:c.lb,width:Math.max(6,Math.round(c.w/7.2))}));
+  const WIDE={responsible:26,project:16,status:12,due:12,closed:12,priority:9,__no:6};
+  ws.columns=cols.map(c=>({header:c.lb,
+    width:WIDE[c.k]||Math.max(6,Math.round(c.w/7.2))}));
 
   const hr=ws.getRow(1);
-  hr.height=24;
+  hr.height=22;
   hr.eachCell(cell=>{
     cell.fill=solid(XC.head);
-    cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
-    cell.alignment={vertical:'middle',horizontal:'left'};
+    cell.font={bold:true,size:10,color:{argb:XC.headInk},name:'Calibri'};
+    cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
     cell.border=edge();
   });
 
   const today=TODAY();
-  VIEW.forEach((nd,i)=>{
+  /* the workbook is read to decide what to chase first, so it comes out in
+     priority order, 1 to 4, keeping the register's order within each band */
+  const rows=VIEW.slice().sort((a,b)=>
+    (Number(a.rec.priority)||9)-(Number(b.rec.priority)||9) || a.no-b.no);
+  rows.forEach((nd,i)=>{
     const r=nd.rec, acts=nd.acts||[];
     const closed=r.status==='Closed';
     const row=ws.addRow([]);
     const put=(k,v)=>{ const ci=colOf(k)+1; row.getCell(ci).value=v; return row.getCell(ci); };
 
-    put('__no',nd.no).alignment={horizontal:'center',vertical:'top'};
+    const MID={horizontal:'center',vertical:'middle',wrapText:true};
+    const LEFT={horizontal:'left',vertical:'top',wrapText:true};
+    put('__no',nd.no).alignment=MID;
     const dc=put('description',r.description||'');
-    dc.font={bold:true,size:11,color:{argb:XC.ink},name:'Segoe UI'};
-    dc.alignment={wrapText:true,vertical:'top'};
+    dc.font={bold:true,size:10.5,color:{argb:XC.ink},name:'Calibri'};
+    dc.alignment=LEFT;
 
     /* the action list, numbered, in ONE cell — closed ones struck through,
        overdue dates in red, exactly as the register draws them */
@@ -2042,45 +2140,44 @@ function buildWorkbook(){
         const ad=a.status==='Closed', od=!ad&&a.due&&a.due<today;
         if(j)rich.push({font:{size:10,color:{argb:XC.ink3}},text:'\n'});
         rich.push({font:{size:10,bold:true,
-          color:{argb:ad?XC.good:od?XC.hot:XC.violet},name:'Segoe UI'},text:(j+1)+'. '});
-        rich.push({font:{size:10,name:'Segoe UI',strike:ad,
+          color:{argb:ad?XC.ink3:od?XC.hot:XC.ink},name:'Calibri'},text:(j+1)+'. '});
+        rich.push({font:{size:10,name:'Calibri',strike:ad,
           color:{argb:ad?XC.ink3:XC.ink}},text:a.text||'—'});
-        if(a.due)rich.push({font:{size:9,name:'Segoe UI',
+        if(a.due)rich.push({font:{size:9,name:'Calibri',
           color:{argb:od?XC.hot:XC.ink3}},text:'   '+shortDay(a.due)});
       });
       ac.value={richText:rich};
     }else{
       ac.value='— no actions yet —';
-      ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Segoe UI'};
+      ac.font={size:10,italic:true,color:{argb:XC.ink3},name:'Calibri'};
     }
-    ac.alignment={wrapText:true,vertical:'top'};
+    ac.alignment=LEFT;
 
-    put('project',r.project||'');
-    put('responsible',get(nd,COLS[colOf('responsible')]));
+    put('project',r.project||'').alignment=MID;
+    put('responsible',get(nd,COLS[colOf('responsible')])).alignment=MID;
     const pc=put('priority',r.priority?Number(r.priority):null);
     const ps=XPRIO[r.priority]||XPRIO[4];
-    pc.fill=solid(ps.bg);
-    pc.font={bold:true,size:10,color:{argb:ps.fg},name:'Segoe UI'};
-    pc.alignment={horizontal:'center',vertical:'top'};
+    if(Number(r.priority)<=2)pc.fill=solid(ps.bg);
+    pc.font={bold:Number(r.priority)<=2,size:10,color:{argb:ps.fg},name:'Calibri'};
+    pc.alignment=MID;
 
     const sc=put('status',r.status||'Open');
     const st=XSTAT[r.status]||XSTAT.Open;
-    sc.fill=solid(st.bg);
-    sc.font={bold:true,size:10,color:{argb:st.fg},name:'Segoe UI'};
-    sc.alignment={horizontal:'center',vertical:'top'};
+    if(st.bg!=='FFFFFFFF')sc.fill=solid(st.bg);
+    sc.font={size:10,color:{argb:st.fg},name:'Calibri'};
+    sc.alignment=MID;
 
-    put('raised',r.raised||'');
-    const du=put('due',r.due||'');
+    const du=put('due',xdate(r.due)); du.alignment=MID; du.numFmt=XDFMT;
     if(r.due&&!closed&&r.due<today)
-      du.font={bold:true,size:10,color:{argb:XC.hot},name:'Segoe UI'};
-    put('closed',r.done_at||'');
-    put('notes',r.notes||'').alignment={wrapText:true,vertical:'top'};
+      du.font={bold:true,size:10,color:{argb:XC.hot},name:'Calibri'};
+    const cc=put('closed',xdate(r.done_at)); cc.alignment=MID; cc.numFmt=XDFMT;
+    put('notes',r.notes||'').alignment=LEFT;
 
     /* banding, borders, and the default ink for anything not set above */
     row.eachCell({includeEmpty:true},cell=>{
-      if(!cell.fill)cell.fill=solid(i%2?XC.rowAlt:XC.row);
-      if(!cell.font)cell.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
-      if(!cell.alignment)cell.alignment={vertical:'top'};
+      if(!cell.fill)cell.fill=solid(XC.row);
+      if(!cell.font)cell.font={size:10,color:{argb:XC.ink},name:'Calibri'};
+      if(!cell.alignment)cell.alignment=MID;
       cell.border=edge();
     });
     /* tall enough for the whole action list, like the row heights on screen */
@@ -2091,6 +2188,13 @@ function buildWorkbook(){
 
   const last=VIEW.length+1;
   ws.autoFilter={from:{row:1,column:1},to:{row:last,column:cols.length}};
+  /* so it prints as a document: headings repeat on every page, the sheet fits
+     the paper width, and the heading row stays put while scrolling */
+  ws.views=[{state:'frozen',ySplit:1}];
+  ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,
+    paperSize:9,margins:{left:0.4,right:0.4,top:0.5,bottom:0.5,header:0.2,footer:0.2},
+    printTitlesRow:'1:1'};
+  ws.headerFooter={oddFooter:'&L&"Calibri"Action list&C&"Calibri"&P of &N&R&"Calibri"&D'};
 
   /* live rules, so the colours follow the sheet if it is edited in Excel */
   if(VIEW.length){
@@ -2105,7 +2209,7 @@ function buildWorkbook(){
        formulae:['AND($'+D+'2<>"",$'+D+'2<TODAY(),$'+S+'2<>"Closed")'],
        style:{font:{bold:true,color:{argb:XC.hot}}}},
       {type:'expression',priority:2,
-       formulae:['AND($'+D+'2=TEXT(TODAY(),"yyyy-mm-dd"),$'+S+'2<>"Closed")'],
+       formulae:['AND($'+D+'2=TODAY(),$'+S+'2<>"Closed")'],
        style:{font:{bold:true,color:{argb:XC.warn}}}}]});
     ws.addConditionalFormatting({ref:body,rules:[
       {type:'expression',priority:3,formulae:['$'+S+'2="Closed"'],
@@ -2123,22 +2227,26 @@ function buildWorkbook(){
     const h=hs.getRow(1);
     h.height=22;
     h.eachCell(c=>{c.fill=solid(XC.head);
-      c.font={bold:true,size:10,color:{argb:XC.headInk},name:'Segoe UI'};
+      c.font={bold:true,size:10,color:{argb:XC.headInk},name:'Calibri'};
       c.border=edge();});
     let k=0;
     ACTS.forEach(a=>{
       const it=ITEMS.find(i=>i.id===a.item_id)||{};
       (LOGS[a.id]||[]).slice().reverse().forEach(l=>{
-        const row=hs.addRow([it.description||'',a.text||'',whenTxt(l.at),l.kind||'',l.note||'']);
+        const t=l.at?Date.parse(l.at):NaN;
+        const when=isNaN(t)?whenTxt(l.at)
+          :(t-Date.UTC(1899,11,30))/86400000;      /* the same day number, with a time */
+        const row=hs.addRow([it.description||'',a.text||'',when,l.kind||'',l.note||'']);
+        if(typeof when==='number')row.getCell(3).numFmt='dd-mmm-yyyy hh:mm';
         const tint=l.kind==='closed'?XC.good:l.kind==='reopened'?XC.warn
                   :l.kind==='note'?XC.violet:XC.ink3;
         row.eachCell({includeEmpty:true},c=>{
-          c.fill=solid((k%2)?XC.rowAlt:XC.row);
-          c.font={size:10,color:{argb:XC.ink2},name:'Segoe UI'};
+          c.fill=solid(XC.row);
+          c.font={size:10,color:{argb:XC.ink},name:'Calibri'};
           c.alignment={wrapText:true,vertical:'top'};
           c.border=edge();
         });
-        row.getCell(4).font={size:10,bold:true,color:{argb:tint},name:'Segoe UI'};
+        row.getCell(4).font={size:10,bold:true,color:{argb:tint},name:'Calibri'};
         k++;
       });
     });
