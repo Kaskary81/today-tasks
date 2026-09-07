@@ -316,6 +316,12 @@ table.alist tr.done td.t{text-decoration:line-through;
 .agi .aga input{width:auto;flex:none;margin-top:2px}
 .agi .aga i{display:block;font-style:normal;font-size:11px;color:var(--ink3);margin-top:1px}
 /* screenshots waiting to be read */
+.agontorow{display:flex;gap:9px;align-items:flex-start;margin:10px 0 0;
+  font-size:12.5px;font-weight:400;letter-spacing:0;text-transform:none;
+  color:var(--ink2);cursor:pointer}
+.agontorow input{width:auto;flex:none;margin-top:2px}
+.agontorow i{display:block;font-style:normal;color:var(--ink3);font-size:11.5px;
+  margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
 .agshots{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
 .agshots .agsh{position:relative;width:74px;height:74px;border-radius:9px;
   overflow:hidden;border:1px solid var(--line);background:var(--card2)}
@@ -576,7 +582,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b23';
+const BUILD='ACTIONS 2026-09-07 · b24';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2463,6 +2469,15 @@ let toastT=null;
    ============================================================ */
 let AGENT=null;                       /* the current proposal, once read */
 let AGIMG=[];                         /* screenshots waiting to be read */
+let AGONTO=null;                      /* the row the actions are being added to */
+/* The item the cursor is sitting on — whether the cursor is on the item row
+   itself or on one of its actions. */
+function agentTargetItem(){
+  const node=VIEW[CUR.r]; if(!node)return null;
+  if(node.kind==='item')return node.rec;
+  if(node.kind==='action')return ITEMS.find(r=>r.id===node.rec.item_id)||null;
+  return null;
+}
 /* A phone screenshot is 3–4 megapixels; the model sees no more than about
    1568px on the long edge, so sending the original would cost tokens and time
    for detail that is thrown away. Shrunk here, before it leaves the machine. */
@@ -2544,6 +2559,7 @@ async function agentRead(text){
       Authorization:'Bearer '+(SESSION?SESSION.access_token:SB_KEY),
       'Content-Type':'application/json'},
     body:JSON.stringify({text,today:TODAY(),
+      onto:AGONTO?(AGONTO.description||AGONTO.title||''):'',
       images:AGIMG.map(im=>({media_type:im.media_type,data:im.data})),
       people:suggestions('responsible').slice(0,60),
       projects:suggestions('project').slice(0,40)})});
@@ -2563,9 +2579,11 @@ function agentPreviewHTML(items){
     return '<p class="hint">Nothing in those notes looked like an item with '+
            'something to do. Try including who is to do what, and by when.</p>';
   const nA=items.reduce((t,i)=>t+i.actions.length,0);
-  return '<p class="hint" style="margin:0 0 12px">Found <b>'+items.length+'</b> item'+
-    (items.length===1?'':'s')+' and <b>'+nA+'</b> action'+(nA===1?'':'s')+
-    '. Untick anything you do not want. Nothing is saved until you press Add.</p>'+
+  return '<p class="hint" style="margin:0 0 12px">'+(AGONTO
+      ? 'Found <b>'+nA+'</b> action'+(nA===1?'':'s')+' to add to the selected row.'
+      : 'Found <b>'+items.length+'</b> item'+(items.length===1?'':'s')+' and <b>'+nA+
+        '</b> action'+(nA===1?'':'s')+'.')+
+    ' Untick anything you do not want. Nothing is saved until you press Add.</p>'+
     items.map((it,i)=>
       '<div class="agi">'+
       '<label class="agh"><input type="checkbox" data-i="'+i+'" checked>'+
@@ -2596,6 +2614,7 @@ function openAgent(){
     +'<label>Paste the notes</label>'
     +'<div class="fld"><textarea id="agtext" rows="9" placeholder="Meeting notes, an email, '
     +'a list you wrote by hand. You can paste a screenshot here too — Ctrl+V."></textarea></div>'
+    +'<div id="agonto"></div>'
     +'<div class="agshots" id="agshots" style="display:none"></div>'
     +'<div class="agadds"><button class="tbtn" id="agpick">Add a screenshot</button>'
     +'<input type="file" id="agfile" accept="image/*" multiple style="display:none"></div>'
@@ -2607,7 +2626,16 @@ function openAgent(){
     +'<div id="agout"></div>'
     +'</div>';
   sh.classList.add('on');
-  AGIMG=[];
+  AGIMG=[]; AGONTO=null;
+  /* If the cursor is on a row, offer to hang the actions off THAT row instead of
+     making a new one — which is what "add the action to the selected item"
+     means, and what typing it into the notes could never do. */
+  const tgt=agentTargetItem();
+  if(tgt){
+    $('agonto').innerHTML='<label class="agontorow"><input type="checkbox" id="agontock">'
+      +'<span>Add to the selected row<i>'+esc(tgt.description||tgt.title||'')+'</i></span></label>';
+    $('agontock').onchange=e=>{ AGONTO=e.target.checked?tgt:null; };
+  }
   const close=()=>{sh.classList.remove('on');sh.className='sheet';AGENT=null;AGIMG=[];};
   $('agclose').onclick=close;
   /* paste, drop or pick — the same three ways anything else takes an image */
@@ -2647,6 +2675,8 @@ async function agentApply(close){
   const on=sel=>[...out.querySelectorAll(sel)].filter(x=>x.checked);
   const items=on('.agh input').map(x=>+x.dataset.i);
   if(!items.length)return toast('Tick at least one item');
+  if(AGONTO&&!on('.aga input').length)
+    return toast('Tick at least one action to add');
   const acts=new Set(on('.aga input').map(x=>x.dataset.i+':'+x.dataset.j));
   const btn=$('agadd'); if(btn){btn.disabled=true;btn.textContent='Adding…';}
   const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
@@ -2654,18 +2684,28 @@ async function agentApply(close){
   try{
     for(const i of items){
       const it=AGENT[i];
-      const r=await api('task_items',{method:'POST',body:JSON.stringify([{
-        description:it.description,title:it.description,project:it.project,
-        responsible:it.responsible,priority:it.priority,status:'Open',
-        raised:TODAY(),due:it.due,notes:it.notes,sort:base+(++nI)}])});
-      if(!r||!r[0])continue;
-      made.push({kind:'item',id:r[0].id});
-      let k=0;
+      /* Adding to a row that already exists: no item is created, the actions
+         hang off the one the cursor was on, and its own sort order continues
+         from the actions already there. */
+      let itemId, k;
+      if(AGONTO){
+        itemId=AGONTO.id;
+        const sibs=ACTS.filter(a=>a.item_id===itemId&&!a.deleted_at);
+        k=sibs.length?Math.max(...sibs.map(a=>a.sort||0)):0;
+      }else{
+        const r=await api('task_items',{method:'POST',body:JSON.stringify([{
+          description:it.description,title:it.description,project:it.project,
+          responsible:it.responsible,priority:it.priority,status:'Open',
+          raised:TODAY(),due:it.due,notes:it.notes,sort:base+(++nI)}])});
+        if(!r||!r[0])continue;
+        made.push({kind:'item',id:r[0].id});
+        itemId=r[0].id; k=0;
+      }
       for(let j=0;j<it.actions.length;j++){
         if(!acts.has(i+':'+j))continue;
         const a=it.actions[j];
         const ar=await api('task_actions',{method:'POST',body:JSON.stringify([{
-          item_id:r[0].id,text:a.text,responsible:a.responsible,
+          item_id:itemId,text:a.text,responsible:a.responsible,
           due:a.due,status:'Open',sort:++k}])});
         if(ar&&ar[0]){made.push({kind:'action',id:ar[0].id});nA++;}
       }
@@ -2674,7 +2714,9 @@ async function agentApply(close){
   if(made.length)UNDO.push({t:'add',made});
   await loadAll(); await loadLogCounts(); paint();
   close();
-  toast('Added '+nI+' item'+(nI===1?'':'s')+' and '+nA+' action'+(nA===1?'':'s'),
+  toast(AGONTO
+        ? 'Added '+nA+' action'+(nA===1?'':'s')+' to the row'
+        : 'Added '+nI+' item'+(nI===1?'':'s')+' and '+nA+' action'+(nA===1?'':'s'),
         'Undo',undo);
 }
 function toast(msg,action,fn){
