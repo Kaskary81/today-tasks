@@ -315,6 +315,16 @@ table.alist tr.done td.t{text-decoration:line-through;
   font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink2);margin:0}
 .agi .aga input{width:auto;flex:none;margin-top:2px}
 .agi .aga i{display:block;font-style:normal;font-size:11px;color:var(--ink3);margin-top:1px}
+/* screenshots waiting to be read */
+.agshots{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.agshots .agsh{position:relative;width:74px;height:74px;border-radius:9px;
+  overflow:hidden;border:1px solid var(--line);background:var(--card2)}
+.agshots .agsh img{width:100%;height:100%;object-fit:cover;display:block}
+.agshots .agsh button{position:absolute;top:2px;right:2px;width:19px;height:19px;
+  border:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:13px;
+  line-height:19px;padding:0;cursor:pointer}
+.agadds{margin:10px 0 0}
+.agadds .tbtn{width:100%;justify-content:center}
 .sheet .sh .tbtn{padding:5px 9px;font-size:11.5px}
 .sheet .sf{display:flex;gap:8px;padding:12px 18px calc(14px + var(--safe-b));
   border-top:1px solid var(--line)}
@@ -566,7 +576,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b19';
+const BUILD='ACTIONS 2026-09-07 · b20';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2452,6 +2462,54 @@ let toastT=null;
    do when a row is typed by hand.
    ============================================================ */
 let AGENT=null;                       /* the current proposal, once read */
+let AGIMG=[];                         /* screenshots waiting to be read */
+/* A phone screenshot is 3–4 megapixels; the model sees no more than about
+   1568px on the long edge, so sending the original would cost tokens and time
+   for detail that is thrown away. Shrunk here, before it leaves the machine. */
+function shrinkImage(file,max=1568){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error('Could not read that image'));
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error('That file is not an image the browser can open'));
+      img.onload=()=>{
+        const sc=Math.min(1,max/Math.max(img.width,img.height));
+        const w=Math.max(1,Math.round(img.width*sc)), h=Math.max(1,Math.round(img.height*sc));
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const x=c.getContext('2d');
+        /* a white ground: a screenshot saved with transparency goes black
+           otherwise, and black-on-black reads as an empty picture */
+        x.fillStyle='#fff'; x.fillRect(0,0,w,h);
+        x.drawImage(img,0,0,w,h);
+        const url=c.toDataURL('image/jpeg',0.85);
+        res({media_type:'image/jpeg',data:url.split(',')[1],thumb:url,w,h,
+             name:file.name||'screenshot'});
+      };
+      img.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+async function agentAddFiles(files){
+  const list=[...files].filter(f=>/^image\//.test(f.type));
+  if(!list.length)return;
+  for(const f of list){
+    if(AGIMG.length>=8){toast('Eight screenshots at a time is the limit');break;}
+    try{ AGIMG.push(await shrinkImage(f)); }
+    catch(e){ toast(e.message); }
+  }
+  agentDrawShots();
+}
+function agentDrawShots(){
+  const box=$('agshots'); if(!box)return;
+  box.innerHTML=AGIMG.map((im,i)=>
+    '<span class="agsh"><img src="'+im.thumb+'" alt="">'
+    +'<button data-rm="'+i+'" title="Remove">×</button></span>').join('');
+  box.style.display=AGIMG.length?'flex':'none';
+  box.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{
+    AGIMG.splice(+b.dataset.rm,1); agentDrawShots(); });
+}
 async function agentRead(text){
   const r=await fetch(SB_URL+'/functions/v1/fill-actions',{
     method:'POST',
@@ -2459,6 +2517,7 @@ async function agentRead(text){
       Authorization:'Bearer '+(SESSION?SESSION.access_token:SB_KEY),
       'Content-Type':'application/json'},
     body:JSON.stringify({text,today:TODAY(),
+      images:AGIMG.map(im=>({media_type:im.media_type,data:im.data})),
       people:suggestions('responsible').slice(0,60),
       projects:suggestions('project').slice(0,40)})});
   let d=null; try{ d=await r.json(); }catch(e){}
@@ -2502,19 +2561,33 @@ function openAgent(){
     +'<div class="sb">'
     +'<label>Paste the notes</label>'
     +'<div class="fld"><textarea id="agtext" rows="9" placeholder="Meeting notes, an email, '
-    +'a list you wrote by hand — whatever says what has to be done and by whom."></textarea></div>'
-    +'<p class="hint">It takes only what the text says. A person or a date the notes '
-    +'do not give is left empty rather than guessed.</p>'
+    +'a list you wrote by hand. You can paste a screenshot here too — Ctrl+V."></textarea></div>'
+    +'<div class="agshots" id="agshots" style="display:none"></div>'
+    +'<div class="agadds"><button class="tbtn" id="agpick">Add a screenshot</button>'
+    +'<input type="file" id="agfile" accept="image/*" multiple style="display:none"></div>'
+    +'<p class="hint">Paste or drop a screenshot of an email or a chat and it reads that '
+    +'too. It takes only what is actually written — a person or a date the notes do not '
+    +'give is left empty rather than guessed.</p>'
     +'<button class="tbtn primary" id="agrun" style="width:100%;justify-content:center;'
     +'margin:10px 0">Read the notes</button>'
     +'<div id="agout"></div>'
     +'</div>';
   sh.classList.add('on');
-  const close=()=>{sh.classList.remove('on');sh.className='sheet';AGENT=null;};
+  AGIMG=[];
+  const close=()=>{sh.classList.remove('on');sh.className='sheet';AGENT=null;AGIMG=[];};
   $('agclose').onclick=close;
+  /* paste, drop or pick — the same three ways anything else takes an image */
+  $('agtext').addEventListener('paste',e=>{
+    const f=[...(e.clipboardData&&e.clipboardData.files||[])];
+    if(f.length){ e.preventDefault(); agentAddFiles(f); }});
+  ['dragover','drop'].forEach(t=>sh.addEventListener(t,e=>{
+    e.preventDefault();
+    if(t==='drop'&&e.dataTransfer&&e.dataTransfer.files)agentAddFiles(e.dataTransfer.files);}));
+  $('agpick').onclick=()=>$('agfile').click();
+  $('agfile').onchange=e=>{agentAddFiles(e.target.files);e.target.value='';};
   $('agrun').onclick=async()=>{
     const t=$('agtext').value.trim();
-    if(!t)return toast('Paste the notes first');
+    if(!t&&!AGIMG.length)return toast('Paste the notes or a screenshot first');
     $('agrun').disabled=true; $('agrun').textContent='Reading…';
     $('agout').innerHTML='<p class="hint">Working through the notes…</p>';
     try{
