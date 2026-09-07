@@ -576,7 +576,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b20';
+const BUILD='ACTIONS 2026-09-07 · b21';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2511,7 +2511,13 @@ function agentDrawShots(){
     AGIMG.splice(+b.dataset.rm,1); agentDrawShots(); });
 }
 async function agentRead(text){
-  const r=await fetch(SB_URL+'/functions/v1/fill-actions',{
+  /* fetch REJECTS rather than returning a response when the request never
+     completes — no network, or the browser blocked it because the CORS
+     preflight was refused. "Failed to fetch" is all the browser says, which
+     tells the reader nothing, so it is translated here. */
+  let r;
+  try{
+    r=await fetch(SB_URL+'/functions/v1/fill-actions',{
     method:'POST',
     headers:{apikey:SB_KEY,
       Authorization:'Bearer '+(SESSION?SESSION.access_token:SB_KEY),
@@ -2520,6 +2526,10 @@ async function agentRead(text){
       images:AGIMG.map(im=>({media_type:im.media_type,data:im.data})),
       people:suggestions('responsible').slice(0,60),
       projects:suggestions('project').slice(0,40)})});
+  }catch(e){
+    throw new Error('Could not reach the agent. Check that you are online, and '+
+      'that the fill-actions function is deployed and reachable from this site.');
+  }
   let d=null; try{ d=await r.json(); }catch(e){}
   if(!r.ok||!d||d.error)throw new Error((d&&d.error)||('The agent failed ('+r.status+')'));
   return d.items||[];
