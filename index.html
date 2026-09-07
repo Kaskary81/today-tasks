@@ -576,7 +576,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b22';
+const BUILD='ACTIONS 2026-09-07 · b23';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2466,7 +2466,16 @@ let AGIMG=[];                         /* screenshots waiting to be read */
 /* A phone screenshot is 3–4 megapixels; the model sees no more than about
    1568px on the long edge, so sending the original would cost tokens and time
    for detail that is thrown away. Shrunk here, before it leaves the machine. */
-function shrinkImage(file,max=1568){
+/* A phone screenshot is 3-4 megapixels. Two reasons not to send that:
+   the model sees no more than about 1568px on the long edge anyway, and —
+   measured, not assumed — a request body over roughly 200 KB does not survive
+   the trip: 154 KB returns instantly, 320 KB hangs until it is aborted, which
+   is what "Failed to fetch" was. So each image is stepped down until its
+   base64 is under the budget, and the total is capped as well. */
+const IMG_BUDGET=120*1024;              /* base64 characters, per image */
+const IMG_TOTAL =260*1024;              /* base64 characters, all images */
+const IMG_STEPS=[[1400,.80],[1200,.75],[1000,.70],[850,.62],[700,.55]];
+function shrinkImage(file){
   return new Promise((res,rej)=>{
     const fr=new FileReader();
     fr.onerror=()=>rej(new Error('Could not read that image'));
@@ -2474,17 +2483,22 @@ function shrinkImage(file,max=1568){
       const img=new Image();
       img.onerror=()=>rej(new Error('That file is not an image the browser can open'));
       img.onload=()=>{
-        const sc=Math.min(1,max/Math.max(img.width,img.height));
-        const w=Math.max(1,Math.round(img.width*sc)), h=Math.max(1,Math.round(img.height*sc));
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        const x=c.getContext('2d');
-        /* a white ground: a screenshot saved with transparency goes black
-           otherwise, and black-on-black reads as an empty picture */
-        x.fillStyle='#fff'; x.fillRect(0,0,w,h);
-        x.drawImage(img,0,0,w,h);
-        const url=c.toDataURL('image/jpeg',0.85);
-        res({media_type:'image/jpeg',data:url.split(',')[1],thumb:url,w,h,
-             name:file.name||'screenshot'});
+        let best=null;
+        for(const [max,q] of IMG_STEPS){
+          const sc=Math.min(1,max/Math.max(img.width,img.height));
+          const w=Math.max(1,Math.round(img.width*sc)), h=Math.max(1,Math.round(img.height*sc));
+          const c=document.createElement('canvas'); c.width=w; c.height=h;
+          const x=c.getContext('2d');
+          /* a white ground: a screenshot saved with transparency goes black
+             otherwise, and black-on-black reads as an empty picture */
+          x.fillStyle='#fff'; x.fillRect(0,0,w,h);
+          x.drawImage(img,0,0,w,h);
+          const url=c.toDataURL('image/jpeg',q);
+          best={media_type:'image/jpeg',data:url.split(',')[1],thumb:url,w,h,
+                name:file.name||'screenshot'};
+          if(best.data.length<=IMG_BUDGET)break;
+        }
+        res(best);
       };
       img.src=fr.result;
     };
@@ -2496,7 +2510,14 @@ async function agentAddFiles(files){
   if(!list.length)return;
   for(const f of list){
     if(AGIMG.length>=8){toast('Eight screenshots at a time is the limit');break;}
-    try{ AGIMG.push(await shrinkImage(f)); }
+    try{
+      const im=await shrinkImage(f);
+      const tot=AGIMG.reduce((t,x)=>t+x.data.length,0);
+      if(tot+im.data.length>IMG_TOTAL){
+        toast('That is as many screenshots as will fit in one read — read these '+
+              'first, then add the rest'); break; }
+      AGIMG.push(im);
+    }
     catch(e){ toast(e.message); }
   }
   agentDrawShots();
