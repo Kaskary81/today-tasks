@@ -320,8 +320,19 @@ table.alist tr.done td.t{text-decoration:line-through;
   font-size:12.5px;font-weight:400;letter-spacing:0;text-transform:none;
   color:var(--ink2);cursor:pointer}
 .agontorow input{width:auto;flex:none;margin-top:2px}
-.agontorow i{display:block;font-style:normal;color:var(--ink3);font-size:11.5px;
-  margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
+.agontorow span{flex:1;min-width:0}
+.agi .agtag{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:1px 6px;border-radius:5px;margin-right:7px;
+  background:var(--chip);color:var(--ink3);vertical-align:1px}
+.agi .agtag.new{background:rgba(30,155,240,.18);color:var(--violet)}
+.agi .agtx{flex:1;min-width:0}
+.agi .aga label.agupd .agwas{text-decoration:line-through;color:var(--ink3)}
+/* the sheet's label rule uppercases everything inside it; a row's own words
+   must be shown as the person wrote them, or the wrong row looks like the
+   right one */
+.agontorow i{display:block;font-style:normal;font-weight:400;color:var(--ink3);
+  font-size:11.5px;text-transform:none;letter-spacing:0;margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
 .agshots{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
 .agshots .agsh{position:relative;width:74px;height:74px;border-radius:9px;
   overflow:hidden;border:1px solid var(--line);background:var(--card2)}
@@ -582,7 +593,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b24';
+const BUILD='ACTIONS 2026-09-07 · b26';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1076,6 +1087,19 @@ async function undo(){
       rec[b.k]=b.v; (pend[b.kind+':'+b.id]=pend[b.kind+':'+b.id]||{})[b.k]=b.v;
     });
     repaintBody(); await push(pend); await refreshItems();
+  }else if(step.t==='agent'){
+    /* the agent's batch is both: rows it created and rows it changed */
+    for(const r of (step.made||[])){
+      const tbl=r.kind==='item'?'task_items':'task_actions';
+      try{await api(tbl+'?id=eq.'+r.id,{method:'PATCH',
+        body:JSON.stringify({deleted_at:new Date().toISOString()})});}catch(e){}
+    }
+    const byId={};
+    (step.back||[]).forEach(b=>{(byId[b.id]=byId[b.id]||{})[b.k]=b.v;});
+    for(const id in byId)
+      try{await api('task_actions?id=eq.'+id,{method:'PATCH',
+        body:JSON.stringify(byId[id])});}catch(e){}
+    await loadAll(); await loadLogCounts();
   }else if(step.t==='add'){
     for(const r of step.made){
       const tbl=r.kind==='item'?'task_items':'task_actions';
@@ -2560,6 +2584,14 @@ async function agentRead(text){
       'Content-Type':'application/json'},
     body:JSON.stringify({text,today:TODAY(),
       onto:AGONTO?(AGONTO.description||AGONTO.title||''):'',
+      /* the register as it stands, so the agent can put a reply against the
+         subject it belongs to instead of making a second row for it */
+      register:ITEMS.filter(r=>!r.deleted_at).map(r=>({
+        id:r.id, description:r.description||r.title||'', project:r.project||'',
+        actions:ACTS.filter(a=>a.item_id===r.id&&!a.deleted_at)
+          .sort((a,b)=>(a.sort-b.sort)||(a.id-b.id))
+          .map(a=>({id:a.id,text:a.text,status:a.status,due:a.due,
+                    responsible:a.responsible}))})),
       images:AGIMG.map(im=>({media_type:im.media_type,data:im.data})),
       people:suggestions('responsible').slice(0,60),
       projects:suggestions('project').slice(0,40)})});
@@ -2576,32 +2608,56 @@ async function agentRead(text){
 }
 function agentPreviewHTML(items){
   if(!items.length)
-    return '<p class="hint">Nothing in those notes looked like an item with '+
-           'something to do. Try including who is to do what, and by when.</p>';
-  const nA=items.reduce((t,i)=>t+i.actions.length,0);
-  return '<p class="hint" style="margin:0 0 12px">'+(AGONTO
-      ? 'Found <b>'+nA+'</b> action'+(nA===1?'':'s')+' to add to the selected row.'
-      : 'Found <b>'+items.length+'</b> item'+(items.length===1?'':'s')+' and <b>'+nA+
-        '</b> action'+(nA===1?'':'s')+'.')+
-    ' Untick anything you do not want. Nothing is saved until you press Add.</p>'+
-    items.map((it,i)=>
-      '<div class="agi">'+
-      '<label class="agh"><input type="checkbox" data-i="'+i+'" checked>'+
-      '<b>'+esc(it.description)+'</b></label>'+
-      '<div class="agm">'+
-        [it.project?'Project: '+esc(it.project):'',
+    return '<p class="hint">Nothing in those notes changed anything on the register. '+
+           'Try including who is to do what, and by when.</p>';
+  const nAdd=items.reduce((t,i)=>t+i.actions.filter(a=>a.op==='add').length,0);
+  const nUpd=items.reduce((t,i)=>t+i.actions.filter(a=>a.op==='update').length,0);
+  const nNew=AGONTO?0:items.filter(i=>i.match_item_id===null).length;
+  const bits=[];
+  if(nNew)bits.push('<b>'+nNew+'</b> new item'+(nNew===1?'':'s'));
+  if(nAdd)bits.push('<b>'+nAdd+'</b> action'+(nAdd===1?'':'s')+' to add');
+  if(nUpd)bits.push('<b>'+nUpd+'</b> already on the register to update');
+  /* An update rewrites something that is already there, so it has to be shown
+     as a change — what it says now, and what it would say — not as a line of
+     new text that reads the same as an addition. */
+  const was=id=>ACTS.find(a=>a.id===id);
+  return '<p class="hint" style="margin:0 0 12px">'+bits.join(', ')+
+    '. Untick anything you do not want. Nothing is saved until you press Add.</p>'+
+    items.map((it,i)=>{
+      /* When the person chose the row, that is where it goes whatever the agent
+         matched — so the preview must say THAT row, or it promises one thing
+         and does another. */
+      const cur=AGONTO||(it.match_item_id!==null?ITEMS.find(r=>r.id===it.match_item_id):null);
+      const head=cur
+        ? '<span class="agtag">on the register</span>'+esc(cur.description||cur.title||'')
+        : '<span class="agtag new">new item</span>'+esc(it.description);
+      const meta=cur?'':[it.project?'Project: '+esc(it.project):'',
          it.responsible?'With: '+esc(it.responsible):'',
-         it.due?'Due '+esc(it.due):'',
-         'Priority '+it.priority].filter(Boolean).join(' · ')+'</div>'+
-      (it.notes?'<div class="agn">'+esc(it.notes)+'</div>':'')+
-      (it.actions.length?'<div class="aga">'+it.actions.map((a,j)=>
-        '<label><input type="checkbox" data-i="'+i+'" data-j="'+j+'" checked>'+
-        '<span>'+esc(a.text)+
-        (a.responsible||a.due?'<i>'+[a.responsible?esc(a.responsible):'',
-           a.due?'due '+esc(a.due):''].filter(Boolean).join(' · ')+'</i>':'')+
-        '</span></label>').join('')+'</div>'
-        :'<div class="agm">No actions — it will be added as a plain row.</div>')+
-      '</div>').join('');
+         it.due?'Due '+esc(it.due):'','Priority '+it.priority].filter(Boolean).join(' · ');
+      return '<div class="agi">'+
+      '<label class="agh"><input type="checkbox" data-i="'+i+'" checked><b>'+head+'</b></label>'+
+      (meta?'<div class="agm">'+meta+'</div>':'')+
+      (it.actions.length?'<div class="aga">'+it.actions.map((a,j)=>{
+        const w=a.op==='update'?was(a.action_id):null;
+        const body=a.op==='update'&&w
+          ? '<span class="agwas">'+esc(w.text)+'</span>'+
+            '<i>'+[w.status!==a.status&&a.status?esc(w.status)+' → <b>'+esc(a.status)+'</b>':'',
+                   a.due&&a.due!==w.due?'due '+esc(w.due||'—')+' → <b>'+esc(a.due)+'</b>':'',
+                   a.text?'wording changed':'' ,
+                   a.responsible&&a.responsible!==w.responsible?esc(a.responsible):''
+                  ].filter(Boolean).join(' · ')+'</i>'
+          : '<span>'+esc(a.text)+'</span>'+
+            (a.responsible||a.due||a.status
+              ? '<i>'+[a.responsible?esc(a.responsible):'',a.due?'due '+esc(a.due):'',
+                       a.status&&a.status!=='Open'?esc(a.status):''].filter(Boolean).join(' · ')+'</i>'
+              : '');
+        return '<label class="'+(a.op==='update'?'agupd':'')+'">'+
+          '<input type="checkbox" data-i="'+i+'" data-j="'+j+'" checked>'+
+          '<span class="agtx">'+body+'</span></label>';
+      }).join('')+'</div>'
+      :'<div class="agm">No actions — it will be added as a plain row.</div>')+
+      '</div>';
+    }).join('');
 }
 function openAgent(){
   const sh=$('sheet');
@@ -2675,21 +2731,22 @@ async function agentApply(close){
   const on=sel=>[...out.querySelectorAll(sel)].filter(x=>x.checked);
   const items=on('.agh input').map(x=>+x.dataset.i);
   if(!items.length)return toast('Tick at least one item');
-  if(AGONTO&&!on('.aga input').length)
-    return toast('Tick at least one action to add');
   const acts=new Set(on('.aga input').map(x=>x.dataset.i+':'+x.dataset.j));
+  if(!acts.size&&AGENT.filter((_,i)=>items.includes(i)).every(it=>it.match_item_id!==null))
+    return toast('Tick at least one action');
   const btn=$('agadd'); if(btn){btn.disabled=true;btn.textContent='Adding…';}
   const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
-  const made=[]; let nI=0,nA=0;
+  const made=[], back=[]; let nI=0,nA=0,nU=0;
   try{
     for(const i of items){
       const it=AGENT[i];
-      /* Adding to a row that already exists: no item is created, the actions
-         hang off the one the cursor was on, and its own sort order continues
-         from the actions already there. */
-      let itemId, k;
-      if(AGONTO){
-        itemId=AGONTO.id;
+      /* Which row this belongs to: the one the agent matched on the register,
+         the one the person chose, or a new one. */
+      let itemId=null, k=0;
+      if(AGONTO) itemId=AGONTO.id;
+      else if(it.match_item_id!==null&&ITEMS.some(r=>r.id===it.match_item_id))
+        itemId=it.match_item_id;
+      if(itemId!==null){
         const sibs=ACTS.filter(a=>a.item_id===itemId&&!a.deleted_at);
         k=sibs.length?Math.max(...sibs.map(a=>a.sort||0)):0;
       }else{
@@ -2698,26 +2755,38 @@ async function agentApply(close){
           responsible:it.responsible,priority:it.priority,status:'Open',
           raised:TODAY(),due:it.due,notes:it.notes,sort:base+(++nI)}])});
         if(!r||!r[0])continue;
-        made.push({kind:'item',id:r[0].id});
-        itemId=r[0].id; k=0;
+        made.push({kind:'item',id:r[0].id}); itemId=r[0].id;
       }
       for(let j=0;j<it.actions.length;j++){
         if(!acts.has(i+':'+j))continue;
         const a=it.actions[j];
-        const ar=await api('task_actions',{method:'POST',body:JSON.stringify([{
-          item_id:itemId,text:a.text,responsible:a.responsible,
-          due:a.due,status:'Open',sort:++k}])});
-        if(ar&&ar[0]){made.push({kind:'action',id:ar[0].id});nA++;}
+        if(a.op==='update'){
+          const cur=ACTS.find(x=>x.id===a.action_id);
+          if(!cur)continue;                        /* it went while we were reading */
+          const patch={};
+          ['text','responsible','due','status'].forEach(f=>{
+            if(a[f]&&a[f]!==cur[f])patch[f]=a[f];});
+          if(!Object.keys(patch).length)continue;
+          /* remember what it said, so one Undo puts it back */
+          Object.keys(patch).forEach(f=>back.push({kind:'action',id:cur.id,k:f,v:cur[f]}));
+          await api('task_actions?id=eq.'+cur.id,{method:'PATCH',body:JSON.stringify(patch)});
+          nU++;
+        }else{
+          const ar=await api('task_actions',{method:'POST',body:JSON.stringify([{
+            item_id:itemId,text:a.text,responsible:a.responsible,
+            due:a.due,status:a.status||'Open',sort:++k}])});
+          if(ar&&ar[0]){made.push({kind:'action',id:ar[0].id});nA++;}
+        }
       }
     }
   }catch(e){ toast('Stopped: '+e.message); }
-  if(made.length)UNDO.push({t:'add',made});
+  if(made.length||back.length)UNDO.push({t:'agent',made,back});
   await loadAll(); await loadLogCounts(); paint();
   close();
-  toast(AGONTO
-        ? 'Added '+nA+' action'+(nA===1?'':'s')+' to the row'
-        : 'Added '+nI+' item'+(nI===1?'':'s')+' and '+nA+' action'+(nA===1?'':'s'),
-        'Undo',undo);
+  const said=[nI?nI+' item'+(nI===1?'':'s'):'',
+              nA?nA+' action'+(nA===1?'':'s'):'',
+              nU?nU+' updated':''].filter(Boolean).join(', ');
+  toast(said?'Added '+said:'Nothing changed','Undo',undo);
 }
 function toast(msg,action,fn){
   const t=$('toast');
