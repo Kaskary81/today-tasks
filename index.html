@@ -303,6 +303,18 @@ table.alist tr.done td.t{text-decoration:line-through;
 .sheet .addbox{border-top:1px solid var(--line);padding-top:16px}
 .sheet .addbox>label{font-size:11px;color:var(--ink2);margin-bottom:10px}
 .sheet .hint{font-size:11.5px;color:var(--ink3);line-height:1.5;margin:12px 0 0}
+/* what the agent proposes, before any of it is written */
+.agi{border:1px solid var(--line);border-radius:12px;padding:11px 12px;margin:0 0 10px}
+.agi .agh{display:flex;gap:9px;align-items:flex-start;font-size:13px;font-weight:600;
+  letter-spacing:0;text-transform:none;color:var(--ink);margin:0}
+.agi .agh input{width:auto;flex:none;margin-top:2px}
+.agi .agm{font-size:11.5px;color:var(--ink3);margin:5px 0 0 25px}
+.agi .agn{font-size:12px;color:var(--ink2);margin:6px 0 0 25px;line-height:1.45}
+.agi .aga{margin:8px 0 0 25px;display:flex;flex-direction:column;gap:6px}
+.agi .aga label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;
+  font-weight:400;letter-spacing:0;text-transform:none;color:var(--ink2);margin:0}
+.agi .aga input{width:auto;flex:none;margin-top:2px}
+.agi .aga i{display:block;font-style:normal;font-size:11px;color:var(--ink3);margin-top:1px}
 .sheet .sh .tbtn{padding:5px 9px;font-size:11.5px}
 .sheet .sf{display:flex;gap:8px;padding:12px 18px calc(14px + var(--safe-b));
   border-top:1px solid var(--line)}
@@ -515,6 +527,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
     <button class="tbtn" id="bxl">Export .xlsx</button>
     <button class="tbtn" id="bcsv">Export .csv</button>
     <button class="tbtn" id="bimp">Import</button>
+    <button class="tbtn" id="bagent">Fill from notes</button>
     <div class="tsep"></div>
     <button class="tbtn" id="bclear">Clear filters</button>
     <button class="tbtn" id="bfit">Autofit</button>
@@ -553,7 +566,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-08-31 · b18';
+const BUILD='ACTIONS 2026-09-07 · b19';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1818,6 +1831,8 @@ function openMoreMenu(){
     +'<span>Export as CSV<small>plain text, opens anywhere</small></span></button>'
     +'<button class="mrow" id="mimp"><span class="ic">▲</span>'
     +'<span>Import a spreadsheet<small>adds rows at the bottom</small></span></button>'
+    +'<button class="mrow" id="magent"><span class="ic">✎</span>'
+    +'<span>Fill from notes<small>turn meeting notes into items and actions</small></span></button>'
     +'<button class="mrow" id="mclear"><span class="ic">⌦</span>'
     +'<span>Clear the search and filters</span></button>'
     +'<button class="mrow danger" id="mout"><span class="ic">⎋</span>'
@@ -1833,6 +1848,7 @@ function openMoreMenu(){
   };
   $('mcsv').onclick=()=>{exportCSV();busy('Saved to your downloads.');};
   $('mimp').onclick=()=>{close();$('fimp').click();};
+  $('magent').onclick=()=>{close();openAgent();};
   $('mclear').onclick=()=>{FILT={};SEARCH='';SORT=null;$('q').value='';
     MFILT='open';paint();close();};
   $('mout').onclick=()=>{
@@ -2423,6 +2439,137 @@ async function importFile(file){
    Small UI helpers
    ============================================================ */
 let toastT=null;
+/* ============================================================
+   THE AGENT — "Fill from notes"
+   Paste what came out of a meeting; it comes back as items with their actions,
+   and NOTHING is written until the rows have been read and ticked.
+
+   The model is called through a Supabase Edge Function (fill-actions), never
+   from here: this page is a public file on GitHub Pages, so an API key placed
+   in it would be readable by anyone who opened the source. The function reads
+   and proposes; the rows are inserted from this page with the signed-in user's
+   own token, so row-level security and the history still work exactly as they
+   do when a row is typed by hand.
+   ============================================================ */
+let AGENT=null;                       /* the current proposal, once read */
+async function agentRead(text){
+  const r=await fetch(SB_URL+'/functions/v1/fill-actions',{
+    method:'POST',
+    headers:{apikey:SB_KEY,
+      Authorization:'Bearer '+(SESSION?SESSION.access_token:SB_KEY),
+      'Content-Type':'application/json'},
+    body:JSON.stringify({text,today:TODAY(),
+      people:suggestions('responsible').slice(0,60),
+      projects:suggestions('project').slice(0,40)})});
+  let d=null; try{ d=await r.json(); }catch(e){}
+  if(!r.ok||!d||d.error)throw new Error((d&&d.error)||('The agent failed ('+r.status+')'));
+  return d.items||[];
+}
+function agentPreviewHTML(items){
+  if(!items.length)
+    return '<p class="hint">Nothing in those notes looked like an item with '+
+           'something to do. Try including who is to do what, and by when.</p>';
+  const nA=items.reduce((t,i)=>t+i.actions.length,0);
+  return '<p class="hint" style="margin:0 0 12px">Found <b>'+items.length+'</b> item'+
+    (items.length===1?'':'s')+' and <b>'+nA+'</b> action'+(nA===1?'':'s')+
+    '. Untick anything you do not want. Nothing is saved until you press Add.</p>'+
+    items.map((it,i)=>
+      '<div class="agi">'+
+      '<label class="agh"><input type="checkbox" data-i="'+i+'" checked>'+
+      '<b>'+esc(it.description)+'</b></label>'+
+      '<div class="agm">'+
+        [it.project?'Project: '+esc(it.project):'',
+         it.responsible?'With: '+esc(it.responsible):'',
+         it.due?'Due '+esc(it.due):'',
+         'Priority '+it.priority].filter(Boolean).join(' · ')+'</div>'+
+      (it.notes?'<div class="agn">'+esc(it.notes)+'</div>':'')+
+      (it.actions.length?'<div class="aga">'+it.actions.map((a,j)=>
+        '<label><input type="checkbox" data-i="'+i+'" data-j="'+j+'" checked>'+
+        '<span>'+esc(a.text)+
+        (a.responsible||a.due?'<i>'+[a.responsible?esc(a.responsible):'',
+           a.due?'due '+esc(a.due):''].filter(Boolean).join(' · ')+'</i>':'')+
+        '</span></label>').join('')+'</div>'
+        :'<div class="agm">No actions — it will be added as a plain row.</div>')+
+      '</div>').join('');
+}
+function openAgent(){
+  const sh=$('sheet');
+  AGENT=null;
+  sh.className='sheet on';
+  sh.innerHTML=
+     '<div class="sh"><b>Fill from notes</b><span class="hgrow"></span>'
+    +'<button class="tbtn" id="agclose">Close</button></div>'
+    +'<div class="sb">'
+    +'<label>Paste the notes</label>'
+    +'<div class="fld"><textarea id="agtext" rows="9" placeholder="Meeting notes, an email, '
+    +'a list you wrote by hand — whatever says what has to be done and by whom."></textarea></div>'
+    +'<p class="hint">It takes only what the text says. A person or a date the notes '
+    +'do not give is left empty rather than guessed.</p>'
+    +'<button class="tbtn primary" id="agrun" style="width:100%;justify-content:center;'
+    +'margin:10px 0">Read the notes</button>'
+    +'<div id="agout"></div>'
+    +'</div>';
+  sh.classList.add('on');
+  const close=()=>{sh.classList.remove('on');sh.className='sheet';AGENT=null;};
+  $('agclose').onclick=close;
+  $('agrun').onclick=async()=>{
+    const t=$('agtext').value.trim();
+    if(!t)return toast('Paste the notes first');
+    $('agrun').disabled=true; $('agrun').textContent='Reading…';
+    $('agout').innerHTML='<p class="hint">Working through the notes…</p>';
+    try{
+      AGENT=await agentRead(t);
+      $('agout').innerHTML=agentPreviewHTML(AGENT)+
+        (AGENT.length?'<button class="tbtn primary" id="agadd" style="width:100%;'
+         +'justify-content:center;margin:14px 0 4px">Add the ticked rows</button>':'');
+      const b=$('agadd'); if(b)b.onclick=()=>agentApply(close);
+    }catch(e){
+      $('agout').innerHTML='<p class="hint" style="color:var(--hot)">'+esc(e.message)+'</p>';
+    }finally{
+      $('agrun').disabled=false; $('agrun').textContent='Read the notes';
+    }
+  };
+  const ta=$('agtext'); if(ta)ta.focus();
+}
+/* Written with the ordinary api() calls, one item then its actions, exactly as
+   the import does — so the database triggers roll the item up, the history is
+   written, and Undo takes it all back out. */
+async function agentApply(close){
+  if(!AGENT)return;
+  const out=$('agout');
+  const on=sel=>[...out.querySelectorAll(sel)].filter(x=>x.checked);
+  const items=on('.agh input').map(x=>+x.dataset.i);
+  if(!items.length)return toast('Tick at least one item');
+  const acts=new Set(on('.aga input').map(x=>x.dataset.i+':'+x.dataset.j));
+  const btn=$('agadd'); if(btn){btn.disabled=true;btn.textContent='Adding…';}
+  const base=ITEMS.length?Math.max(...ITEMS.map(r=>r.sort||0)):0;
+  const made=[]; let nI=0,nA=0;
+  try{
+    for(const i of items){
+      const it=AGENT[i];
+      const r=await api('task_items',{method:'POST',body:JSON.stringify([{
+        description:it.description,title:it.description,project:it.project,
+        responsible:it.responsible,priority:it.priority,status:'Open',
+        raised:TODAY(),due:it.due,notes:it.notes,sort:base+(++nI)}])});
+      if(!r||!r[0])continue;
+      made.push({kind:'item',id:r[0].id});
+      let k=0;
+      for(let j=0;j<it.actions.length;j++){
+        if(!acts.has(i+':'+j))continue;
+        const a=it.actions[j];
+        const ar=await api('task_actions',{method:'POST',body:JSON.stringify([{
+          item_id:r[0].id,text:a.text,responsible:a.responsible,
+          due:a.due,status:'Open',sort:++k}])});
+        if(ar&&ar[0]){made.push({kind:'action',id:ar[0].id});nA++;}
+      }
+    }
+  }catch(e){ toast('Stopped: '+e.message); }
+  if(made.length)UNDO.push({t:'add',made});
+  await loadAll(); await loadLogCounts(); paint();
+  close();
+  toast('Added '+nI+' item'+(nI===1?'':'s')+' and '+nA+' action'+(nA===1?'':'s'),
+        'Undo',undo);
+}
 function toast(msg,action,fn){
   const t=$('toast');
   t.innerHTML='<span>'+esc(msg)+'</span>'+(action?'<span class="u">'+esc(action)+'</span>':'');
@@ -2574,6 +2721,7 @@ function wireTools(){
   $('bxl').onclick=exportXLSX;
   $('bcsv').onclick=exportCSV;
   $('bimp').onclick=()=>$('fimp').click();
+  $('bagent').onclick=openAgent;
   $('fimp').onchange=e=>{importFile(e.target.files[0]);e.target.value='';};
   $('bfit').onclick=autofitAll;
   $('bwrap').onclick=toggleWrap;
