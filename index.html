@@ -576,7 +576,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b21';
+const BUILD='ACTIONS 2026-09-07 · b22';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -2527,8 +2527,11 @@ async function agentRead(text){
       people:suggestions('responsible').slice(0,60),
       projects:suggestions('project').slice(0,40)})});
   }catch(e){
-    throw new Error('Could not reach the agent. Check that you are online, and '+
-      'that the fill-actions function is deployed and reachable from this site.');
+    /* Keep the browser's own words. A generic sentence reads better but tells
+       nobody which of the half-dozen causes it was, and that cost a round of
+       guessing once already. */
+    throw new Error('Could not reach the agent — '+(e&&e.message||e)+
+      '. Check that you are online and signed in.');
   }
   let d=null; try{ d=await r.json(); }catch(e){}
   if(!r.ok||!d||d.error)throw new Error((d&&d.error)||('The agent failed ('+r.status+')'));
