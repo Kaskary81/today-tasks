@@ -134,6 +134,20 @@ body.wrap table.g td .cv.acts{-webkit-line-clamp:unset}
 body.wrap table.g td .st,body.wrap table.g td .pr,body.wrap table.g td .hbtn{
   margin-top:1px}
 /* the grip that drags a row taller */
+.dgrip{position:absolute;left:2px;top:50%;transform:translateY(-50%);width:12px;height:22px;
+  line-height:22px;text-align:center;font:700 11px/22px system-ui;letter-spacing:-2px;
+  color:var(--ink3);cursor:grab;opacity:.35;z-index:4;user-select:none;border-radius:4px}
+tr.irow:hover .dgrip,.dgrip:hover{opacity:1;color:var(--violet)}
+.dga{flex:none;width:9px;margin-top:1px;font:700 10px/15px system-ui;letter-spacing:-2px;
+  color:var(--ink3);cursor:grab;opacity:0;user-select:none;text-align:center}
+.aline:hover .dga,.dga:hover{opacity:1;color:var(--violet)}
+.dragging-row td{opacity:.45}
+.aline.dragging-line{opacity:.4}
+tr.irow.dropb td{box-shadow:inset 0 3px 0 var(--violet)}
+tr.irow.dropa td{box-shadow:inset 0 -3px 0 var(--violet)}
+.aline.dropb{box-shadow:0 -2px 0 var(--violet)}
+.aline.dropa{box-shadow:0 2px 0 var(--violet)}
+body.dragmode,body.dragmode *{cursor:grabbing!important;user-select:none!important}
 .rgrip{position:absolute;left:0;right:0;bottom:-3px;height:7px;cursor:row-resize;z-index:5}
 .rgrip:hover{background:rgba(42,120,214,.28)}
 .tbtn.active{border-color:var(--violet);color:var(--violet2);background:rgba(42,120,214,.14)}
@@ -593,7 +607,7 @@ table.g tbody tr:hover td{background:rgba(255,255,255,.028)}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-09-07 · b26';
+const BUILD='ACTIONS 2026-10-17 · b27';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -868,7 +882,8 @@ function actsHTML(node){
   return '<span class="cv acts">'+acts.map((a,i)=>{
     const closed=a.status==='Closed';
     const overdue=!closed&&a.due&&a.due<TODAY();
-    return '<span class="aline'+(closed?' done':'')+'">'
+    return '<span class="aline'+(closed?' done':'')+'" data-aid="'+a.id+'">'
+      +'<span class="dga" data-dga="'+a.id+'" title="Drag to reorder this action">⋮⋮</span>'
       +'<button class="an'+(overdue?' od':'')+(closed?' ok':'')+'" data-act="'+a.id+'" '
       +'title="Open this action">'+(i+1)+'</button>'
       +'<span class="at">'+esc(a.text||'—')
@@ -891,6 +906,7 @@ function shortName(v){
 function cellHTML(node,c){
   if(c.kind==='no')
     return '<span class="cv nocell"><b>'+node.no+'</b></span>'
+      +'<i class="dgrip" data-dgi="1" title="Drag to move this row">⋮⋮</i>'
       +'<i class="rgrip" data-rgrip="1"></i>';
   if(c.kind==='acts')return actsHTML(node);
   const v=get(node,c);
@@ -1124,6 +1140,11 @@ async function undo(){
     for(const b of step.textBack)
       try{await api('task_actions?id=eq.'+b.id,{method:'PATCH',
         body:JSON.stringify({text:b.text})});}catch(e){}
+    await loadAll(); await loadLogCounts();
+  }else if(step.t==='order'){
+    for(const b of step.back)
+      try{await api(step.tbl+'?id=eq.'+b.id,{method:'PATCH',
+        body:JSON.stringify({sort:b.sort})});}catch(e){}
     await loadAll(); await loadLogCounts();
   }else if(step.t==='split'){
     try{await api('task_actions?id=eq.'+step.actionId,{method:'PATCH',
@@ -2821,11 +2842,116 @@ function typing(el){
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')return true;
   return !!el.closest('#sheet, #scrim, #menu');   /* any panel or dialog */
 }
+
+/* ============================================================
+   Drag to rearrange: rows by the grip in the number column, actions by the
+   grip beside each action number. The new order is written to `sort`.
+   ============================================================ */
+async function saveOrder(tbl,recs,label){
+  const back=[], jobs=[];
+  recs.forEach((r,i)=>{
+    if(r.sort!==i+1){
+      back.push({id:r.id,sort:r.sort}); r.sort=i+1;
+      jobs.push(api(tbl+'?id=eq.'+r.id,{method:'PATCH',body:JSON.stringify({sort:i+1})}));
+    }
+  });
+  if(!jobs.length)return;
+  try{await Promise.all(jobs);}
+  catch(e){toast('Could not save the new order: '+e.message); await reload(); return;}
+  UNDO.push({t:'order',tbl,back}); if(UNDO.length>60)UNDO.shift();
+  paint(); toast(label+' moved');
+}
+function wireDrag(){
+  const gb=$('gbody'), wrap=$('gwrap');
+  let D=null;
+  const clear=()=>{
+    gb.querySelectorAll('.dropb,.dropa,.dragging-row,.dragging-line').forEach(el=>
+      el.classList.remove('dropb','dropa','dragging-row','dragging-line'));
+  };
+  /* where would the dragged thing land? returns {i, after} among `els` */
+  const spot=(els,y)=>{
+    let best=0, after=false, dist=1e9;
+    els.forEach((el,i)=>{
+      const b=el.getBoundingClientRect();
+      if(y>=b.top&&y<=b.bottom){best=i;after=y>(b.top+b.bottom)/2;dist=-1;}
+      else if(dist>=0){
+        const d=Math.min(Math.abs(y-b.top),Math.abs(y-b.bottom));
+        if(d<dist){dist=d;best=i;after=y>b.bottom;}
+      }
+    });
+    return {i:best,after};
+  };
+  gb.addEventListener('mousedown',e=>{
+    const gi=e.target.closest('[data-dgi]'), ga=e.target.closest('[data-dga]');
+    if(!gi&&!ga)return;
+    if(e.button!==0)return;
+    if(EDIT)commitEdit();
+    if(gi){
+      if(SORT||SEARCH||Object.keys(FILT).length){
+        e.preventDefault();
+        toast('Clear the sort, search and filters first — rows can only be moved in the original order');
+        return;
+      }
+    }
+    e.preventDefault(); e.stopPropagation();
+    const tr=(gi||ga).closest('tr');
+    D={kind:gi?'row':'act',tr,y0:e.clientY,on:false,
+       els:null,cell:null,from:-1,to:-1,after:false,
+       el:gi?tr:(gi||ga).closest('.aline')};
+    if(ga){
+      D.cell=ga.closest('.cv.acts');
+      D.els=[...D.cell.querySelectorAll('.aline')];
+      D.from=D.els.indexOf(D.el);
+    }else{
+      D.els=[...gb.querySelectorAll('tr.irow')];
+      D.from=D.els.indexOf(tr);
+    }
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!D)return;
+    if(!D.on){
+      if(Math.abs(e.clientY-D.y0)<5)return;
+      D.on=true; document.body.classList.add('dragmode');
+      D.el.classList.add(D.kind==='row'?'dragging-row':'dragging-line');
+    }
+    const wb=wrap.getBoundingClientRect();
+    if(e.clientY<wb.top+40)wrap.scrollTop-=16;
+    else if(e.clientY>wb.bottom-40)wrap.scrollTop+=16;
+    gb.querySelectorAll('.dropb,.dropa').forEach(el=>el.classList.remove('dropb','dropa'));
+    const p=spot(D.els,e.clientY);
+    D.to=p.i; D.after=p.after;
+    D.els[p.i].classList.add(p.after?'dropa':'dropb');
+  });
+  document.addEventListener('mouseup',async()=>{
+    if(!D)return;
+    const d=D; D=null;
+    document.body.classList.remove('dragmode');
+    if(!d.on){return;}
+    clear();
+    let dest=d.to+(d.after?1:0);
+    if(dest>d.from)dest--;
+    if(dest===d.from||d.to<0)return;
+    if(d.kind==='row'){
+      const recs=VIEW.map(n=>n.rec);
+      const [m]=recs.splice(d.from,1); recs.splice(dest,0,m);
+      await saveOrder('task_items',recs,'Row');
+    }else{
+      const node=VIEW[+d.tr.dataset.r]; if(!node)return;
+      const recs=node.acts.slice();
+      const [m]=recs.splice(d.from,1); recs.splice(dest,0,m);
+      await saveOrder('task_actions',recs,'Action');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(D&&e.key==='Escape'){D=null;document.body.classList.remove('dragmode');clear();}
+  });
+}
 function wireGrid(){
   const gb=$('gbody');
   gb.addEventListener('mousedown',e=>{
     if(e.target.closest('.cellin'))return;
     if(e.target.closest('[data-act]'))return;
+    if(e.target.closest('[data-dgi],[data-dga]'))return;
     const td=e.target.closest('td'); if(!td||td.dataset.r===undefined)return;
     const r=+td.dataset.r, c=+td.dataset.c;
     if(EDIT)commitEdit();
@@ -2962,7 +3088,7 @@ async function startApp(){
   await loadAll();
   await loadLogCounts();
   paint();
-  wireGrid(); wireTools(); wireResize(); wireRowResize(); wireMobile();
+  wireGrid(); wireDrag(); wireTools(); wireResize(); wireRowResize(); wireMobile();
   $('app').classList.add('ready');
   $('gwrap').focus();
 }
