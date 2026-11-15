@@ -33,6 +33,11 @@
   --ovl:rgba(0,0,0,.62); --lbbg:rgba(14,14,16,.94); --lbk:rgba(255,255,255,.14);
   --c-blue:#007aff; --c-red:#ff3b30; --c-orange:#ff9500; --c-green:#34c759;
   --c-purple:#af52de; --c-teal:#30b0c7; --c-gray:#8e8e93;
+  --room-wall:#e3e8f2; --room-wall-edge:#c3cbdb; --room-base:#a4adc0; --room-tray:rgba(247,249,253,.98);
+  --room-floor:#aeb6c7; --room-floor2:#c2c9d8; --room-seam:rgba(40,50,80,.10);
+  --room-card:#ffffff; --room-tag:rgba(255,255,255,.92);
+  --room-cardsh:0 1px 1px rgba(30,40,70,.22),0 5px 12px rgba(30,40,70,.20);
+  --room-cardlift:0 2px 3px rgba(30,40,70,.2),0 14px 26px rgba(30,40,70,.30);
   --ring:0 0 0 3px rgba(var(--accent-rgb),.35);
   --pshadow:0 0 0 .5px rgba(0,0,0,.12),0 12px 36px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);
   --ease:cubic-bezier(.22,1,.36,1);
@@ -56,6 +61,11 @@
   --scrim:rgba(0,0,0,.5); --shadowc:rgba(0,0,0,.6);
   --c-blue:#0a84ff; --c-red:#ff453a; --c-orange:#ff9f0a; --c-green:#30d158;
   --c-purple:#bf5af2; --c-teal:#40c8e0; --c-gray:#8e8e93;
+  --room-wall:#3d414c; --room-wall-edge:#1f2127; --room-base:#4a4e59; --room-tray:rgba(38,40,46,.98);
+  --room-floor:#17181c; --room-floor2:#26282e; --room-seam:rgba(255,255,255,.06);
+  --room-card:#2f3036; --room-tag:rgba(46,48,54,.94);
+  --room-cardsh:0 1px 1px rgba(0,0,0,.5),0 5px 12px rgba(0,0,0,.5);
+  --room-cardlift:0 2px 3px rgba(0,0,0,.5),0 14px 28px rgba(0,0,0,.65);
   --pshadow:0 0 0 .5px rgba(255,255,255,.14),0 14px 40px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.3);
 }
 
@@ -792,6 +802,129 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.06s!important}}
 
 /* ---------- print: the A4 reports (paper, so literal colours) ---------- */
+/* ---------- b30: groups by project ---------- */
+.seg{display:inline-flex;align-items:center;border-radius:9px;background:var(--chip);padding:2px;max-width:100%}
+.segl{font-size:12px;color:var(--ink3);padding:0 8px}
+.segb{border:0;background:transparent;border-radius:7px;padding:3px 12px;font-size:12.5px;cursor:pointer;color:var(--ink2);height:24px}
+.segb[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(var(--ink-rgb),.18)}
+.segb:focus-visible,.pchip:focus-visible,.pgh:focus-visible{outline:none;box-shadow:var(--ring)}
+.pchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.pchip{border:1px solid var(--line2);background:var(--card);border-radius:14px;padding:2px 11px;font-size:12.5px;cursor:pointer;color:var(--ink);height:26px}
+.pchip span{color:var(--ink3);margin-left:4px;font-variant-numeric:tabular-nums}
+.pchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.pchip[aria-pressed="true"] span{color:var(--on-accent);opacity:.85}
+#epchips:empty{display:none}
+#epchips .pchips{margin-bottom:14px}
+.pgrp{margin:0 0 22px}
+.pgh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;text-align:left;background:transparent;border:0;
+  border-bottom:1px solid var(--line);padding:6px 2px 9px;margin:0 0 14px;cursor:pointer;color:var(--ink);border-radius:4px}
+.pgh b{font-size:15px;font-weight:600}
+.pgh .chev{display:inline-flex;color:var(--ink3)}
+.pgh .chev svg{transform:rotate(-90deg);transition:transform .18s var(--ease)}
+.pgh[aria-expanded="false"] .chev svg{transform:rotate(180deg)}
+.pgc{color:var(--ink3);font-size:12.5px}
+.pgh .cbadge{margin-left:auto}
+.pgrp.closed .pgh{margin-bottom:0}
+.glist{display:block}
+.erow.cb{box-shadow:inset 3px 0 0 var(--accent)}
+.ctag{flex:none}
+.tgroup .tbtn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+/* ---------- b30: the Room ---------- */
+.sidei[data-view="room"] .icb{background:var(--c-teal)}
+#v-room{overflow:hidden}
+.rbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 18px;border-bottom:1px solid var(--line);flex:none}
+.rcount{color:var(--ink3);font-size:12.5px}
+.rhint{color:var(--ink3);font-size:12px}
+.rstage{flex:1;min-height:0;overflow:auto;position:relative;background:var(--room-wall)}
+.room{position:relative;width:100%;perspective:2000px;perspective-origin:50% 22%;overflow:hidden}
+.rwalls{position:absolute;left:0;top:0;display:block;pointer-events:none}
+.rwalls .wb{fill:url(#gwb)}
+.rwalls .wl{fill:url(#gwl)}
+.rwalls .wr{fill:url(#gwr)}
+.rwalls stop.s0{stop-color:var(--room-wall-edge)}
+.rwalls stop.s1{stop-color:var(--room-wall)}
+.rwalls .wbase{stroke:var(--room-base);stroke-width:3;stroke-linecap:square}
+.rfloor{position:absolute;left:0;bottom:0;transform-origin:50% 100%;transform:rotateX(46deg);
+  background:repeating-linear-gradient(90deg,transparent 0 119px,var(--room-seam) 119px 120px),
+    repeating-linear-gradient(0deg,transparent 0 239px,var(--room-seam) 239px 240px),
+    linear-gradient(0deg,var(--room-floor2),var(--room-floor))}
+.cm{position:absolute;width:2px;height:2px;pointer-events:none;opacity:0}
+.cm[data-c="0"]{left:0;top:0}.cm[data-c="1"]{right:0;top:0}.cm[data-c="2"]{left:0;bottom:0}.cm[data-c="3"]{right:0;bottom:0}
+.pile{position:absolute;width:176px;height:116px;outline:none;cursor:grab;touch-action:none;transition:opacity .3s}
+.pile.moving{cursor:grabbing;z-index:60}
+.pile.fan{z-index:50;cursor:default}
+.ftray{position:absolute;left:0;top:0;width:0;height:0;border-radius:14px;background:var(--room-tray);
+  box-shadow:0 0 0 1px var(--room-base),var(--room-cardsh);opacity:0;pointer-events:none;transition:opacity .3s}
+.pile.fan .ftray{opacity:1;pointer-events:auto}
+.pile.carding .ftray{opacity:0;pointer-events:none}
+.pcards{position:absolute;left:0;top:0;width:100%;height:100%}
+.rc{position:absolute;left:0;top:0;width:176px;height:116px;padding:6px 9px 6px;display:flex;flex-direction:column;gap:3px;
+  background:var(--room-card);border:1px solid var(--line2);border-radius:6px;box-shadow:var(--room-cardsh);color:var(--ink);
+  font-size:11px;line-height:1.25;overflow:hidden;user-select:none;-webkit-user-select:none;text-align:left;
+  transform:translate(var(--ox,0px),var(--oy,0px)) rotate(var(--r,0deg));
+  transition:transform .55s var(--ease),opacity .25s,box-shadow .25s}
+.rc.cb{background:linear-gradient(rgba(var(--accent-rgb),.13),rgba(var(--accent-rgb),.13)),var(--room-card);
+  border-color:rgba(var(--accent-rgb),.5);border-top:3px solid var(--accent);padding-top:4px}
+.rc.done{opacity:.5;filter:saturate(.25)}
+.rc.off{opacity:0;pointer-events:none}
+.rc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pile:not(.fan):hover .rc.top,.pile:not(.fan):focus-visible .rc.top{
+  transform:translate(var(--ox,0px),calc(var(--oy,0px) - 14px)) rotate(0deg) scale(1.05);box-shadow:var(--room-cardlift);z-index:99!important}
+.pile.fan .rc{cursor:pointer}
+.pile.fan .rc:hover{box-shadow:var(--room-cardlift);transform:translate(var(--ox,0px),calc(var(--oy,0px) - 4px))}
+.rc.drag{transition:none;z-index:300!important;pointer-events:none;box-shadow:var(--room-cardlift);cursor:grabbing}
+.pile.carding .rc:not(.drag){opacity:.16;pointer-events:none}
+.hasfan .pile:not(.fan){opacity:.45}
+.hasfan:has(.carding) .pile:not(.fan){opacity:1}
+.hasfan:has(.carding) .pile:not(.fan):hover .plabel{outline:2px solid var(--accent);outline-offset:2px}
+.pile:focus-visible .plabel{outline:2px solid var(--accent);outline-offset:2px}
+.rc.more{align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:600;color:var(--accent);
+  background:var(--room-tag);border-style:dashed;cursor:pointer}
+.plabel{position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);display:flex;align-items:center;gap:6px;
+  background:var(--room-tag);border-radius:6px;padding:2px 9px;white-space:nowrap;font-size:13px;color:var(--ink);
+  box-shadow:0 1px 2px rgba(var(--ink-rgb),.16);z-index:120;max-width:240px}
+.plabel b{font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.plabel .pn{color:var(--ink3);font-variant-numeric:tabular-nums;font-size:12px}
+.plabel .pc{display:inline-flex;align-items:center;gap:2px;color:var(--accent);font-size:12px;font-weight:600}
+.plabel .pc svg{fill:var(--accent);stroke:var(--accent)}
+.plabel .po{color:var(--hot-t);font-size:12px;font-weight:600}
+.pile.fan .plabel{left:var(--lx,0px);top:var(--ly,0px);transform:none;transition:left .5s var(--ease),top .5s var(--ease)}
+.rl1{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:10.5px;color:var(--ink2);font-weight:600;min-width:0;flex:none}
+.rfrom{display:flex;align-items:center;gap:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rfrom svg,.rno svg{fill:var(--accent);stroke:var(--accent);flex:none}
+.rtag{flex:none;font-size:9.5px;font-weight:600;color:var(--accent);background:rgba(var(--accent-rgb),.16);padding:0 5px;border-radius:4px}
+.rth{display:block;height:30px;border-radius:3px;overflow:hidden;background:var(--chip);flex:none}
+.rth img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block}
+.rsubj{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:600;flex:1;min-height:0;word-break:break-word}
+.rsubj{max-height:45px}
+.rth+.rsubj{-webkit-line-clamp:2;max-height:30px}
+.rl3{font-size:10.5px;color:var(--ink3);font-variant-numeric:tabular-nums;flex:none}
+.rl3.over{color:var(--hot-t);font-weight:700}
+.rno{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:700;color:var(--ink)}
+.rst{font-size:10px;color:var(--ink3);font-weight:500}
+.rempty{position:absolute;left:0;right:0;top:40%}
+.room.fresh .rc{animation:rdrop .75s var(--ease) backwards;animation-delay:calc(var(--pi,0)*70ms + var(--i,0)*45ms)}
+@keyframes rdrop{from{opacity:0;transform:translate(var(--ox,0px),calc(var(--oy,0px) - 170px)) rotate(calc(var(--r,0deg) + 16deg)) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.room.fresh .rc{animation:none}.rc,.pile.fan .plabel{transition:none}}
+/* phone: one column of piles, a fan opens as a list */
+.room.flat{perspective:none;overflow:visible;height:auto!important}
+.room.flat .rwalls,.room.flat .cm{display:none}
+.room.flat .rfloor{position:relative;transform:none;width:auto!important;height:auto!important;background:none;display:flex;flex-direction:column;
+  gap:20px;padding:16px 16px calc(var(--tabh) + var(--safe-b) + 26px)}
+.room.flat .pile{position:relative;left:auto!important;top:auto!important;width:100%;height:auto;touch-action:auto;cursor:pointer}
+.room.flat .plabel{position:static;transform:none;margin:0 0 10px;display:inline-flex;max-width:100%}
+.room.flat .pile.fan .plabel{position:static;transform:none}
+.room.flat .pcards{position:relative;left:auto;top:auto;height:128px}
+.room.flat .pile.fan .pcards{height:auto;display:flex;flex-direction:column;gap:8px}
+.room.flat .pile.fan .rc{position:relative;transform:none!important;width:100%;height:auto;min-height:76px}
+.room.flat .pile.fan .rsubj{max-height:none}
+.room.flat .pile.fan .rc.off{display:none}
+.room.flat .hasfan .pile:not(.fan){opacity:1}
+.room.flat .pcards{margin:22px 0 0 6px}
+.room.flat .pile.fan .pcards{margin-left:0}
+@media (max-width:900px){.rhint{display:none}.rbar{padding:10px 14px}}
+#ctx .mi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media (max-width:600px){.pchips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-right:-14px;scrollbar-width:none}.pchips::-webkit-scrollbar{display:none}.pchip{flex:none}}
 @media print{
   @page{size:A4;margin:14mm}
   html,body{height:auto!important;overflow:visible!important;background:#fff!important}
@@ -884,6 +1017,7 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
     </section>
     <section class="view" id="v-inbox" aria-label="Key inbox"></section>
     <section class="view" id="v-emails" aria-label="Emails"></section>
+    <section class="view" id="v-room" aria-label="Room"></section>
     <section class="view" id="v-points" aria-label="Points"></section>
     <section class="view" id="v-closures" aria-label="Closures"></section>
     <section class="view" id="v-dash" aria-label="Dashboard"></section>
@@ -926,7 +1060,7 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-11-15 · b29';
+const BUILD='ACTIONS 2026-11-15 · b30';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -3443,7 +3577,7 @@ const CAPS={emails:false,shots:false,links:false,meetings:false,points:false,
 let EM=[],LINKS=[],MEET=[],PTS=[],LEDGER=[],INBOXV=null,DASHV=null;
 let SHOTS={},SHOTLOAD={},IMGC={},SHOTN={};
 let VIEWNOW='register',QF='all',QRAW='';
-const VQ={inbox:'',emails:'',points:'',closures:'',dash:''};
+const VQ={inbox:'',emails:'',room:'',points:'',closures:'',dash:''};
 const EMF='id,subject,sender_name,sender_email,recipients,cc,sent_at,folder,direction,to_me,cc_me,'
   +'mentions_me,from_key,importance,attachments,summary,outlook_url,handled,handled_at,handled_note';
 const SHF='id,email_id,caption,mime,width,height,thumb_b64,sort,taken_at';
@@ -3461,6 +3595,7 @@ const ICP={
   points:'<path d="M9 6h12M9 12h12M9 18h12"/><path d="m3 6 1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/>',
   closures:'<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.5"/>',
   dash:'<path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/>',
+  room:'<path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
   settings:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
@@ -3871,14 +4006,15 @@ const VIEWS=[
   {k:'register',lb:'Register',ic:'grid'},
   {k:'inbox',lb:'Key inbox',ic:'inbox',need:'emails'},
   {k:'emails',lb:'Emails',ic:'mail',need:'emails'},
+  {k:'room',lb:'Room',ic:'room',need:'emails'},
   {k:'points',lb:'Points',ic:'points',need:'points'},
   {k:'closures',lb:'Closures',ic:'closures',need:'closures'},
   {k:'dash',lb:'Dashboard',ic:'dash'}
 ];
-const VTITLE={register:'Register',inbox:'Key inbox',emails:'Emails',points:'Points',
+const VTITLE={register:'Register',inbox:'Key inbox',emails:'Emails',room:'Room',points:'Points',
   closures:'Closures',dash:'Dashboard',settings:'Settings'};
 const VPLACE={register:'Search items and actions',inbox:'Search the key inbox…',
-  emails:'Search emails…',points:'Search points…',closures:'Search closures…',
+  emails:'Search emails…',room:'Search the piles…',points:'Search points…',closures:'Search closures…',
   dash:'Search…',settings:'Search…'};
 const viewOK=v=>!v.need||CAPS[v.need];
 function badgeFor(k){
@@ -3892,8 +4028,8 @@ function buildNav(){
   const cur=k=>VIEWNOW===k?' aria-current="page"':'';
   const item=v=>'<button class="sidei" data-view="'+v.k+'" title="'+esc(v.lb)+'"'+cur(v.k)+'>'
       +'<span class="icb">'+icon(v.ic,14)+'</span><span class="lbl">'+esc(v.lb)+'</span>'+bd(v.k)+'</button>';
-  const work=vs.filter(v=>['register','inbox','emails'].includes(v.k));
-  const review=vs.filter(v=>!['register','inbox','emails'].includes(v.k));
+  const work=vs.filter(v=>['register','inbox','emails','room'].includes(v.k));
+  const review=vs.filter(v=>!['register','inbox','emails','room'].includes(v.k));
   $('side').innerHTML=
     '<div class="brand"><div class="mark"></div><div><b>Action list</b><small>Register</small></div></div>'
     +'<div class="sgrp">Work</div>'+work.map(item).join('')
@@ -3923,7 +4059,7 @@ function setView(k){
   if(EDIT)commitEdit();
   closeAlerts(); closeCtx();
   if(DR.on)closeDrawer(true);
-  VIEWNOW=k;
+  VIEWNOW=k; if(k==='room')RM.fresh=true;
   document.querySelectorAll('.view').forEach(el=>el.classList.toggle('on',el.id==='v-'+k));
   document.querySelectorAll('[data-view]').forEach(b=>{
     if(b.dataset.view===k)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');});
@@ -3937,6 +4073,7 @@ function setView(k){
 function renderView(k){
   if(k==='inbox')renderInbox();
   else if(k==='emails')renderEmails();
+  else if(k==='room')renderRoom();
   else if(k==='points')renderPoints();
   else if(k==='closures')renderClosures();
   else if(k==='dash')renderDash();
@@ -4845,6 +4982,7 @@ function putView(k,html){
 }
 function repaintThumbs(){
   if(VIEWNOW==='inbox'||VIEWNOW==='emails'||VIEWNOW==='closures')renderView(VIEWNOW);
+  else if(VIEWNOW==='room')roomThumbs();
   if(DR.on&&DR.kind==='email')drawDrawer();
 }
 const pstatCls=s=>s==='New'?'warn':s==='Mapped'?'acc':s==='Done'?'good':'';
@@ -4880,7 +5018,7 @@ function inboxCard(e){
     +'<span class="sub">'+esc(dayShort(rDay(e.sent_at)))+' · '+esc(rTime(e.sent_at))+'</span></div>'
     +'<span class="hgrow" style="flex:1"></span>'
     +(key?'<span class="chip acc" title="From a key person">'+icon('star',12)+' key</span>':'')
-    +(e.mentions_me?'<span class="chip warn">mentions you</span>':'')+'</div>'
+    +charbelTagHTML(e)+'</div>'
     +'<h3>'+esc(e.subject||'(no subject)')+'</h3>'
     +(e.summary?'<p class="esum">'+esc(e.summary)+'</p>':'')
     +(e.summary&&e.summary.length>260?'<button class="more" data-more="1">Show all</button>':'')
@@ -4892,21 +5030,6 @@ function inboxCard(e){
     +'<button class="tbtn" data-handle="'+e.id+'">'+icon('check',14)+' Mark handled</button>'
     +'<button class="tbtn" data-open="'+e.id+'">Open</button></div></article>';
 }
-function inboxRows(){
-  const q=VQ.inbox.trim().toLowerCase();
-  return keyEmails().filter(e=>textHit(q,(e.subject||'')+' '+(e.sender_name||'')+' '+(e.summary||'')));
-}
-function renderInbox(){
-  const all=keyEmails().length, rows=inboxRows();
-  putView('inbox','<div class="vscroll"><div class="vhead"><div><h2>Key inbox</h2><p>'+all
-    +' email'+(all===1?'':'s')+' from key people or mentioning you that '+(all===1?'has':'have')+' not been handled. Newest first.</p></div>'
-    +'<span class="hgrow"></span><button class="tbtn" data-print="inbox">'+icon('print',15)+' Print report</button>'
-    +'<button class="tbtn" data-newmail="1">'+icon('plus',15)+' New email</button></div>'
-    +(rows.length?'<div class="cards">'+rows.map(inboxCard).join('')+'</div>'
-      :'<div class="empty">'+(all?'Nothing matches that search.':'Nothing waiting. Every key email has been handled.')+'</div>')
-    +'</div>');
-  loadThumbs(rows.map(e=>e.id));
-}
 async function handledDialog(id){
   const e=emailById(id); if(!e)return;
   const ok=await dialog({title:'Mark handled',desc:clip(e.subject,120),ok:'Mark handled',
@@ -4916,14 +5039,164 @@ async function handledDialog(id){
 }
 
 /* ----- emails ----- */
-const EF={sender:'',key:false,mine:false,link:'any',handled:'any'};
-function emailRows(){
-  const q=VQ.emails.trim().toLowerCase();
+/* ----- points ----- */
+/* ============================================================
+   b30: groups by project, Charbel first, and the Room
+   ============================================================ */
+const NOPROJ='';
+const NOPROJ_LB='No project';
+const isCharbel=e=>!!(e&&(e.from_key||e.to_me||e.mentions_me||e.cc_me));
+const isDirect=e=>!!(e&&(e.to_me||e.mentions_me||e.cc_me));
+function charbelTag(e){return !e?'':e.mentions_me?'mentions you':e.to_me?'to you':e.cc_me?'cc you':'';}
+const projOfItem=id=>{const it=itemById(id);return it?String(it.project||'').trim():NOPROJ;};
+const projOfAct=a=>a?projOfItem(a.item_id):NOPROJ;
+const projName=k=>k===NOPROJ?NOPROJ_LB:k;
+const cmpS=(a,b)=>a<b?-1:a>b?1:0;
+
+/* which projects and open actions an email touches, built once per draw from the links */
+function linkIndex(){
+  const proj={}, acts={};
+  LINKS.forEach(l=>{
+    const a=l.action_id?actById(l.action_id):null;
+    const itId=l.item_id||(a?a.item_id:null);
+    if(!itId||!itemById(itId))return;
+    const k=projOfItem(itId);
+    (proj[l.email_id]=proj[l.email_id]||new Set()).add(k);
+    if(a&&isOpenAct(a))(acts[l.email_id]=acts[l.email_id]||new Set()).add(a.id);
+  });
+  return {proj,acts};
+}
+const projKeysOf=(ix,e)=>ix.proj[e.id]?[...ix.proj[e.id]]:[NOPROJ];
+function emailRank(e){return isDirect(e)?0:e.from_key?1:2;}
+function emailOrder(a,b){return emailRank(a)-emailRank(b)||cmpS(String(b.sent_at||''),String(a.sent_at||''));}
+
+/* one group per project; an email linked to several projects sits in each, counted once per group */
+function projectGroups(emails){
+  const ix=linkIndex(), m=new Map();
+  emails.forEach(e=>{
+    projKeysOf(ix,e).forEach(k=>{
+      let g=m.get(k); if(!g){g={key:k,name:projName(k),emails:[],actIds:new Set()};m.set(k,g);}
+      if(!g.emails.includes(e))g.emails.push(e);
+      (ix.acts[e.id]?[...ix.acts[e.id]]:[]).forEach(id=>{if(projOfAct(actById(id))===k)g.actIds.add(id);});
+    });
+  });
+  return finishGroups([...m.values()]);
+}
+function senderGroups(emails){
+  const m=new Map();
+  emails.forEach(e=>{const k=e.sender_name||e.sender_email||'Unknown sender';
+    let g=m.get(k); if(!g){g={key:k,name:k,emails:[],actIds:new Set()};m.set(k,g);} g.emails.push(e);});
+  return finishGroups([...m.values()],true);
+}
+function finishGroups(gs,keepNone){
+  gs.forEach(g=>{
+    g.emails.sort(emailOrder);
+    g.unhandled=g.emails.filter(e=>!e.handled).length;
+    g.charbel=g.emails.filter(isCharbel).length;
+    g.newest=g.emails.reduce((m,e)=>String(e.sent_at||'')>m?String(e.sent_at||''):m,'');
+    g.cnewest=g.emails.filter(isCharbel).reduce((m,e)=>String(e.sent_at||'')>m?String(e.sent_at||''):m,'');
+    g.acts=g.actIds.size;
+  });
+  gs.sort((a,b)=>(!keepNone&&a.key===NOPROJ?1:0)-(!keepNone&&b.key===NOPROJ?1:0)
+    ||cmpS(b.cnewest,a.cnewest)||cmpS(b.newest,a.newest)||cmpS(a.name,b.name));
+  return gs;
+}
+
+/* ---------- the choices Karim made, kept per device ---------- */
+const GB={inbox:'project',emails:'day',points:'meeting'};
+const CHO={inbox:false,emails:false};
+const PFLT={inbox:null,emails:null};
+const GCOL={};
+function loadGB(){
+  try{
+    const o=JSON.parse(localStorage.getItem('task-groupby1')||'{}')||{};
+    ['inbox','emails','points'].forEach(k=>{if(typeof o.gb==='object'&&o.gb&&typeof o.gb[k]==='string')GB[k]=o.gb[k];});
+    ['inbox','emails'].forEach(k=>{if(typeof o.ch==='object'&&o.ch&&typeof o.ch[k]==='boolean')CHO[k]=o.ch[k];});
+  }catch(e){console.warn('group prefs',e);}
+}
+function saveGB(){
+  try{localStorage.setItem('task-groupby1',JSON.stringify({gb:GB,ch:CHO}));}catch(e){console.warn('group prefs',e);}
+}
+function segHTML(view,cur,opts){
+  return '<div class="seg" role="group" aria-label="Group by"><span class="segl">Group by</span>'
+    +opts.map(o=>'<button type="button" class="segb" data-gb="'+view+'" data-gv="'+o[0]+'" aria-pressed="'+(cur===o[0])+'">'+esc(o[1])+'</button>').join('')+'</div>';
+}
+const GOPTS=[['day','Day'],['project','Project'],['sender','Sender']];
+function charbelToggle(view){
+  return '<label class="tg"><input type="checkbox" id="chk-'+view+'"'+(CHO[view]?' checked':'')+'> Charbel only</label>';
+}
+function projChips(view,groups,total,cur){
+  if(!groups.length)return '';
+  return '<div class="pchips" role="group" aria-label="Filter by project"><button type="button" class="pchip" data-pchip="'+view+'" data-pk="*" aria-pressed="'
+    +(cur===null)+'">All projects <span>'+total+'</span></button>'
+    +groups.map(g=>'<button type="button" class="pchip" data-pchip="'+view+'" data-pk="'+esc(g.key)+'" aria-pressed="'+(cur===g.key)+'">'
+      +esc(g.name)+' <span>'+g.emails.length+'</span></button>').join('')+'</div>';
+}
+function groupCounts(g){
+  return '<span class="pgc">'+g.emails.length+' email'+(g.emails.length===1?'':'s')
+    +(g.unhandled?' · '+g.unhandled+' unhandled':'')
+    +(g.acts?' · '+g.acts+' open action'+(g.acts===1?'':'s'):'')+'</span>';
+}
+function groupSection(view,g,inner){
+  const id=view+'|'+g.key, col=!!GCOL[id];
+  return '<section class="pgrp'+(col?' closed':'')+'" data-gk="'+esc(g.key)+'"><button type="button" class="pgh" data-pgt="'+esc(id)
+    +'" aria-expanded="'+(!col)+'"><span class="chev">'+icon('chevron',14)+'</span><b>'+esc(g.name)+'</b>'+groupCounts(g)
+    +(g.charbel?'<span class="chip acc cbadge" title="Emails from, to or mentioning you from Charbel">'+icon('star',11)+' Charbel '+g.charbel+'</span>':'')
+    +'</button>'+(col?'':inner)+'</section>';
+}
+function charbelTagHTML(e){
+  const t=charbelTag(e);
+  return t?'<span class="chip '+(e.mentions_me?'warn':'acc')+' ctag">'+t+'</span>':'';
+}
+function uniqueRows(rows){return new Set(rows.map(e=>e.id)).size;}
+
+/* ---------- Key inbox, grouped ---------- */
+function inboxRows(skipProj){
+  const q=VQ.inbox.trim().toLowerCase();
+  const ix=linkIndex();
+  return keyEmails().filter(e=>textHit(q,(e.subject||'')+' '+(e.sender_name||'')+' '+(e.summary||''))
+    &&(!CHO.inbox||isCharbel(e))
+    &&(skipProj||PFLT.inbox===null||projKeysOf(ix,e).includes(PFLT.inbox)));
+}
+function inboxBody(rows){
+  const mode=GB.inbox;
+  if(mode==='day'){
+    let day='',h='';
+    rows.forEach(e=>{const d=rDay(e.sent_at)||'';
+      if(d!==day){if(day!==''||h)h+='</div>';day=d;h+='<div class="dayh">'+esc(d?dayLong(d):'No date')+'</div><div class="cards">';}
+      h+=inboxCard(e);});
+    return h?h+'</div>':'';
+  }
+  const gs=mode==='sender'?senderGroups(rows):projectGroups(rows);
+  return gs.map(g=>groupSection('inbox',g,'<div class="cards">'+g.emails.map(inboxCard).join('')+'</div>')).join('');
+}
+function renderInbox(){
+  const all=keyEmails().length, rows=inboxRows(), pool=inboxRows(true);
+  const pg=projectGroups(pool);
+  putView('inbox','<div class="vscroll"><div class="vhead"><div><h2>Key inbox</h2><p>'+all
+    +' email'+(all===1?'':'s')+' from key people or mentioning you that '+(all===1?'has':'have')+' not been handled.'
+    +(GB.inbox==='project'?' Grouped by project, Charbel first.':' Newest first.')+'</p></div>'
+    +'<span class="hgrow"></span><button class="tbtn" data-print="inbox">'+icon('print',15)+' Print report</button>'
+    +'<button class="tbtn" data-newmail="1">'+icon('plus',15)+' New email</button></div>'
+    +'<div class="bar">'+segHTML('inbox',GB.inbox,GOPTS)+charbelToggle('inbox')+'</div>'
+    +projChips('inbox',pg,uniqueRows(pool),PFLT.inbox)
+    +(rows.length?inboxBody(rows)
+      :'<div class="empty">'+(all?'Nothing matches those filters.':'Nothing waiting. Every key email has been handled.')+'</div>')
+    +'</div>');
+  loadThumbs(rows.slice(0,60).map(e=>e.id));
+}
+
+/* ---------- Emails, grouped ---------- */
+const EF={sender:'',key:false,mine:false,charbel:false,proj:null,link:'any',handled:'any'};
+function emailRows(skipProj){
+  const q=VQ.emails.trim().toLowerCase(), ix=linkIndex();
   return EM.filter(e=>{
     if(EF.sender&&(e.sender_name||'')!==EF.sender)return false;
     if(EF.key&&!e.from_key)return false;
     if(EF.mine&&!e.mentions_me)return false;
-    const linked=LINKS.some(l=>l.email_id===e.id);
+    if(CHO.emails&&!isCharbel(e))return false;
+    if(!skipProj&&EF.proj!==null&&!projKeysOf(ix,e).includes(EF.proj))return false;
+    const linked=!!ix.proj[e.id];
     if(EF.link==='linked'&&!linked)return false;
     if(EF.link==='unlinked'&&linked)return false;
     if(EF.handled==='open'&&e.handled)return false;
@@ -4933,11 +5206,11 @@ function emailRows(){
 }
 function emailRow(e){
   const sh=shotKnown(e), nl=LINKS.filter(l=>l.email_id===e.id).length;
-  return '<button class="erow'+(e.handled?' done':'')+(DR.on&&DR.kind==='email'&&DR.id===e.id?' sel':'')
+  return '<button class="erow'+(e.handled?' done':'')+(isCharbel(e)?' cb':'')+(DR.on&&DR.kind==='email'&&DR.id===e.id?' sel':'')
     +'" data-email="'+e.id+'"><span class="tm">'+esc(rTime(e.sent_at))+'</span><span class="fr">'
     +(e.from_key?'<span class="kstar">'+icon('star',13)+'</span> ':'')+esc(e.sender_name||e.sender_email||'?')+'</span>'
     +'<span class="sj"><b>'+esc(e.subject||'(no subject)')+'</b><small>'+esc(e.summary||'')+'</small></span>'
-    +'<span class="bg">'+(e.mentions_me?'<span class="chip warn">@ you</span>':'')
+    +'<span class="bg">'+charbelTagHTML(e)
     +(e.attachments?'<span title="'+esc(e.attachments)+'">'+icon('clip',14)+'</span>':'')
     +(sh?'<span title="'+sh+' screenshot'+(sh>1?'s':'')+'">'+icon('camera',14)+sh+'</span>':'')
     +(nl?'<span title="'+nl+' link'+(nl>1?'s':'')+'">'+icon('link',14)+nl+'</span>':'')
@@ -4945,14 +5218,21 @@ function emailRow(e){
 }
 function fillEmailList(){
   const rows=emailRows(), box=$('elist'); if(!box)return;
-  let day='', h='';
-  rows.forEach(e=>{
-    const d=rDay(e.sent_at)||'';
-    if(d!==day){day=d;h+='<div class="dayh">'+esc(d?dayLong(d):'No date')+'<span>'+rows.filter(x=>(rDay(x.sent_at)||'')===d).length+'</span></div>';}
-    h+=emailRow(e);
-  });
+  const mode=GB.emails; let h='';
+  if(mode==='day'){
+    let day='';
+    rows.forEach(e=>{
+      const d=rDay(e.sent_at)||'';
+      if(d!==day){day=d;h+='<div class="dayh">'+esc(d?dayLong(d):'No date')+'<span>'+rows.filter(x=>(rDay(x.sent_at)||'')===d).length+'</span></div>';}
+      h+=emailRow(e);
+    });
+  }else{
+    const gs=mode==='sender'?senderGroups(rows):projectGroups(rows);
+    h=gs.map(g=>groupSection('emails',g,'<div class="glist">'+g.emails.map(emailRow).join('')+'</div>')).join('');
+  }
   box.innerHTML=h||'<div class="empty">No emails match.</div>';
-  const c=$('ecount'); if(c)c.textContent=rows.length+' of '+EM.length;
+  const c=$('ecount'); if(c)c.textContent=uniqueRows(rows)+' of '+EM.length;
+  const pc=$('epchips'); if(pc){const pool=emailRows(true);pc.innerHTML=projChips('emails',projectGroups(pool),uniqueRows(pool),EF.proj);}
   loadThumbs(rows.slice(0,60).map(e=>e.id));
 }
 function renderEmails(){
@@ -4962,6 +5242,8 @@ function renderEmails(){
     +(CAPS.shots?'<button class="tbtn" data-importshots="1">'+icon('upload',15)+' Import screenshots</button>'
       +'<input type="file" id="shotfiles" accept="image/*" multiple hidden>':'')
     +'<button class="tbtn" data-newmail="1">'+icon('plus',15)+' New email</button></div>'
+    +'<div class="bar" id="ebar0">'+segHTML('emails',GB.emails,GOPTS)+charbelToggle('emails')+'</div>'
+    +'<div id="epchips"></div>'
     +'<div class="bar" id="ebar"><select id="ef-sender" aria-label="Sender"><option value="">Any sender</option>'
     +senders.map(s=>'<option'+(EF.sender===s?' selected':'')+'>'+esc(s)+'</option>').join('')+'</select>'
     +'<label class="tg"><input type="checkbox" id="ef-key"'+(EF.key?' checked':'')+'> Key only</label>'
@@ -4979,7 +5261,7 @@ function renderEmails(){
   const sf=$('shotfiles'); if(sf)sf.onchange=e=>{importShots(e.target.files);e.target.value='';};
 }
 
-/* ----- points ----- */
+/* ---------- Points, by meeting or by project ---------- */
 const PF={newOnly:false,status:''};
 function pointsFiltered(){
   const q=VQ.points.trim().toLowerCase();
@@ -4989,6 +5271,7 @@ function pointsFiltered(){
     return textHit(q,(p.ref||'')+' '+(p.text||'')+' '+(p.topic||''));
   });
 }
+const projOfPoint=p=>p.action_id?projOfAct(actById(p.action_id)):(p.item_id?projOfItem(p.item_id):NOPROJ);
 function pointRow(p){
   const a=p.action_id?actById(p.action_id):null;
   return '<div class="prow2" data-pt="'+p.id+'"><span class="ref">'+esc(p.ref||'')+'</span><div class="tx">'+esc(p.text||'')
@@ -5002,26 +5285,512 @@ function pointRow(p){
       :'<button class="tbtn" data-pmap="'+p.id+'">Map to action…</button>'
        +'<button class="tbtn" data-pcreate="'+p.id+'">Create action</button>')+'</div></div>';
 }
-function renderPoints(){
-  const rows=pointsFiltered(), groups=[];
-  MEET.forEach(m=>{const r=rows.filter(p=>p.meeting_id===m.id);if(r.length)groups.push({m,rows:r});});
+function pointGroups(rows){
+  if(GB.points==='project'){
+    const m=new Map();
+    rows.forEach(p=>{const k=projOfPoint(p);let g=m.get(k);if(!g){g={title:projName(k),sub:'',key:k,rows:[],all:[]};m.set(k,g);}g.rows.push(p);});
+    PTS.forEach(p=>{const g=m.get(projOfPoint(p));if(g)g.all.push(p);});
+    return [...m.values()].sort((a,b)=>(a.key===NOPROJ?1:0)-(b.key===NOPROJ?1:0)||cmpS(a.title,b.title));
+  }
+  const groups=[];
+  MEET.forEach(m=>{const r=rows.filter(p=>p.meeting_id===m.id);
+    if(r.length)groups.push({title:m.title,sub:m.held_at?dmy(rDay(m.held_at)):'',rows:r,all:PTS.filter(p=>p.meeting_id===m.id)});});
   const loose=rows.filter(p=>!p.meeting_id||!MEET.some(m=>m.id===p.meeting_id));
-  if(loose.length)groups.push({m:null,rows:loose});
+  if(loose.length)groups.push({title:'No meeting',sub:'',rows:loose,all:PTS.filter(p=>!p.meeting_id||!MEET.some(m=>m.id===p.meeting_id))});
+  return groups;
+}
+function renderPoints(){
+  const rows=pointsFiltered(), groups=pointGroups(rows);
   const cnt=(arr,s)=>arr.filter(p=>p.status===s).length;
-  putView('points','<div class="vscroll"><div class="vhead"><div><h2>Points</h2><p>Charbel’s points, grouped by meeting. '
+  putView('points','<div class="vscroll"><div class="vhead"><div><h2>Points</h2><p>Charbel’s points, grouped by '
+    +(GB.points==='project'?'project':'meeting')+'. '
     +newPoints()+' new.</p></div><span class="hgrow"></span><button class="tbtn" data-print="points">'+icon('print',15)+' Print report</button></div>'
-    +'<div class="bar"><label class="tg"><input type="checkbox" id="pf-new"'+(PF.newOnly?' checked':'')+'> New only</label>'
+    +'<div class="bar">'+segHTML('points',GB.points,[['meeting','Meeting'],['project','Project']])
+    +'<label class="tg"><input type="checkbox" id="pf-new"'+(PF.newOnly?' checked':'')+'> New only</label>'
     +'<select id="pf-status" aria-label="Status"><option value="">Any status</option>'
     +PSTAT.map(s=>'<option'+(PF.status===s?' selected':'')+'>'+s+'</option>').join('')+'</select></div>'
     +(groups.length?groups.map(g=>{
-      const all=PTS.filter(p=>g.m?p.meeting_id===g.m.id:(!p.meeting_id||!MEET.some(m=>m.id===p.meeting_id)));
-      return '<section class="mgroup"><h3>'+esc(g.m?g.m.title:'No meeting')+(g.m&&g.m.held_at?'<small>'+esc(dmy(rDay(g.m.held_at)))+'</small>':'')
-        +'</h3><div class="mcount">'+PSTAT.map(s=>'<span class="chip '+pstatCls(s)+'">'+s+' '+cnt(all,s)+'</span>').join('')
-        +'<span class="chip">'+all.length+' points</span></div>'+g.rows.map(pointRow).join('')+'</section>';}).join('')
+      return '<section class="mgroup"><h3>'+esc(g.title)+(g.sub?'<small>'+esc(g.sub)+'</small>':'')
+        +'</h3><div class="mcount">'+PSTAT.map(s=>'<span class="chip '+pstatCls(s)+'">'+s+' '+cnt(g.all,s)+'</span>').join('')
+        +'<span class="chip">'+g.all.length+' points</span></div>'+g.rows.map(pointRow).join('')+'</section>';}).join('')
       :'<div class="empty">No points match.</div>')+'</div>');
   const n=$('pf-new'); if(n)n.onchange=()=>{PF.newOnly=n.checked;renderPoints();$('pf-new').focus();};
   const s=$('pf-status'); if(s)s.onchange=()=>{PF.status=s.value;renderPoints();$('pf-status').focus();};
 }
+
+/* clicks and switches for the group controls, in every view */
+function wireB30(){
+  loadGB();
+  $('main').addEventListener('click',e=>{
+    const t=e.target.closest('button'); if(!t||!t.dataset)return;
+    const ds=t.dataset;
+    if(ds.gb){
+      GB[ds.gb]=ds.gv; saveGB(); renderView(ds.gb);
+      const b=document.querySelector('#v-'+ds.gb+' [data-gb="'+ds.gb+'"][data-gv="'+ds.gv+'"]'); if(b)b.focus();
+    }else if(ds.pgt){
+      GCOL[ds.pgt]=!GCOL[ds.pgt];
+      const v=ds.pgt.split('|')[0]; if(v==='emails')fillEmailList(); else renderView(v);
+      const b=document.querySelector('[data-pgt="'+ds.pgt.replace(/"/g,'\\"')+'"]'); if(b)b.focus();
+    }else if(ds.pchip){
+      const k=ds.pk==='*'?null:ds.pk, v=ds.pchip;
+      if(v==='inbox'){PFLT.inbox=(PFLT.inbox===k?null:k);renderInbox();}
+      else{EF.proj=(EF.proj===k?null:k);fillEmailList();}
+      const sel='[data-pchip="'+v+'"][data-pk="'+(ds.pk.replace(/"/g,'\\"'))+'"]';
+      const b=document.querySelector(sel); if(b)b.focus();
+    }
+  });
+  $('main').addEventListener('change',e=>{
+    const t=e.target; if(!t||!t.id)return;
+    if(t.id==='chk-inbox'||t.id==='chk-emails'){
+      const v=t.id.slice(4); CHO[v]=t.checked; saveGB();
+      if(v==='inbox')renderInbox(); else fillEmailList();
+      const c=$(t.id); if(c)c.focus();
+    }
+  });
+  wireRoom();
+}
+
+/* ============================================================
+   The Room: every project is a pile on the floor
+   ============================================================ */
+const RM={filter:'all',fan:null,page:0,pos:null,fresh:true,flat:false,W:0,H:0,suppress:false,drag:null,n:0};
+const CW=176, CH=116, FANMAX=24;
+const pkey=k=>k===NOPROJ?'~none':k;
+const unpkey=k=>k==='~none'?NOPROJ:k;
+function roomLoadPos(){
+  if(RM.pos)return;
+  try{const o=JSON.parse(localStorage.getItem('task-room1')||'{}');RM.pos=(o&&typeof o==='object')?o:{};}
+  catch(e){console.warn('room positions',e);RM.pos={};}
+}
+function roomSavePos(){
+  try{localStorage.setItem('task-room1',JSON.stringify(RM.pos||{}));}catch(e){console.warn('room positions',e);}
+}
+function rnd(s,n){
+  let h=2166136261; s=s+':'+n;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return ((h>>>0)%10000)/10000;
+}
+const cardKey=c=>c.t+':'+c.id;
+function cardRank(c){
+  if(c.t==='e'){const e=c.e; return e.handled?5:isDirect(e)?0:e.from_key?1:3;}
+  const a=c.a; if(a.status==='Closed')return 6;
+  return a.due&&a.due<TODAY()?2:4;
+}
+function cardOrder(a,b){
+  const ra=cardRank(a), rb=cardRank(b); if(ra!==rb)return ra-rb;
+  if(a.t==='e'&&b.t==='e')return cmpS(String(b.e.sent_at||''),String(a.e.sent_at||''));
+  if(a.t==='a'&&b.t==='a')return cmpS(a.a.due||'~',b.a.due||'~')||(a.a.id-b.a.id);
+  return a.t==='e'?-1:1;
+}
+/* the piles, unfiltered: used for the order and the default places */
+function roomAllPiles(){
+  const ix=linkIndex(), m=new Map();
+  const ensure=k=>{let p=m.get(k);if(!p){p={key:k,name:projName(k),cards:[],cnewest:'',newest:''};m.set(k,p);}return p;};
+  EM.forEach(e=>{
+    const has=!!ix.proj[e.id];
+    if(e.handled&&!has)return;
+    projKeysOf(ix,e).forEach(k=>ensure(k).cards.push({t:'e',id:e.id,e}));
+  });
+  ACTS.forEach(a=>{if(a.deleted_at)return;ensure(projOfAct(a)).cards.push({t:'a',id:a.id,a});});
+  const out=[...m.values()];
+  out.forEach(p=>{
+    p.cards.forEach(c=>{if(c.t==='e'){const s=String(c.e.sent_at||'');
+      if(s>p.newest)p.newest=s; if(isCharbel(c.e)&&s>p.cnewest)p.cnewest=s;}});
+  });
+  out.sort((a,b)=>(a.key===NOPROJ?1:0)-(b.key===NOPROJ?1:0)||cmpS(b.cnewest,a.cnewest)||cmpS(b.newest,a.newest)||cmpS(a.name,b.name));
+  return out;
+}
+function actCharbel(a,ix){
+  if(a.key_origin)return true;
+  return LINKS.some(l=>l.action_id===a.id&&(emailById(l.email_id)&&isCharbel(emailById(l.email_id))));
+}
+function roomMatch(c,q){
+  const f=RM.filter;
+  if(c.t==='e'){
+    if(f==='overdue')return false;
+    if(f==='charbel'&&!isCharbel(c.e))return false;
+    if(f==='open'&&c.e.handled)return false;
+    return textHit(q,(c.e.subject||'')+' '+(c.e.sender_name||'')+' '+(c.e.summary||''));
+  }
+  const a=c.a, open=a.status!=='Closed';
+  if(f==='overdue'&&!(open&&a.due&&a.due<TODAY()))return false;
+  if(f==='open'&&!open)return false;
+  if(f==='charbel'&&!actCharbel(a))return false;
+  return textHit(q,(a.text||'')+' '+(a.responsible||'')+' '+actNoOf(a));
+}
+function roomDefaultPos(i,n){
+  const cols=Math.max(2,Math.floor(RM.W/270)), c=i%cols, r=Math.floor(i/cols);
+  const jx=(rnd('x'+i,1)-.5)*.03, jy=(rnd('y'+i,2)-.5)*50;
+  const rowsN=Math.ceil(n/cols);
+  const x=(c+.5)/cols+jx;
+  const y=(RM.H-130-r*250+jy)/RM.H;
+  return {x:Math.min(.94,Math.max(.06,x)),y:Math.min(.95,Math.max(.1,y))};
+}
+function roomPileOffset(c,i){
+  const k=cardKey(c);
+  if(i===0)return {x:(rnd(k,1)-.5)*4,y:0,r:(rnd(k,2)-.5)*3};
+  const j=Math.min(i,5);
+  return {x:(rnd(k,1)-.5)*18,y:-j*3+(rnd(k,3)-.5)*5,r:(rnd(k,2)-.5)*10};
+}
+function roomThumbHTML(e){
+  const n=shotKnown(e); if(!n)return '';
+  const s=(SHOTS[e.id]||[])[0];
+  return '<span class="rth" data-th="'+e.id+'">'+(s?'<img alt="" src="'+s.thumb_b64+'">':'')+'</span>';
+}
+function roomCardHTML(c,i,pi){
+  const common=' style="--i:'+i+';--pi:'+pi+'" data-ck="'+cardKey(c)+'"';
+  if(c.t==='e'){
+    const e=c.e, cb=isCharbel(e);
+    return '<div class="rc em'+(cb?' cb':'')+(e.handled?' done':'')+'"'+common+' role="button" tabindex="-1" aria-label="Email from '
+      +esc(e.sender_name||'unknown')+': '+esc(clip(e.subject,70))+'">'
+      +'<span class="rl1"><span class="rfrom">'+(e.from_key?icon('star',11):'')+esc(e.sender_name||e.sender_email||'Unknown')+'</span>'
+      +(charbelTag(e)?'<span class="rtag">'+charbelTag(e)+'</span>':'')+'</span>'
+      +roomThumbHTML(e)
+      +'<span class="rsubj">'+esc(cleanSubject(e.subject)||'(no subject)')+'</span>'
+      +'<span class="rl3">'+esc(dayShort(rDay(e.sent_at)))+' '+esc(rTime(e.sent_at))+'</span></div>';
+  }
+  const a=c.a, closed=a.status==='Closed', over=!closed&&a.due&&a.due<TODAY();
+  return '<div class="rc ac'+(closed?' done':'')+(a.key_origin?' key':'')+'"'+common+' role="button" tabindex="-1" aria-label="Action '
+    +esc(actNoOf(a))+': '+esc(clip(a.text,70))+'">'
+    +'<span class="rl1"><b class="rno">'+(a.key_origin?icon('star',11):'')+esc(actNoOf(a))+'</b><span class="rst">'+esc(a.status||'Open')+'</span></span>'
+    +'<span class="rsubj">'+esc(a.text||'')+'</span>'
+    +'<span class="rl3'+(over?' over':'')+'">'+(a.due?(closed?'was due ':'due ')+esc(dayShort(a.due)):'no due date')+'</span></div>';
+}
+function roomFilterHTML(){
+  const F=[['all','All'],['charbel','Charbel'],['open','Open'],['overdue','Overdue']];
+  return '<div class="tgroup" role="group" aria-label="Show">'+F.map(f=>'<button type="button" class="tbtn" data-rf="'+f[0]
+    +'" aria-pressed="'+(RM.filter===f[0])+'">'+f[1]+'</button>').join('')+'</div>';
+}
+function renderRoom(){
+  const box=$('v-room'); if(!box)return;
+  roomLoadPos();
+  RM.flat=isMobile();
+  const prevStage=box.querySelector('.rstage'), keep=prevStage?prevStage.scrollTop:0;
+  const q=(VQ.room||'').trim().toLowerCase();
+  const all=roomAllPiles();
+  const st=box.querySelector('.rstage');
+  RM.W=st&&st.clientWidth?st.clientWidth:Math.max(320,(box.clientWidth||window.innerWidth-240));
+  const cols=Math.max(2,Math.floor(RM.W/270));
+  RM.H=Math.max(700,Math.ceil(all.length/cols)*250+170);
+  const piles=all.map((p,i)=>({p,i,cards:p.cards.filter(c=>roomMatch(c,q)).sort(cardOrder)})).filter(x=>x.cards.length);
+  if(RM.fan&&!piles.some(x=>pkey(x.p.key)===RM.fan))RM.fan=null;
+  const total=piles.reduce((n,x)=>n+x.cards.length,0);
+  RM.n=total;
+  const html=piles.map((x,pi)=>{
+    const p=x.p, cs=x.cards.slice(0,60), e=cs.filter(c=>c.t==='e'&&isCharbel(c.e)).length;
+    const over=cs.filter(c=>c.t==='a'&&c.a.status!=='Closed'&&c.a.due&&c.a.due<TODAY()).length;
+    const pk=pkey(p.key), pos=RM.pos[pk]||roomDefaultPos(x.i,all.length);
+    return '<div class="pile" data-pk="'+esc(pk)+'" data-x="'+pos.x+'" data-y="'+pos.y+'" role="button" tabindex="0" aria-expanded="false" '
+      +'aria-label="'+esc(p.name)+', '+x.cards.length+' card'+(x.cards.length===1?'':'s')+(e?', '+e+' from Charbel':'')+'. Press Enter to fan out.">'
+      +'<div class="plabel"><b>'+esc(p.name)+'</b><span class="pn">'+x.cards.length+'</span>'
+      +(e?'<span class="pc" title="From, to or mentioning you, Charbel">'+icon('star',10)+e+'</span>':'')
+      +(over?'<span class="po" title="Overdue actions">'+over+' overdue</span>':'')+'</div>'
+      +'<div class="ftray" aria-hidden="true"></div><div class="pcards">'+cs.map((c,i)=>roomCardHTML(c,i,pi)).join('')
+      +(x.cards.length>FANMAX?'<div class="rc more" data-more="1" role="button" tabindex="-1">+'+(x.cards.length-FANMAX+1)+' more</div>':'')
+      +'</div></div>';
+  }).join('');
+  box.innerHTML='<div class="rbar">'+roomFilterHTML()
+    +'<button type="button" class="tbtn" data-rtidy="1" title="Put every pile back where it started">Tidy</button>'
+    +'<span class="rcount" id="rcount">'+piles.length+' pile'+(piles.length===1?'':'s')+', '+total+' card'+(total===1?'':'s')+'</span>'
+    +'<span class="hgrow"></span><span class="rhint">Click a pile to fan it out. Drag a pile to move it. Esc puts it back.</span></div>'
+    +'<div class="rstage" id="rstage"><div class="room'+(RM.flat?' flat':'')+(RM.fresh?' fresh':'')+'" id="room">'
+    +'<svg class="rwalls" id="rwalls" aria-hidden="true"></svg>'
+    +'<div class="rfloor" id="rfloor">'+html
+    +'<i class="cm" data-c="0"></i><i class="cm" data-c="1"></i><i class="cm" data-c="2"></i><i class="cm" data-c="3"></i></div></div>'
+    +(piles.length?'':'<div class="empty rempty">Nothing here yet. Change the filter or clear the search.</div>')
+    +'</div>';
+  roomFit();
+  roomPose();
+  const ns=$('rstage'); if(ns&&keep)ns.scrollTop=keep;
+  if(RM.fresh){const r=$('room');setTimeout(()=>{if(r)r.classList.remove('fresh');RM.fresh=false;},1600);}
+  const ids=[];
+  piles.forEach(x=>x.cards.slice(0,FANMAX).forEach(c=>{if(c.t==='e')ids.push(c.id);}));
+  loadThumbs(ids);
+  if(RM.ro===undefined){RM.ro=null;try{if(window.ResizeObserver){RM.ro=new ResizeObserver(()=>{
+    if(VIEWNOW==='room'&&$('rstage')&&Math.abs($('rstage').clientWidth-RM.W)>2)renderRoom();});}}catch(e){console.warn('observer',e);}}
+  if(RM.ro&&ns){try{RM.ro.disconnect();RM.ro.observe(ns);}catch(e){console.warn('observer',e);}}
+}
+function roomThumbs(){
+  document.querySelectorAll('#v-room .rth[data-th]').forEach(el=>{
+    const s=(SHOTS[+el.dataset.th]||[])[0];
+    if(s&&!el.firstChild)el.innerHTML='<img alt="" src="'+s.thumb_b64+'">';
+  });
+}
+function cornerPts(){
+  const rm=$('room'), base=rm.getBoundingClientRect();
+  return [...document.querySelectorAll('#rfloor .cm')].map(m=>{const r=m.getBoundingClientRect();
+    return {x:r.left+r.width/2-base.left,y:r.top+r.height/2-base.top};});
+}
+/* sizes the floor, then draws the three walls from where the corners really land */
+function roomFit(){
+  const st=$('rstage'), rm=$('room'), fl=$('rfloor'), wl=$('rwalls'); if(!st||!rm||!fl)return;
+  if(RM.flat){rm.style.height='';fl.style.width='';fl.style.height='';if(wl)wl.innerHTML='';
+    fl.querySelectorAll('.pile').forEach(p=>{p.style.left='';p.style.top='';});return;}
+  const W=Math.max(320,st.clientWidth||RM.W), H=RM.H;
+  RM.W=W;
+  fl.style.width=W+'px'; fl.style.height=H+'px';
+  fl.querySelectorAll('.pile').forEach(p=>{
+    p.style.left=(+p.dataset.x*W-CW/2)+'px'; p.style.top=(+p.dataset.y*H-CH/2)+'px';});
+  const avail=Math.max(420,st.clientHeight||600);
+  rm.style.height='3000px';
+  let c=cornerPts();
+  const proj=3000-c[0].y;
+  const R=Math.max(avail,proj+140);
+  rm.style.height=R+'px';
+  c=cornerPts();
+  if(wl){
+    const bl=c[0], br=c[1], fl2=c[2], fr=c[3], w=W, top=0;
+    wl.setAttribute('viewBox','0 0 '+w+' '+R); wl.setAttribute('width',w); wl.setAttribute('height',R);
+    const P=a=>a.map(p=>Math.round(p[0])+','+Math.round(p[1])).join(' ');
+    wl.innerHTML='<defs><linearGradient id="gwb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="s0"/><stop offset="1" class="s1"/></linearGradient>'
+      +'<linearGradient id="gwl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="s0"/><stop offset="1" class="s1"/></linearGradient>'
+      +'<linearGradient id="gwr" x1="1" y1="0" x2="0" y2="0"><stop offset="0" class="s0"/><stop offset="1" class="s1"/></linearGradient></defs>'
+      +'<polygon class="wb" points="'+P([[bl.x,top],[br.x,top],[br.x,br.y],[bl.x,bl.y]])+'"/>'
+      +'<polygon class="wl" points="'+P([[0,top],[bl.x,top],[bl.x,bl.y],[0,fl2.y]])+'"/>'
+      +'<polygon class="wr" points="'+P([[br.x,top],[w,top],[w,fr.y],[br.x,br.y]])+'"/>'
+      +'<line class="wbase" x1="'+Math.round(bl.x)+'" y1="'+Math.round(bl.y)+'" x2="'+Math.round(br.x)+'" y2="'+Math.round(br.y)+'"/>'
+      +'<line class="wbase" x1="0" y1="'+Math.round(fl2.y)+'" x2="'+Math.round(bl.x)+'" y2="'+Math.round(bl.y)+'"/>'
+      +'<line class="wbase" x1="'+w+'" y1="'+Math.round(fr.y)+'" x2="'+Math.round(br.x)+'" y2="'+Math.round(br.y)+'"/>';
+  }
+  st.scrollTop=st.scrollHeight;
+}
+/* every card to its place: in the pile, or on the floor when the pile is fanned */
+function roomPose(){
+  const fl=$('rfloor'); if(!fl)return;
+  fl.classList.toggle('hasfan',!!RM.fan);
+  const W=RM.W, H=RM.H;
+  fl.querySelectorAll('.pile').forEach(p=>{
+    const pk=p.dataset.pk, fan=(pk===RM.fan);
+    p.classList.toggle('fan',fan); p.setAttribute('aria-expanded',fan?'true':'false');
+    const base=p.getAttribute('aria-label').replace(/ (Press Enter to fan out|Press Enter or Escape to put it back)\.$/,'');
+    p.setAttribute('aria-label',base+' '+(fan?'Press Enter or Escape to put it back.':'Press Enter to fan out.'));
+    const cards=[...p.querySelectorAll('.pcards>.rc:not(.more)')], more=p.querySelector('.rc.more');
+    const lab=p.querySelector('.plabel');
+    if(!fan||RM.flat){
+      cards.forEach((c,i)=>{
+        const cd={t:c.dataset.ck[0],id:+c.dataset.ck.slice(2)};
+        const o=roomPileOffset(cd,i);
+        c.style.setProperty('--ox',o.x+'px'); c.style.setProperty('--oy',o.y+'px'); c.style.setProperty('--r',o.r+'deg');
+        c.style.zIndex=String(cards.length-i); c.classList.toggle('top',i===0); c.classList.remove('off');
+        c.tabIndex=(fan&&RM.flat)?0:-1; c.style.removeProperty('--fx');
+      });
+      if(more){more.classList.add('off');more.tabIndex=-1;}
+      if(lab){lab.style.removeProperty('--lx');lab.style.removeProperty('--ly');}
+      return;
+    }
+    const pages=Math.max(1,Math.ceil(cards.length/(more?FANMAX-1:FANMAX)));
+    const per=more?FANMAX-1:FANMAX;
+    const pageN=RM.page%pages, from=pageN*per;
+    const show=cards.slice(from,from+per), n=show.length+(more?1:0);
+    const cols=Math.min(6,Math.max(2,Math.ceil(Math.sqrt(n*1.7)))), G=14;
+    const rows=Math.ceil(n/cols);
+    const gw=cols*(CW+G)-G, gh=rows*(CH+G)-G;
+    const px=+p.dataset.x*W, py=+p.dataset.y*H;
+    const left=Math.max(12,Math.min(W-gw-12,px-gw/2)), topv=Math.max(34,Math.min(H-gh-70,py-gh/2));
+    const pl=px-CW/2, pt=py-CH/2;
+    cards.forEach((c,i)=>{
+      const k=i-from;
+      if(k<0||k>=show.length){c.classList.add('off');c.tabIndex=-1;c.style.setProperty('--ox','0px');c.style.setProperty('--oy','0px');c.style.setProperty('--r','0deg');return;}
+      c.classList.remove('off','top');
+      const cx=k%cols, cy=Math.floor(k/cols);
+      c.style.setProperty('--ox',(left+cx*(CW+G)-pl)+'px'); c.style.setProperty('--oy',(topv+cy*(CH+G)-pt)+'px');
+      c.style.setProperty('--r','0deg'); c.style.zIndex=String(10+k); c.tabIndex=0;
+    });
+    if(more){
+      const k=show.length, cx=k%cols, cy=Math.floor(k/cols);
+      more.classList.remove('off'); more.tabIndex=0;
+      more.style.setProperty('--ox',(left+cx*(CW+G)-pl)+'px'); more.style.setProperty('--oy',(topv+cy*(CH+G)-pt)+'px');
+      more.style.setProperty('--r','0deg'); more.style.zIndex='40';
+      more.textContent='Page '+(pageN+1)+' of '+pages+'. Next page';
+    }
+    if(lab){lab.style.setProperty('--lx',(left-pl)+'px');lab.style.setProperty('--ly',(topv-pt-34)+'px');}
+    const tr=p.querySelector('.ftray');
+    if(tr){tr.style.left=(left-pl-14)+'px';tr.style.top=(topv-pt-44)+'px';tr.style.width=(gw+28)+'px';tr.style.height=(gh+60)+'px';}
+  });
+}
+function roomFanTo(pk){
+  RM.fan=pk; RM.page=0; roomPose();
+  if(pk){
+    const p=document.querySelector('#rfloor .pile[data-pk="'+(pk.replace(/"/g,'\\"'))+'"]');
+    const ids=[...(p?p.querySelectorAll('.rc.em'):[])].slice(0,FANMAX).map(c=>+c.dataset.ck.slice(2));
+    loadThumbs(ids);
+  }
+}
+function roomUnfan(focus){
+  const was=RM.fan; if(!was)return;
+  RM.fan=null; roomPose();
+  if(focus){const p=document.querySelector('#rfloor .pile[data-pk="'+was.replace(/"/g,'\\"')+'"]');if(p)p.focus();}
+}
+function roomOpenCard(el){
+  if(!el||!el.dataset.ck)return;
+  const t=el.dataset.ck[0], id=+el.dataset.ck.slice(2);
+  if(t==='e')openDrawer('email',id);
+  else{const a=actById(id); if(a)openDrawer('item',a.item_id,'actions');}
+}
+function roomTidy(){
+  RM.pos={}; roomSavePos(); RM.fan=null; RM.fresh=true;
+  renderRoom();
+}
+
+/* screen to floor: the four corner markers give the projection, so dragging is exact under perspective */
+function roomMapper(){
+  const ms=[...document.querySelectorAll('#rfloor .cm')]; if(ms.length<4)return null;
+  const W=RM.W, H=RM.H;
+  const dst=[[1,1],[W-1,1],[1,H-1],[W-1,H-1]];
+  const src=ms.map(m=>{const r=m.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2];});
+  const A=[];
+  for(let i=0;i<4;i++){
+    const [x,y]=src[i], [u,v]=dst[i];
+    A.push([x,y,1,0,0,0,-u*x,-u*y,u]); A.push([0,0,0,x,y,1,-v*x,-v*y,v]);
+  }
+  for(let c=0;c<8;c++){
+    let m=c; for(let r=c+1;r<8;r++)if(Math.abs(A[r][c])>Math.abs(A[m][c]))m=r;
+    if(Math.abs(A[m][c])<1e-9)return null;
+    [A[c],A[m]]=[A[m],A[c]];
+    for(let r=0;r<8;r++){if(r===c)continue; const f=A[r][c]/A[c][c]; for(let k=c;k<9;k++)A[r][k]-=f*A[c][k];}
+  }
+  const h=A.map((r,i)=>r[8]/r[i]);
+  return (x,y)=>{const d=h[6]*x+h[7]*y+1; return [(h[0]*x+h[1]*y+h[2])/d,(h[3]*x+h[4]*y+h[5])/d];};
+}
+function roomDown(e){
+  if(RM.flat||(e.button&&e.button>0))return;
+  const pile=e.target.closest&&e.target.closest('.pile'); if(!pile)return;
+  const card=e.target.closest('.rc'), fanned=pile.classList.contains('fan');
+  let mode='pile';
+  if(fanned){if(!card||card.classList.contains('more'))return; mode='card';}
+  const map=roomMapper(); if(!map)return;
+  const d={mode,pile,card,map,sx:e.clientX,sy:e.clientY,s0:map(e.clientX,e.clientY),moved:false,
+    px:+pile.dataset.x,py:+pile.dataset.y,pk:pile.dataset.pk,
+    ox:card?parseFloat(card.style.getPropertyValue('--ox'))||0:0,oy:card?parseFloat(card.style.getPropertyValue('--oy'))||0:0};
+  RM.drag=d;
+  const mv=ev=>roomMove(ev), up=ev=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);
+    window.removeEventListener('pointercancel',up);roomUp(ev);};
+  window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up); window.addEventListener('pointercancel',up);
+}
+function roomMove(e){
+  const d=RM.drag; if(!d)return;
+  if(!d.moved){if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<6)return; d.moved=true;
+    if(d.mode==='pile')d.pile.classList.add('moving');
+    else{d.card.classList.add('drag');d.pile.classList.add('carding');}}
+  const c=d.map(e.clientX,e.clientY), dx=c[0]-d.s0[0], dy=c[1]-d.s0[1];
+  if(d.mode==='pile'){
+    d.cx=Math.min(.97,Math.max(.03,d.px+dx/RM.W)); d.cy=Math.min(.97,Math.max(.08,d.py+dy/RM.H));
+    d.pile.style.left=(d.cx*RM.W-CW/2)+'px'; d.pile.style.top=(d.cy*RM.H-CH/2)+'px';
+  }else{
+    d.card.style.setProperty('--ox',(d.ox+dx)+'px'); d.card.style.setProperty('--oy',(d.oy+dy)+'px');
+    d.card.style.setProperty('--r','-3deg');
+  }
+}
+function roomUp(e){
+  const d=RM.drag; RM.drag=null; if(!d)return;
+  if(!d.moved)return;
+  RM.suppress=true; setTimeout(()=>{RM.suppress=false;},60);
+  if(d.mode==='pile'){
+    d.pile.classList.remove('moving');
+    if(d.cx!==undefined){d.pile.dataset.x=d.cx;d.pile.dataset.y=d.cy;RM.pos[d.pk]={x:+d.cx.toFixed(4),y:+d.cy.toFixed(4)};roomSavePos();}
+    if(RM.fan===d.pk)roomPose();
+    return;
+  }
+  d.card.classList.remove('drag'); d.pile.classList.remove('carding');
+  let target=null;
+  try{
+    const stack=document.elementsFromPoint(e.clientX,e.clientY)||[];
+    for(const el of stack){const p=el.closest&&el.closest('.pile'); if(p&&p.dataset.pk!==d.pk){target=p;break;}}
+  }catch(err){console.warn('hit test',err);}
+  if(target)roomDrop(d.card.dataset.ck,unpkey(target.dataset.pk),e.clientX,e.clientY);
+  else roomPose();
+}
+async function roomDrop(ck,target,x,y){
+  const t=ck[0], id=+ck.slice(2);
+  roomPose();
+  if(t==='e')return roomLinkEmail(id,target,x||0,y||0);
+  return roomMoveAction(id,target);
+}
+async function roomLinkEmail(id,target,x,y){
+  const e=emailById(id); if(!e)return;
+  if(target===NOPROJ){toast('Drop an email on a project to link it.');return;}
+  const ix=linkIndex();
+  if(ix.proj[id]&&ix.proj[id].has(target)){toast('Already linked to '+target+'.');return;}
+  const its=ITEMS.filter(i=>String(i.project||'').trim()===target);
+  const open=its.filter(i=>i.status!=='Closed'), list=open.length?open:its;
+  if(!list.length){toast('No item in '+target+' to link to.');return;}
+  const doLink=async(it)=>{
+    const before=new Set(LINKS.map(l=>l.id));
+    try{await rpc('task_attach_email',{p_email:id,p_item:it.id,p_action:null,p_relation:'reference',p_note:''});}
+    catch(err){toast('Could not link: '+err.message);return;}
+    await refreshCore();
+    const added=LINKS.filter(l=>!before.has(l.id)&&l.email_id===id);
+    toast('Linked to '+target+', item '+itemNoOf(it.id)+'.','Undo',async()=>{
+      try{for(const l of added)await api('task_email_links?id=eq.'+l.id,{method:'DELETE'});await refreshCore();toast('Link removed.');}
+      catch(err){toast('Could not undo: '+err.message);}
+    });
+  };
+  if(list.length===1)return doLink(list[0]);
+  /* the click that ends the drag would close a menu opened now, so open it just after */
+  setTimeout(()=>openCtx(x,y,[{lb:'Link to which item?',ic:'link',dis:true}]
+    .concat(list.map(it=>({lb:'Item '+itemNoOf(it.id)+' '+clip(it.description,40),ic:'link',fn:()=>doLink(it)})))),60);
+}
+async function roomMoveAction(id,target){
+  const a=actById(id), it=a?itemById(a.item_id):null; if(!it)return;
+  const from=String(it.project||'').trim();
+  if(from===target){toast('Already in '+projName(target)+'.');return;}
+  const n=kidsOf(it.id).length;
+  const put=async(v)=>api('task_items?id=eq.'+it.id,{method:'PATCH',body:JSON.stringify({project:v})});
+  try{await put(target);}catch(err){toast('Could not move: '+err.message);return;}
+  await refreshCore();
+  toast('Item '+itemNoOf(it.id)+(n>1?' and its '+n+' actions':'')+' moved to '+projName(target)+'.','Undo',async()=>{
+    try{await put(from);await refreshCore();toast('Moved back.');}catch(err){toast('Could not undo: '+err.message);}
+  });
+}
+function roomClick(e){
+  const t=e.target; if(!t.closest)return;
+  const rf=t.closest('[data-rf]');
+  if(rf){RM.filter=rf.dataset.rf;renderRoom();const b=document.querySelector('#v-room [data-rf="'+RM.filter+'"]');if(b)b.focus();return;}
+  if(t.closest('[data-rtidy]')){roomTidy();return;}
+  if(RM.suppress){RM.suppress=false;return;}
+  const card=t.closest('.rc'), pile=t.closest('.pile');
+  if(card&&card.classList.contains('more')){RM.page++;roomPose();return;}
+  if(pile&&pile.classList.contains('fan')){
+    if(card&&!card.classList.contains('off'))roomOpenCard(card); else roomUnfan(true);
+    return;
+  }
+  if(pile){roomFanTo(pile.dataset.pk);return;}
+  if(RM.fan)roomUnfan(false);
+}
+function roomKey(e){
+  const t=e.target; if(!t.closest||!t.closest('#v-room'))return;
+  if(e.key==='Escape'){if(RM.fan){e.preventDefault();roomUnfan(true);}return;}
+  const card=t.closest('.rc'), pile=t.closest('.pile');
+  if(e.key==='Enter'||e.key===' '){
+    if(card&&pile&&pile.classList.contains('fan')){e.preventDefault();
+      if(card.classList.contains('more')){RM.page++;roomPose();} else roomOpenCard(card);return;}
+    if(pile&&t===pile){e.preventDefault();if(pile.classList.contains('fan'))roomUnfan(true);else roomFanTo(pile.dataset.pk);}
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='ArrowDown'||e.key==='ArrowUp')&&card&&pile&&pile.classList.contains('fan')){
+    const cs=[...pile.querySelectorAll('.rc:not(.off)')], i=cs.indexOf(card);
+    const step=(e.key==='ArrowRight'||e.key==='ArrowDown')?1:-1, nx=cs[i+step];
+    if(nx){e.preventDefault();nx.focus();}
+    return;
+  }
+  if((e.key==='ArrowRight'||e.key==='ArrowLeft')&&pile&&t===pile){
+    const ps=[...document.querySelectorAll('#rfloor .pile')], i=ps.indexOf(pile), nx=ps[i+(e.key==='ArrowRight'?1:-1)];
+    if(nx){e.preventDefault();nx.focus();}
+  }
+}
+function wireRoom(){
+  const r=$('v-room'); if(!r)return;
+  r.addEventListener('click',roomClick);
+  r.addEventListener('keydown',roomKey);
+  r.addEventListener('pointerdown',roomDown);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&VIEWNOW==='room'&&RM.fan&&!DR.on&&!$('scrim').classList.contains('on')&&!$('pal').classList.contains('on')
+      &&!(e.target&&e.target.closest&&e.target.closest('#v-room'))){roomUnfan(false);}
+  });
+  let rt=null;
+  window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(VIEWNOW==='room')renderRoom();},160);});
+}
+
 function gotoPoint(id){
   setView('points');
   const el=document.querySelector('[data-pt="'+id+'"]');
@@ -5337,7 +6106,7 @@ async function startApp(){
   await loadLogCounts();
   paint();
   wireGrid(); wireDrag(); wireTools(); wireResize(); wireRowResize(); wireMobile();
-  wireShell(); wireCtx(); wireDrawer(); wireViews(); wireLightbox(); wirePalette(); wirePaste();
+  wireShell(); wireCtx(); wireDrawer(); wireViews(); wireB30(); wireLightbox(); wirePalette(); wirePaste();
   buildNav();
   $('app').classList.add('ready');
   if(!isMobile())$('gwrap').focus();
