@@ -925,6 +925,139 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
 @media (max-width:900px){.rhint{display:none}.rbar{padding:10px 14px}}
 #ctx .mi span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 @media (max-width:600px){.pchips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin-right:-14px;scrollbar-width:none}.pchips::-webkit-scrollbar{display:none}.pchip{flex:none}}
+/* ---------- b31: Next steps and Waiting for ---------- */
+.sidei[data-view="next"] .icb{background:var(--c-blue)}
+.sidei.sarch{height:auto;min-height:30px;padding:5px 8px;align-items:flex-start}
+.sidei.sarch .icb{background:var(--c-gray)}
+.sidei.sarch .lbl{white-space:normal;line-height:1.25;padding-top:2px}
+.sidei.sarch .lbl small{display:block;font-size:10.5px;font-weight:400;color:var(--ink3);margin-top:1px}
+.nxhb{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.nxbadge{margin-left:2px;border-radius:8px;padding:0 6px;font-size:10px;font-weight:700;line-height:16px;
+  background:var(--hot);color:var(--on-accent)}
+.nxkpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 16px;max-width:760px}
+.nxk{display:block;text-align:left;padding:10px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:0}
+.nxk:hover{background:var(--hover)}
+.nxk[aria-pressed="true"]{border-color:rgba(var(--accent-rgb),.6);box-shadow:0 0 0 1px rgba(var(--accent-rgb),.35) inset}
+.nxk b{display:block;font-size:22px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.nxk span{display:block;margin-top:2px;font-size:12px;color:var(--ink3)}
+.nxk.hot b{color:var(--hot-t)}
+.nxk.good b{color:var(--good-t)}
+.nxadd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:5px 6px 5px 12px;max-width:980px;
+  background:var(--field);border:1px solid var(--line2);border-radius:12px}
+.nxadd:focus-within{border-color:var(--accent);box-shadow:var(--ring)}
+.nxplus{display:inline-flex;color:var(--ink3);flex:none}
+.nxadd input.nxnew{flex:1 1 240px;min-width:0;border:0;background:transparent;box-shadow:none;padding:4px 0;font-size:14px}
+.nxadd input.nxnew:focus{box-shadow:none}
+.nxadd .nxchipin{flex:none;width:130px;height:28px;border-radius:14px;border:1px solid var(--line);background:var(--chip);
+  padding:0 11px;font-size:12.5px;box-shadow:none}
+.nxadd .nxchipin:focus{box-shadow:var(--ring);border-color:var(--accent)}
+.nxadd .nxdate{width:148px}
+.nxadd .tbtn{flex:none}
+.nxbar{margin-bottom:14px}
+.nxseg .segb{display:inline-flex;align-items:center;gap:3px}
+.nxn{color:var(--ink3);font-variant-numeric:tabular-nums;font-weight:500}
+.nxodx{height:24px;gap:6px}
+.nxgrp{margin:0 0 18px}
+.nxgrp .nxgh{margin-bottom:0}
+.nxod{color:var(--hot-t);font-weight:600}
+.nxlist{display:block}
+.nxrow{display:grid;grid-template-columns:20px 30px minmax(0,1fr) auto;gap:2px 10px;align-items:start;
+  padding:10px 8px 10px 6px;border-bottom:1px solid var(--line);border-radius:6px;position:relative}
+.nxrow:hover{background:var(--band)}
+.nxrow:focus-visible{outline:none;box-shadow:var(--ring)}
+.nxrow.over{box-shadow:inset 3px 0 0 var(--hot)}
+.nxrow.over:focus-visible{box-shadow:inset 3px 0 0 var(--hot),var(--ring)}
+.nxrow.flash{background:rgba(var(--accent-rgb),.12)}
+.nxchk{width:16px;height:16px;margin:2px 0 0;cursor:pointer}
+.nxref{font-size:12px;font-weight:600;color:var(--ink3);text-align:center;line-height:20px;border-radius:6px;background:var(--chip);
+  font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.nxmain{min-width:0}
+.nxt{font-size:13.5px;font-weight:600;line-height:20px;word-break:break-word;cursor:text;border-radius:4px}
+.nxt:hover{background:rgba(var(--accent-rgb),.07)}
+.nxrow.done .nxt{text-decoration:line-through;text-decoration-color:rgba(var(--mute-rgb),.7);color:var(--ink2)}
+.nxin{width:100%;font-size:13.5px;font-weight:600;height:28px;padding:2px 8px}
+.nxpt{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;width:100%;text-align:left;
+  font-size:12px;line-height:17px;color:var(--ink3);margin-top:2px;cursor:pointer;word-break:break-word;border-radius:4px}
+.nxpt[aria-expanded="true"]{-webkit-line-clamp:unset;display:block}
+.nxpt:hover{color:var(--ink2)}
+.nxq{font-weight:600}
+.nxnote{display:flex;gap:5px;align-items:flex-start;font-size:12px;line-height:17px;color:var(--ink2);margin-top:3px;word-break:break-word}
+.nxnote .ic{margin-top:2px;color:var(--ink3)}
+.nxmeta{display:flex;flex-wrap:wrap;gap:5px 6px;align-items:center;margin-top:6px}
+.nxmeta .chip:empty{display:none}
+.nxwho,.nxage{font-size:12px;color:var(--ink3)}
+.nxwho.other{color:var(--accent);font-weight:500}
+.nxacts{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;justify-content:flex-end;opacity:0;transition:opacity .12s}
+.nxrow:hover .nxacts,.nxrow:focus-within .nxacts{opacity:1}
+.nxb{height:24px;padding:0 9px;font-size:12px;gap:4px;border-radius:12px}
+.nxkeys{font-size:11.5px;color:var(--ink3);margin:22px 0 0}
+.nxquick{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 4px}
+.nxquick .tbtn{height:26px;padding:0 11px;font-size:12px}
+@media (hover:none){.nxacts{opacity:1}}
+@media (max-width:1180px){
+  .nxrow{grid-template-columns:20px 30px minmax(0,1fr)}
+  .nxacts{grid-column:3/-1;justify-content:flex-start;flex-wrap:wrap;opacity:1;margin-top:6px}
+}
+@media (max-width:900px){
+  .nxkeys{display:none}
+  .nxkpis{gap:8px;max-width:none}
+  .nxk{padding:9px 10px}
+  .nxk b{font-size:20px}
+  .nxk span{font-size:11px;line-height:1.25}
+  .nxadd{padding:8px 8px 8px 12px;gap:8px}
+  .nxadd input.nxnew{flex:1 1 calc(100% - 30px)}
+  .nxadd .nxchipin{flex:1 1 0;width:auto;min-width:0;height:32px;border-radius:16px}
+  .nxadd .nxdate{flex:1 1 0}
+  .nxadd .tbtn{height:32px;padding:0 16px}
+  .nxrow{grid-template-columns:20px 28px minmax(0,1fr);padding:12px 4px 12px 2px}
+  .nxacts{grid-column:2/-1;gap:6px}
+  .nxb{height:30px;padding:0 10px;font-size:12.5px;border-radius:15px}
+  .nxb .ic{display:none}
+  .nxhb{width:100%}
+  .nxhb .tbtn{height:30px}
+}
+/* the weekly review */
+.nxstep{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px 16px;margin:0 0 14px;max-width:980px}
+.nxsh{display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;gap:10px;margin:0 0 8px;font-size:15px;font-weight:600}
+.nxst{min-width:0}
+.nxsh .chip{justify-self:start}
+.nxsn{width:24px;height:24px;border-radius:12px;display:inline-grid;place-items:center;background:var(--chip);color:var(--ink2);
+  font-size:12.5px;font-weight:700;flex:none}
+.nxrr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.nxrr .nxref{align-self:start;margin-top:1px}
+.nxrt{min-width:0}
+.nxrt b{display:block;font-size:13.5px;font-weight:600;word-break:break-word}
+.nxrt small{display:block;font-size:12px;color:var(--ink3);margin-top:2px}
+.nxrc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nxrc input[type=date]{height:28px;padding:0 8px;font-size:12.5px;width:150px}
+.nxok{display:flex;align-items:center;gap:6px;color:var(--good-t);margin:4px 0 2px;font-size:13px}
+.nxml{list-style:none;margin:2px 0 12px;padding:0}
+.nxml li{display:flex;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:13px;align-items:baseline}
+.nxmd{flex:none;width:92px;color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
+.nxms{flex:1;min-width:0;word-break:break-word}
+.nxmore{margin:-6px 0 12px;font-size:12px}
+.nxwk{border-collapse:collapse;width:100%;max-width:520px;font-size:13px;margin:4px 0 8px}
+.nxwk th{text-align:left;font-size:12px;font-weight:600;color:var(--ink3);border-bottom:1px solid var(--line2);padding:6px 10px 6px 0}
+.nxwk td{border-bottom:1px solid var(--line);padding:7px 10px 7px 0;font-variant-numeric:tabular-nums}
+.nxwk .num{text-align:right;padding-right:0}
+.nxwk tr.cur td{font-weight:600}
+.nxavg{margin:6px 0 0;font-size:13px;color:var(--ink2)}
+.nxrevf{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:6px 0 24px}
+@media (max-width:900px){
+  .nxstep{padding:12px 14px 14px}
+  .nxrr{grid-template-columns:28px minmax(0,1fr)}
+  .nxrc{grid-column:2/-1;justify-content:flex-start}
+  .nxrc .tbtn{height:30px}
+  .nxrc input[type=date]{height:30px;width:126px}
+  .nxrc .tbtn{padding:0 11px}
+}
+/* the room: next-step cards */
+.rc.nx.wt{border-top:3px solid var(--warn);padding-top:4px}
+/* dashboard from next steps: tiles fill the row, short lists stack beside the long one */
+.tiles.nxtiles{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.dgrid.nxdg{align-items:start}
+.nxdcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:900px){.tiles.nxtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media print{
   @page{size:A4;margin:14mm}
   html,body{height:auto!important;overflow:visible!important;background:#fff!important}
@@ -938,6 +1071,11 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
   #printarea td{border-bottom:.5pt solid #999;padding:3.5pt 5pt;vertical-align:top;font-size:9pt}
   #printarea tr{page-break-inside:avoid}
   #printarea .w1{width:5%}
+  #printarea .pt{font-size:8.5pt;color:#444;margin-top:1pt}
+  #printarea table.nxp{table-layout:fixed}
+  #printarea .nxp .w1{width:6%}
+  #printarea .nxp .ww{width:17%}
+  #printarea .nxp .wd{width:12%;white-space:nowrap}
 }
 </style>
 </head>
@@ -1015,6 +1153,7 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
         <div class="mbar" id="mbar"></div>
       </div>
     </section>
+    <section class="view" id="v-next" aria-label="Next steps"></section>
     <section class="view" id="v-inbox" aria-label="Key inbox"></section>
     <section class="view" id="v-emails" aria-label="Emails"></section>
     <section class="view" id="v-room" aria-label="Room"></section>
@@ -1060,7 +1199,7 @@ svg.chart .bc{fill:var(--ink3);opacity:.5}
    ============================================================ */
 const SB_URL='https://ivmmnsjiekhjxkhllncb.supabase.co';
 const SB_KEY='sb_publishable_RTHsaxZXVmRBQziLbFJX8g_PAaZzIbF';
-const BUILD='ACTIONS 2026-11-15 · b30';
+const BUILD='ACTIONS 2026-11-16 · b31';
 
 let SESSION=null, ITEMS=[], ACTS=[], VIEW=[], LOGS={};
 let SORT=null, FILT={}, SEARCH='';
@@ -1394,8 +1533,8 @@ function cellHTML(node,c){
 function body(){
   if(!VIEW.length)
     return '<tr><td colspan="'+(COLS.length+1)+'" style="height:120px;text-align:center;'
-      +'color:var(--ink3)">Nothing to show. '
-      +(Object.keys(FILT).length||SEARCH?'Clear the filters, or ':'')+'add a row.</td></tr>';
+      +'color:var(--ink3)">'+(CAPS.next&&!ITEMS.length?'Old items and actions were archived on 16 Nov and are kept in the database. Charbel’s points are now in Next steps.'
+      :'Nothing to show. '+(Object.keys(FILT).length||SEARCH?'Clear the filters, or ':'')+'add a row.')+'</td></tr>';
   const box=selBox();
   let h='';
   VIEW.forEach((node,ri)=>{
@@ -2343,7 +2482,7 @@ function mobPaint(){
   $('mlist').innerHTML=rowsNow.length
     ? rowsNow.map(mobCard).join('')
     : '<p style="color:var(--ink3);text-align:center;padding:40px 10px">'
-      +(SEARCH?'Nothing matches that search.':'Nothing here yet.')+'</p>';
+      +(SEARCH?'Nothing matches that search.':CAPS.next&&!ITEMS.length?'Old items and actions were archived on 16 Nov and are kept in the database. Charbel’s points are now in Next steps.':'Nothing here yet.')+'</p>';
   const openI=ITEMS.filter(r=>r.status!=='Closed').length;
   const openA=ACTS.filter(a=>a.status!=='Closed').length;
   $('mbar').innerHTML='<span class="cnt"><b>'+openI+'</b> open of <b>'+ITEMS.length
@@ -2364,7 +2503,7 @@ function openMoreMenu(){
     +'<button class="tbtn" id="mclose">Close</button></div>'
     +'<div class="sb">'
     +'<button class="mrow" id="mxl"><span class="ic">▦</span>'
-    +'<span>Export to Excel<small>the register as it looks here, with the history</small></span></button>'
+    +'<span>Export to Excel<small>'+(CAPS.next?'next steps first, then the archive sheets':'the register as it looks here, with the history')+'</small></span></button>'
     +'<button class="mrow" id="mcsv"><span class="ic">▤</span>'
     +'<span>Export as CSV<small>plain text, opens anywhere</small></span></button>'
     +'<button class="mrow" id="mimp"><span class="ic">▲</span>'
@@ -2373,6 +2512,8 @@ function openMoreMenu(){
     +'<span>Fill from notes<small>turn meeting notes into items and actions</small></span></button>'
     +'<button class="mrow" id="mclear"><span class="ic">⌦</span>'
     +'<span>Clear the search and filters</span></button>'
+    +(CAPS.next?'<button class="mrow" id="mrev"><span class="ic">✓</span><span>Weekly review<small>overdue, waiting, Charbel emails, done this week</small></span></button>'
+      +'<button class="mrow" id="march"><span class="ic">▣</span><span>Archive<small>'+ARCH_NOTE+'</small></span></button>':'')
     +'<button class="mrow" id="mset"><span class="ic">⚙</span>'
     +'<span>Settings and theme<small>Light, dark or automatic</small></span></button>'
     +'<button class="mrow danger" id="mout"><span class="ic">⎋</span>'
@@ -2392,6 +2533,8 @@ function openMoreMenu(){
   $('mclear').onclick=()=>{FILT={};SEARCH='';SORT=null;$('q').value='';
     MFILT='open';paint();close();};
   $('mset').onclick=()=>{close();setView('settings');};
+  if($('mrev'))$('mrev').onclick=()=>{close();openReview();};
+  if($('march'))$('march').onclick=()=>{close();setView('register');};
   $('mout').onclick=()=>{
     try{localStorage.removeItem('task-session');}catch(e){console.warn('ignored',e);}
     location.reload();
@@ -2876,7 +3019,7 @@ async function exportXLSX(){
       {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
     a.download='Action list '+TODAY()+'.xlsx'; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    toast('Exported '+VIEW.length+' rows');
+    toast(CAPS.next?'Exported '+NEXT.length+' next steps':'Exported '+VIEW.length+' rows');
   }catch(e){ toast('Could not build the file: '+e.message); }
 }
 function exportXLSX_old(){
@@ -3572,12 +3715,12 @@ function wireTools(){
    Every new table is feature-detected: if one is missing its section is
    hidden and the register carries on exactly as before.
    ============================================================ */
-const CAPS={emails:false,shots:false,links:false,meetings:false,points:false,
+const CAPS={next:false,emails:false,shots:false,links:false,meetings:false,points:false,
   closures:false,vInbox:false,vLedger:false,vDash:false,probed:false};
 let EM=[],LINKS=[],MEET=[],PTS=[],LEDGER=[],INBOXV=null,DASHV=null;
 let SHOTS={},SHOTLOAD={},IMGC={},SHOTN={};
 let VIEWNOW='register',QF='all',QRAW='';
-const VQ={inbox:'',emails:'',room:'',points:'',closures:'',dash:''};
+const VQ={next:'',inbox:'',emails:'',room:'',points:'',closures:'',dash:''};
 const EMF='id,subject,sender_name,sender_email,recipients,cc,sent_at,folder,direction,to_me,cc_me,'
   +'mentions_me,from_key,importance,attachments,summary,outlook_url,handled,handled_at,handled_note';
 const SHF='id,email_id,caption,mime,width,height,thumb_b64,sort,taken_at';
@@ -3596,6 +3739,8 @@ const ICP={
   closures:'<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.5"/>',
   dash:'<path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/>',
   room:'<path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/>',
+  next:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8M13 8l4 4-4 4"/>',
+  archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/>',
   settings:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
   search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
@@ -3709,6 +3854,7 @@ const guard=(label,fn)=>fn().catch(e=>{console.error(label,e);toast('Could not l
 async function loadExtra(){
   if(!CAPS.probed)await probeCaps();
   const jobs=[];
+  if(CAPS.next)jobs.push(guard('next steps',loadNext));
   if(CAPS.emails)jobs.push(guard('emails',async()=>{
     EM=(await api('task_emails?select='+EMF+'&deleted_at=is.null&order=sent_at.desc.nullslast,id.desc&limit=800'))||[];}));
   if(CAPS.links)jobs.push(guard('email links',async()=>{
@@ -4003,6 +4149,7 @@ async function showEmailShots(emailId,i){
    Shell: sidebar, bottom tabs, views, alerts, palette
    ============================================================ */
 const VIEWS=[
+  {k:'next',lb:'Next steps',ic:'next',need:'next'},
   {k:'register',lb:'Register',ic:'grid'},
   {k:'inbox',lb:'Key inbox',ic:'inbox',need:'emails'},
   {k:'emails',lb:'Emails',ic:'mail',need:'emails'},
@@ -4011,34 +4158,44 @@ const VIEWS=[
   {k:'closures',lb:'Closures',ic:'closures',need:'closures'},
   {k:'dash',lb:'Dashboard',ic:'dash'}
 ];
-const VTITLE={register:'Register',inbox:'Key inbox',emails:'Emails',room:'Room',points:'Points',
+const VTITLE={next:'Next steps',register:'Register',inbox:'Key inbox',emails:'Emails',room:'Room',points:'Points',
   closures:'Closures',dash:'Dashboard',settings:'Settings'};
-const VPLACE={register:'Search items and actions',inbox:'Search the key inbox…',
+const VPLACE={next:'Search next steps…',register:'Search items and actions',inbox:'Search the key inbox…',
   emails:'Search emails…',room:'Search the piles…',points:'Search points…',closures:'Search closures…',
   dash:'Search…',settings:'Search…'};
 const viewOK=v=>!v.need||CAPS[v.need];
 function badgeFor(k){
+  if(k==='next')return CAPS.next?nxCounts().over:0;
   if(k==='inbox')return CAPS.emails?keyEmails().length:0;
   if(k==='points')return CAPS.points?newPoints():0;
   return 0;
 }
+/* b31: once next steps exist, the old register becomes the Archive at the bottom */
+const viewLb=v=>v.k==='register'&&CAPS.next?'Archive':v.lb;
+const viewTitle=k=>k==='register'&&CAPS.next?'Archive':(VTITLE[k]||'');
+const ARCH_NOTE='Old items and actions, archived 16 Nov';
 function buildNav(){
-  const vs=VIEWS.filter(viewOK);
+  const vs=VIEWS.filter(viewOK), arch=!!CAPS.next;
   const bd=k=>{const n=badgeFor(k);return n?'<span class="bd">'+n+'</span>':'';};
   const cur=k=>VIEWNOW===k?' aria-current="page"':'';
-  const item=v=>'<button class="sidei" data-view="'+v.k+'" title="'+esc(v.lb)+'"'+cur(v.k)+'>'
-      +'<span class="icb">'+icon(v.ic,14)+'</span><span class="lbl">'+esc(v.lb)+'</span>'+bd(v.k)+'</button>';
-  const work=vs.filter(v=>['register','inbox','emails','room'].includes(v.k));
-  const review=vs.filter(v=>!['register','inbox','emails','room'].includes(v.k));
+  const item=v=>{const a=arch&&v.k==='register';
+    return '<button class="sidei'+(a?' sarch':'')+'" data-view="'+v.k+'" title="'+esc(a?'Archive: '+ARCH_NOTE:viewLb(v))+'"'+cur(v.k)+'>'
+      +'<span class="icb">'+icon(a?'archive':v.ic,14)+'</span><span class="lbl">'+esc(viewLb(v))+(a?'<small>'+ARCH_NOTE+'</small>':'')+'</span>'
+      +(a?'':bd(v.k))+'</button>';};
+  const W=['next','register','inbox','emails','room'];
+  const work=vs.filter(v=>W.includes(v.k)&&!(arch&&v.k==='register'));
+  const review=vs.filter(v=>!W.includes(v.k));
+  const archive=arch?vs.filter(v=>v.k==='register'):[];
   $('side').innerHTML=
-    '<div class="brand"><div class="mark"></div><div><b>Action list</b><small>Register</small></div></div>'
+    '<div class="brand"><div class="mark"></div><div><b>Action list</b><small>'+(arch?'Next steps':'Register')+'</small></div></div>'
     +'<div class="sgrp">Work</div>'+work.map(item).join('')
     +(review.length?'<div class="sgrp">Review</div>'+review.map(item).join(''):'')
     +'<div class="grow"></div>'
+    +archive.map(item).join('')
     +'<button class="sidei" data-view="settings" title="Settings"'+cur('settings')+'>'
     +'<span class="icb">'+icon('settings',14)+'</span><span class="lbl">Settings</span></button>';
-  $('tabs').innerHTML=vs.map(v=>'<button data-view="'+v.k+'"'+cur(v.k)+' aria-label="'+esc(v.lb)+'">'
-    +icon(v.ic,22)+'<span>'+esc(v.lb)+'</span>'+bd(v.k)+'</button>').join('');
+  $('tabs').innerHTML=vs.filter(v=>!(arch&&v.k==='register')).map(v=>'<button data-view="'+v.k+'"'+cur(v.k)+' aria-label="'+esc(viewLb(v))+'">'
+    +icon(v.ic,22)+'<span>'+esc(viewLb(v))+'</span>'+bd(v.k)+'</button>').join('');
   const n=alertCount();
   const b=$('bell'); b.innerHTML=icon('bell',18)+(n?'<span class="cnt">'+n+'</span>':'');
   b.setAttribute('aria-label','Alerts'+(n?' ('+n+')':''));
@@ -4063,7 +4220,7 @@ function setView(k){
   document.querySelectorAll('.view').forEach(el=>el.classList.toggle('on',el.id==='v-'+k));
   document.querySelectorAll('[data-view]').forEach(b=>{
     if(b.dataset.view===k)b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');});
-  $('vtitle').textContent=VTITLE[k]||'';
+  $('vtitle').textContent=viewTitle(k);
   $('q').placeholder=VPLACE[k]||'Search…';
   $('q').value=k==='register'?QRAW:(VQ[k]||'');
   renderView(k);
@@ -4071,7 +4228,8 @@ function setView(k){
   else{const sc=$('v-'+k).querySelector('.vscroll');if(sc)sc.scrollTop=0;}
 }
 function renderView(k){
-  if(k==='inbox')renderInbox();
+  if(k==='next')renderNext();
+  else if(k==='inbox')renderInbox();
   else if(k==='emails')renderEmails();
   else if(k==='room')renderRoom();
   else if(k==='points')renderPoints();
@@ -4093,11 +4251,18 @@ function alertList(){
   if(od)out.push({n:od,t:'action'+(od>1?'s':'')+' overdue',go:()=>gotoRegister('overdue')});
   if(np)out.push({n:np,t:'new point'+(np>1?'s':'')+' not yet mapped',go:()=>setView('points')});
   if(wkN)out.push({n:wkN,t:'due by Thursday',go:()=>gotoRegister('week')});
+  if(CAPS.next){
+    const nt=nxToday(), no=NEXT.filter(n=>nOver(n,nt)).length, ns=staleWaiting(nt).length;
+    if(no)out.unshift({n:no,t:'next step'+(no>1?'s':'')+' overdue',go:()=>nxTab('me',true)});
+    if(ns)out.push({n:ns,t:'waiting item'+(ns>1?'s':'')+' not chased in 7 days',go:()=>openReview()});
+    if(nxReviewDue(nt))out.push({n:'Thu',t:'weekly review is due',go:()=>openReview()});
+  }
   return out;
 }
 const alertCount=()=>{
   const od=overdueActs().length, ke=CAPS.emails?keyEmails().length:0, np=CAPS.points?newPoints():0;
-  return od+ke+np;
+  const nt=CAPS.next?nxToday():'';
+  return od+ke+np+(CAPS.next?NEXT.filter(n=>nOver(n,nt)).length+staleWaiting(nt).length:0);
 };
 function closeAlerts(){const a=$('alerts');if(a){a.classList.remove('on');$('bell').setAttribute('aria-expanded','false');}}
 function toggleAlerts(){
@@ -4117,7 +4282,14 @@ function gotoRegister(qf){setView('register');setQF(qf);}
 let PAL={sel:0,rows:[]};
 function palItems(){
   const out=[];
-  VIEWS.filter(viewOK).forEach(v=>out.push({g:'Go to',t:v.lb,s:'',k:v.lb.toLowerCase(),go:()=>setView(v.k)}));
+  VIEWS.filter(viewOK).forEach(v=>out.push({g:'Go to',t:viewLb(v),s:'',k:viewLb(v).toLowerCase(),go:()=>setView(v.k)}));
+  if(CAPS.next){
+    out.push({g:'Do',t:'New next step',s:'',k:'new next step add',go:()=>{nxTab('me');const i=$('nxnew');if(i)i.focus();}});
+    out.push({g:'Do',t:'Weekly review',s:'Thursday',k:'weekly review thursday',go:()=>openReview()});
+    NEXT.slice().sort(nxOrder).forEach(n=>out.push({g:'Next step',t:(n.ref?n.ref+'  ':'')+(n.next_step||''),
+      s:projName(nxProj(n))+(isWaitN(n)?' · waiting':isOpenN(n)?'':' · '+String(n.status).toLowerCase()),
+      k:[n.next_step,n.point,n.who,n.waiting_on,n.project,n.note].join(' '),go:()=>gotoNext(n.id)}));
+  }
   out.push({g:'Go to',t:'Settings and theme',s:'',k:'settings theme',go:()=>setView('settings')});
   if(CAPS.emails)out.push({g:'Do',t:'New email',s:'',k:'new email add',go:()=>newEmailDialog()});
   out.push({g:'Do',t:'New item',s:'',k:'new item add',go:()=>{setView('register');addItems(1);}});
@@ -4284,7 +4456,7 @@ function renderSettings(){
     +'<h3 class="sec">Data</h3>'
     +'<div class="setrow"><span class="muted">'+ITEMS.length+' items, '+ACTS.length+' actions'
     +(CAPS.emails?', '+EM.length+' emails':'')+(CAPS.points?', '+PTS.length+' points':'')
-    +(CAPS.closures?', '+LEDGER.length+' closures':'')+'</span></div>'
+    +(CAPS.closures?', '+LEDGER.length+' closures':'')+(CAPS.next?', '+NEXT.length+' next steps':'')+'</span></div>'
     +'<div class="setrow"><button class="tbtn" id="setreload">Reload everything</button>'
     +'<button class="tbtn" id="setout">Sign out</button></div>'
     +'<p class="muted" style="font-size:12px;margin-top:18px">'+esc(BUILD)+'</p></div>';
@@ -5373,6 +5545,7 @@ function rnd(s,n){
 const cardKey=c=>c.t+':'+c.id;
 function cardRank(c){
   if(c.t==='e'){const e=c.e; return e.handled?5:isDirect(e)?0:e.from_key?1:3;}
+  if(c.t==='n'){const n=c.n; return nOver(n)?2:isWaitN(n)?3:4;}
   const a=c.a; if(a.status==='Closed')return 6;
   return a.due&&a.due<TODAY()?2:4;
 }
@@ -5380,6 +5553,7 @@ function cardOrder(a,b){
   const ra=cardRank(a), rb=cardRank(b); if(ra!==rb)return ra-rb;
   if(a.t==='e'&&b.t==='e')return cmpS(String(b.e.sent_at||''),String(a.e.sent_at||''));
   if(a.t==='a'&&b.t==='a')return cmpS(a.a.due||'~',b.a.due||'~')||(a.a.id-b.a.id);
+  if(a.t==='n'&&b.t==='n')return cmpS(a.n.due||'~',b.n.due||'~')||nxOrder(a.n,b.n);
   return a.t==='e'?-1:1;
 }
 /* the piles, unfiltered: used for the order and the default places */
@@ -5392,6 +5566,7 @@ function roomAllPiles(){
     projKeysOf(ix,e).forEach(k=>ensure(k).cards.push({t:'e',id:e.id,e}));
   });
   ACTS.forEach(a=>{if(a.deleted_at)return;ensure(projOfAct(a)).cards.push({t:'a',id:a.id,a});});
+  if(nextMode())NEXT.forEach(n=>{if(isOpenN(n))ensure(nxProj(n)).cards.push({t:'n',id:n.id,n});});
   const out=[...m.values()];
   out.forEach(p=>{
     p.cards.forEach(c=>{if(c.t==='e'){const s=String(c.e.sent_at||'');
@@ -5411,6 +5586,13 @@ function roomMatch(c,q){
     if(f==='charbel'&&!isCharbel(c.e))return false;
     if(f==='open'&&c.e.handled)return false;
     return textHit(q,(c.e.subject||'')+' '+(c.e.sender_name||'')+' '+(c.e.summary||''));
+  }
+  if(c.t==='n'){
+    const n=c.n;
+    if(f==='overdue'&&!nOver(n))return false;
+    if(f==='open'&&!isOpenN(n))return false;
+    if(f==='charbel'&&!n.meeting_id)return false;
+    return textHit(q,nxText(n));
   }
   const a=c.a, open=a.status!=='Closed';
   if(f==='overdue'&&!(open&&a.due&&a.due<TODAY()))return false;
@@ -5439,6 +5621,7 @@ function roomThumbHTML(e){
 }
 function roomCardHTML(c,i,pi){
   const common=' style="--i:'+i+';--pi:'+pi+'" data-ck="'+cardKey(c)+'"';
+  if(c.t==='n')return nxCardHTML(c,common);
   if(c.t==='e'){
     const e=c.e, cb=isCharbel(e);
     return '<div class="rc em'+(cb?' cb':'')+(e.handled?' done':'')+'"'+common+' role="button" tabindex="-1" aria-label="Email from '
@@ -5478,7 +5661,7 @@ function renderRoom(){
   RM.n=total;
   const html=piles.map((x,pi)=>{
     const p=x.p, cs=x.cards.slice(0,60), e=cs.filter(c=>c.t==='e'&&isCharbel(c.e)).length;
-    const over=cs.filter(c=>c.t==='a'&&c.a.status!=='Closed'&&c.a.due&&c.a.due<TODAY()).length;
+    const over=cs.filter(c=>(c.t==='a'&&c.a.status!=='Closed'&&c.a.due&&c.a.due<TODAY())||(c.t==='n'&&nOver(c.n))).length;
     const pk=pkey(p.key), pos=RM.pos[pk]||roomDefaultPos(x.i,all.length);
     return '<div class="pile" data-pk="'+esc(pk)+'" data-x="'+pos.x+'" data-y="'+pos.y+'" role="button" tabindex="0" aria-expanded="false" '
       +'aria-label="'+esc(p.name)+', '+x.cards.length+' card'+(x.cards.length===1?'':'s')+(e?', '+e+' from Charbel':'')+'. Press Enter to fan out.">'
@@ -5625,6 +5808,7 @@ function roomOpenCard(el){
   if(!el||!el.dataset.ck)return;
   const t=el.dataset.ck[0], id=+el.dataset.ck.slice(2);
   if(t==='e')openDrawer('email',id);
+  else if(t==='n')gotoNext(id);
   else{const a=actById(id); if(a)openDrawer('item',a.item_id,'actions');}
 }
 function roomTidy(){
@@ -5704,6 +5888,7 @@ async function roomDrop(ck,target,x,y){
   const t=ck[0], id=+ck.slice(2);
   roomPose();
   if(t==='e')return roomLinkEmail(id,target,x||0,y||0);
+  if(t==='n')return roomMoveNext(id,target);
   return roomMoveAction(id,target);
 }
 async function roomLinkEmail(id,target,x,y){
@@ -5815,6 +6000,598 @@ async function mapPointDialog(id){
   if(ok)toast('Point mapped');
 }
 
+/* ============================================================
+   b31 — Next steps and Waiting for.
+   Getting Things Done: every point becomes the next physical step,
+   the ball is either on Karim ("On me") or on someone else ("Waiting
+   for", chased and dated), grouped by project, reviewed on Thursday.
+   The working week runs Saturday to Thursday.
+   ============================================================ */
+let NEXT=[];
+const NXF='id,meeting_id,email_id,ref,project,point,next_step,who,ball,waiting_on,due,status,done_at,last_chased,note,sort,created_at,updated_at';
+const NX={tab:'me',od:false,review:false,expand:{},col:{},lastProj:null,focus:null,editing:false};
+const REVKEY='task-review1';
+ICP.cal='<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>';
+const nxToday=()=>rDay(nowIso())||TODAY();
+const nextMode=()=>!!CAPS.next&&!ITEMS.length;
+const nxProj=n=>String(n.project||'').trim();
+const isOpenN=n=>n.status==='Open';
+const isWaitN=n=>isOpenN(n)&&n.ball==='waiting';
+const isMeN=n=>isOpenN(n)&&n.ball!=='waiting';
+const nOver=(n,t)=>isOpenN(n)&&!!n.due&&n.due<(t||nxToday());
+const nxOrder=(a,b)=>((a.sort||0)-(b.sort||0))||(a.id-b.id);
+const nxById=id=>NEXT.find(n=>n.id===id);
+
+async function loadNext(){
+  NEXT=(await api('task_next?select='+NXF+'&deleted_at=is.null&order=sort.asc,id.asc'))||[];
+}
+/* the day a step was raised: its meeting, or the day it was typed in */
+function meetDay(n){
+  const m=n.meeting_id?MEET.find(x=>x.id===n.meeting_id):null;
+  return m&&m.held_at?rDay(m.held_at):rDay(n.created_at);
+}
+function ageDays(n,t){const d=daysBetween(meetDay(n),t||nxToday());return d==null?0:Math.max(0,d);}
+function ageText(n,t){
+  const d=ageDays(n,t);
+  if(n.meeting_id)return d===0?'meeting today':d+' d since meeting';
+  return d===0?'added today':'added '+d+' d ago';
+}
+/* a waiting step is chased from its last chase, or from the day it was raised */
+function chaseDays(n,t){const d=daysBetween(n.last_chased||meetDay(n),t||nxToday());return d==null?0:Math.max(0,d);}
+const chaseCls=d=>d>7?'hot':d>3?'warn':'';
+const agoTxt=d=>d===0?'today':d===1?'yesterday':d+'d ago';
+function chaseText(n,t){const d=chaseDays(n,t);return n.last_chased?'chased '+agoTxt(d):'not chased · '+d+' d';}
+const staleWaiting=t=>NEXT.filter(n=>isWaitN(n)&&chaseDays(n,t)>7).sort(nxOrder);
+const overdueMe=t=>NEXT.filter(n=>isMeN(n)&&nOver(n,t)).sort((a,b)=>cmpS(a.due,b.due)||nxOrder(a,b));
+/* Saturday to Thursday; a Friday counts towards the week that follows it */
+function nxWeek(t,back){
+  const w=weekRange(t), k=7*(back||0);
+  return {start:addDays(w.start,-k),end:addDays(w.end,-k),from:addDays(w.start,-k-1)};
+}
+const doneDay=n=>n.status==='Done'?(n.done_at||rDay(n.updated_at)):rDay(n.updated_at);
+function doneIn(w){return NEXT.filter(n=>n.status==='Done'&&n.done_at&&n.done_at>=w.from&&n.done_at<=w.end);}
+function nxCounts(t){
+  t=t||nxToday();
+  return {me:NEXT.filter(isMeN).length,wait:NEXT.filter(isWaitN).length,
+    over:NEXT.filter(n=>nOver(n,t)).length,doneW:doneIn(nxWeek(t,0)).length,
+    done:NEXT.filter(n=>!isOpenN(n)).length};
+}
+/* who "me" is: the name on most of the steps that are on me */
+function meName(){
+  const c={}; NEXT.forEach(n=>{if(n.ball!=='waiting'&&n.who)c[n.who]=(c[n.who]||0)+1;});
+  const k=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];
+  return k||'';
+}
+function nxPeople(){
+  const me=meName(), s=new Set();
+  NEXT.forEach(n=>{[n.who,n.waiting_on].forEach(v=>{v=String(v||'').trim();if(v&&v!==me)s.add(v);});});
+  return [...s].sort((a,b)=>a.localeCompare(b));
+}
+function nxProjects(){
+  const seen=[];
+  NEXT.slice().sort(nxOrder).forEach(n=>{const k=nxProj(n);if(!seen.includes(k))seen.push(k);});
+  return seen.filter(k=>k!==NOPROJ).concat(seen.includes(NOPROJ)?[NOPROJ]:[]);
+}
+function nxText(n){return [n.ref,n.project,n.next_step,n.point,n.who,n.waiting_on,n.note].join(' ').toLowerCase();}
+function nxRows(tab,t){
+  const q=(VQ.next||'').trim().toLowerCase(), words=q?q.split(/\s+/):[];
+  t=t||nxToday();
+  return NEXT.filter(n=>{
+    if(tab==='me'&&!isMeN(n))return false;
+    if(tab==='waiting'&&!isWaitN(n))return false;
+    if(tab==='done'&&isOpenN(n))return false;
+    if(NX.od&&tab!=='done'&&!nOver(n,t))return false;
+    if(words.length){const h=nxText(n);if(!words.every(w=>h.includes(w)))return false;}
+    return true;
+  }).sort(nxOrder);
+}
+function nxGroups(rows,t){
+  t=t||nxToday();
+  const order=nxProjects(), m=new Map();
+  rows.forEach(n=>{const k=nxProj(n);let g=m.get(k);if(!g){g={key:k,name:projName(k),rows:[]};m.set(k,g);}g.rows.push(n);});
+  const gs=[...m.values()].sort((a,b)=>order.indexOf(a.key)-order.indexOf(b.key));
+  gs.forEach(g=>{g.over=g.rows.filter(n=>nOver(n,t)).length;});
+  return gs;
+}
+/* the Done tab: one group per working week, newest first */
+function nxDoneGroups(rows,t){
+  t=t||nxToday();
+  const cur=nxWeek(t,0), m=new Map();
+  rows.forEach(n=>{
+    const d=doneDay(n)||t; let back=0;
+    while(back<520&&d<nxWeek(t,back).from)back++;
+    let g=m.get(back);
+    if(!g){const w=nxWeek(t,back);
+      g={key:'w'+back,back,name:back===0?'This week':back===1?'Last week':'Week of '+dayShort(w.start),
+        sub:dayShort(w.start)+' to '+dayShort(w.end),rows:[]};m.set(back,g);}
+    g.rows.push(n);
+  });
+  const gs=[...m.values()].sort((a,b)=>a.back-b.back);
+  gs.forEach(g=>g.rows.sort((a,b)=>cmpS(doneDay(b),doneDay(a))||nxOrder(a,b)));
+  return gs;
+}
+const nxColKey=(tab,k)=>tab+'|'+k;
+function nxCollapsed(tab,g){
+  const v=NX.col[nxColKey(tab,g.key)];
+  if(v!==undefined)return v;
+  return tab==='done'&&g.back>0;          /* older weeks start folded */
+}
+
+/* ---------- drawing ---------- */
+function nxDueChip(n,t){
+  if(!n.due)return '';
+  if(nOver(n,t))return '<span class="chip hot">due '+esc(dayShort(n.due))+' · '+daysBetween(n.due,t)+' d late</span>';
+  if(!isOpenN(n))return '<span class="chip">was due '+esc(dayShort(n.due))+'</span>';
+  return '<span class="chip">due '+esc(dayShort(n.due))+(n.due===t?' · today':'')+'</span>';
+}
+function nxRowHTML(n,t){
+  const open=isOpenN(n), wait=isWaitN(n), over=nOver(n,t), me=meName();
+  const pt=String(n.point||'').trim(), showPt=pt&&pt!==String(n.next_step||'').trim();
+  const exp=!!NX.expand[n.id];
+  const meta=[];
+  if(wait)meta.push('<span class="chip acc">waiting on '+esc(n.waiting_on||n.who||'someone')+'</span>');
+  else if(n.who)meta.push('<span class="nxwho'+(n.who===me?'':' other')+'">'+esc(n.who===me?shortName(n.who):n.who)+'</span>');
+  meta.push(nxDueChip(n,t));
+  if(wait){const d=chaseDays(n,t);meta.push('<span class="chip '+chaseCls(d)+' nxchase">'+esc(chaseText(n,t))+'</span>');}
+  if(!open)meta.push(n.status==='Done'?'<span class="chip good">done '+esc(dayShort(n.done_at))+'</span>'
+    :'<span class="chip">dropped'+(rDay(n.updated_at)?' '+esc(dayShort(rDay(n.updated_at))):'')+'</span>');
+  meta.push('<span class="nxage">'+esc(ageText(n,t))+'</span>');
+  const b=(a,lb,ic,key)=>'<button type="button" class="tbtn nxb" data-nxa="'+a+'" data-id="'+n.id+'" title="'+esc(lb+(key?' ('+key+')':''))+'">'
+    +(ic?icon(ic,13):'')+'<span>'+esc(lb)+'</span></button>';
+  const acts=!open?b('reopen','Reopen','reopen','O')
+    :(wait?b('chase','Chased today','check','C')+b('me','Back to me','reopen','M')
+          :b('wait','Waiting…','open','W'))
+     +b('due','Due…','cal','D')+b('note','Note…','note','N')+b('drop','Drop…','x','Del');
+  return '<div class="nxrow'+(open?'':' done')+(over?' over':'')+(wait?' wt':'')+(exp?' exp':'')+'" data-nx="'+n.id+'" tabindex="0" '
+    +'aria-label="'+esc((n.ref?'Point '+n.ref+': ':'')+(n.next_step||''))+'">'
+    +'<input type="checkbox" class="nxchk" data-nxdone="'+n.id+'"'+(open?'':' checked')+' aria-label="'+(open?'Done: ':'Reopen: ')+esc(clip(n.next_step,60))+'">'
+    +'<span class="nxref" title="'+(n.ref?'Point '+esc(n.ref)+' in Charbel’s email':'Added here')+'">'+esc(n.ref||'+')+'</span>'
+    +'<div class="nxmain"><div class="nxt" data-nxedit="'+n.id+'" title="Click to edit (Enter)">'+esc(n.next_step||'(no next step yet)')+'</div>'
+    +(n.note?'<div class="nxnote">'+icon('note',12)+'<span>'+esc(n.note)+'</span></div>':'')
+    +(showPt?'<button type="button" class="nxpt" data-nxpt="'+n.id+'" aria-expanded="'+exp+'" title="Charbel’s wording. Click to '+(exp?'collapse':'expand')+'">'
+      +'<span class="nxq">Charbel:</span> '+esc(pt)+'</button>':'')
+    +'<div class="nxmeta">'+meta.join('')+'</div></div>'
+    +'<div class="nxacts">'+acts+'</div></div>';
+}
+function nxGroupHTML(tab,g,t){
+  const col=nxCollapsed(tab,g), id=nxColKey(tab,g.key);
+  return '<section class="nxgrp'+(col?' closed':'')+'"><button type="button" class="pgh nxgh" data-nxg="'+esc(id)+'" aria-expanded="'+(!col)+'">'
+    +'<span class="chev">'+icon('chevron',14)+'</span><b>'+esc(g.name)+'</b>'
+    +'<span class="pgc">'+(g.sub?esc(g.sub)+' · ':'')+g.rows.length+' step'+(g.rows.length===1?'':'s')
+    +(g.over?' · <span class="nxod">'+g.over+' overdue</span>':'')+'</span></button>'
+    +(col?'':'<div class="nxlist">'+g.rows.map(n=>nxRowHTML(n,t)).join('')+'</div>')+'</section>';
+}
+function readReview(){try{return localStorage.getItem(REVKEY)||'';}catch(e){console.warn('review read',e);return '';}}
+function saveReview(day){try{localStorage.setItem(REVKEY,day);}catch(e){console.warn('review save',e);}}
+/* the review badge shows on Thursday until this week has been reviewed */
+function nxReviewDue(t){
+  t=t||nxToday();
+  if(dowOf(t)!==4)return false;
+  const r=readReview();
+  return !(r&&r>=nxWeek(t,0).from);
+}
+function nxKpiHTML(c){
+  const k=(id,n,lb,cls,on)=>'<button type="button" class="nxk'+(cls?' '+cls:'')+'" data-nxk="'+id+'" aria-pressed="'+!!on+'"><b>'+n+'</b><span>'+lb+'</span></button>';
+  return '<div class="nxkpis" role="group" aria-label="Counts">'
+    +k('me',c.me,'On me, open','',NX.tab==='me'&&!NX.od)+k('waiting',c.wait,'Waiting for','',NX.tab==='waiting'&&!NX.od)
+    +k('over',c.over,'Overdue',c.over?'hot':'',NX.od)+k('done',c.doneW,'Done this week','good',NX.tab==='done')+'</div>';
+}
+function renderNext(){
+  const box=$('v-next'); if(!box)return;
+  if(NX.review)return renderReview();
+  const t=nxToday(), c=nxCounts(t), tab=NX.tab, rows=nxRows(tab,t);
+  const gs=tab==='done'?nxDoneGroups(rows,t):nxGroups(rows,t);
+  const rev=readReview(), due=nxReviewDue(t), projs=nxProjects().filter(k=>k!==NOPROJ);
+  const tabB=(k,lb,n)=>'<button type="button" class="segb" role="tab" data-nxtab="'+k+'" aria-selected="'+(tab===k)+'" aria-pressed="'+(tab===k)+'">'+lb+' <span class="nxn">('+n+')</span></button>';
+  const empty=NX.od?'Nothing overdue here.':(VQ.next||'').trim()?'Nothing matches that search.'
+    :tab==='me'?'Nothing on you. Add a next step above.':tab==='waiting'?'Not waiting on anyone.':'Nothing done yet. Ticked steps land here.';
+  putView('next','<div class="vscroll" id="nxscroll"><div class="vhead"><div><h2>Next steps</h2><p>Charbel’s points as next physical steps, grouped by project. '
+    +'Week runs Saturday to Thursday.'+(rev?' Last review '+esc(dayShort(rev))+'.':'')+'</p></div><span class="hgrow"></span>'
+    +'<div class="nxhb"><button type="button" class="tbtn'+(due?' primary':'')+'" data-nxrev="1">'+icon('check',14)+' Weekly review'
+    +(due?'<span class="nxbadge" aria-label="due today">Thu</span>':'')+'</button>'
+    +'<button type="button" class="tbtn" data-print="next">'+icon('print',14)+' Print</button>'
+    +'<button type="button" class="tbtn" data-nxxl="1">Export .xlsx</button></div></div>'
+    +nxKpiHTML(c)
+    +'<form class="nxadd" id="nxadd" autocomplete="off"><span class="nxplus" aria-hidden="true">'+icon('plus',15)+'</span>'
+    +'<input id="nxnew" class="nxnew" placeholder="Next step: type it and press Enter" aria-label="New next step">'
+    +'<input id="nxproj" class="nxchipin" list="nxprojl" placeholder="Project" aria-label="Project (optional)" value="'+esc(NX.lastProj||'')+'">'
+    +'<datalist id="nxprojl">'+projs.map(p=>'<option value="'+esc(p)+'">').join('')+'</datalist>'
+    +'<input id="nxdue0" class="nxchipin nxdate" type="date" aria-label="Due date (optional)">'
+    +'<button type="submit" class="tbtn primary" id="nxgo">Add</button></form>'
+    +'<div class="bar nxbar"><div class="seg nxseg" role="tablist" aria-label="Show">'+tabB('me','On me',c.me)+tabB('waiting','Waiting for',c.wait)+tabB('done','Done',c.done)+'</div>'
+    +(NX.od?'<button type="button" class="chip hot nxodx" data-nxk="over">Overdue only '+icon('x',11)+'</button>':'')+'</div>'
+    +(rows.length?gs.map(g=>nxGroupHTML(tab,g,t)).join(''):'<div class="empty">'+empty+'</div>')
+    +'<p class="nxkeys">Keys on a row: X done · W waiting · M back to me · C chased · D due · N note · Delete drop · Enter edit · arrows move</p>'
+    +'</div>');
+  if(NX.focus!=null){
+    const el=box.querySelector('[data-nx="'+NX.focus+'"]');
+    if(el&&el.focus)el.focus({preventScroll:true});
+    NX.focus=null;
+  }
+}
+
+/* ---------- writes ---------- */
+async function patchNext(id,fields){
+  const out=await api('task_next?id=eq.'+id,{method:'PATCH',body:JSON.stringify(fields)});
+  const n=nxById(id); if(n)Object.assign(n,fields,out&&out[0]?out[0]:{});
+  nxAfter();
+  return n;
+}
+function nxAfter(){
+  buildNav();
+  renderView(VIEWNOW);
+}
+async function nxDo(id,fields,msg,back){
+  try{await patchNext(id,fields);}catch(e){toast('Could not save: '+e.message);return false;}
+  if(msg){
+    if(back)toast(msg,'Undo',async()=>{try{await patchNext(id,back);toast('Undone');}catch(e){toast('Could not undo: '+e.message);}});
+    else toast(msg);
+  }
+  return true;
+}
+/* keep the keyboard on the list: after a row leaves this tab, the next one takes the focus */
+function nxFocusAfter(id){
+  const rows=[...document.querySelectorAll('#v-next .nxrow')], i=rows.findIndex(r=>+r.dataset.nx===id);
+  const nb=rows[i+1]||rows[i-1];
+  NX.focus=nb?+nb.dataset.nx:null;
+}
+function nxDone(id){
+  const n=nxById(id); if(!n)return;
+  nxFocusAfter(id);
+  return nxDo(id,{status:'Done'},'Done: '+clip(n.next_step,48),{status:'Open'});
+}
+function nxReopen(id){
+  const n=nxById(id); if(!n)return;
+  nxFocusAfter(id);
+  return nxDo(id,{status:'Open'},'Back on the list: '+clip(n.next_step,40),{status:n.status});
+}
+function nxChase(id){
+  const n=nxById(id); if(!n)return;
+  NX.focus=id;
+  return nxDo(id,{last_chased:nxToday()},'Chased today: '+clip(n.waiting_on||n.who,30),{last_chased:n.last_chased||''});
+}
+function nxBackToMe(id){
+  const n=nxById(id); if(!n)return;
+  nxFocusAfter(id);
+  return nxDo(id,{ball:'me',waiting_on:'',who:meName()||n.who||''},'Back on you',{ball:'waiting',waiting_on:n.waiting_on||'',who:n.who||''});
+}
+async function nxWaitDialog(id){
+  const n=nxById(id); if(!n)return;
+  const ppl=nxPeople();
+  let res=null;
+  const ok=await dialog({title:'Move to Waiting for',desc:clip(n.next_step,140),ok:'Move',
+    body:'<div class="fld"><label class="l" for="nxwho">Waiting on whom?</label>'
+      +'<input id="nxwho" list="nxwhol" placeholder="Name or company" autocomplete="off">'
+      +'<datalist id="nxwhol">'+ppl.map(p=>'<option value="'+esc(p)+'">').join('')+'</datalist></div>',
+    onOpen:()=>{$('nxwho').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('dok').click();}});return null;},
+    onOk:async()=>{
+      const v=$('nxwho').value.trim(); if(!v)throw new Error('Type who it is with');
+      res=v; return true;}});
+  if(!ok||!res)return;
+  nxFocusAfter(id);
+  return nxDo(id,{ball:'waiting',waiting_on:res,who:res},'Waiting on '+res,{ball:n.ball||'me',waiting_on:n.waiting_on||'',who:n.who||''});
+}
+async function nxDueDialog(id){
+  const n=nxById(id); if(!n)return;
+  const t=nxToday(), thu=nxWeek(t,0).end, nthu=addDays(thu,7);
+  let val=null;
+  const q=(d,lb)=>'<button type="button" class="tbtn" data-nxq="'+d+'">'+esc(lb)+'</button>';
+  const ok=await dialog({title:'Due date',desc:clip(n.next_step,140),ok:'Set date',
+    body:'<div class="fld"><label class="l" for="nxdd">Due</label><input id="nxdd" type="date" value="'+esc(n.due||'')+'"></div>'
+      +'<div class="nxquick">'+q(t,'Today')+(thu>t?q(thu,'Thursday '+dayShort(thu).slice(4)):'')+q(nthu,'Next Thursday')+q('','Clear')+'</div>',
+    onOpen:()=>{$('dlg').querySelectorAll('[data-nxq]').forEach(b=>b.onclick=()=>{$('nxdd').value=b.dataset.nxq;});return null;},
+    onOk:async()=>{
+      const v=$('nxdd').value.trim();
+      if(v&&!DATE_RE.test(v))throw new Error('Use a date like 2026-11-19');
+      val=v; return true;}});
+  if(!ok||val===null)return;
+  NX.focus=id;
+  return nxDo(id,{due:val},val?'Due '+dayShort(val):'Due date cleared',{due:n.due||''});
+}
+async function nxDropDialog(id){
+  const n=nxById(id); if(!n)return;
+  let why=null;
+  const ok=await dialog({title:'Drop this step',desc:clip(n.next_step,140),ok:'Drop',
+    body:'<div class="fld"><label class="l" for="nxwhy">Why is it dropped?</label><textarea id="nxwhy" rows="3" placeholder="For example: covered in meeting, no longer needed"></textarea></div>',
+    onOk:async()=>{why=$('nxwhy').value.trim();return true;}});
+  if(!ok||why===null)return;
+  const old=String(n.note||'').trim(), add='Dropped'+(why?': '+why:'');
+  nxFocusAfter(id);
+  return nxDo(id,{status:'Dropped',note:old?old+' | '+add:add},'Dropped: '+clip(n.next_step,40),{status:n.status,note:n.note||''});
+}
+async function nxNoteDialog(id){
+  const n=nxById(id); if(!n)return;
+  let v=null;
+  const ok=await dialog({title:'Note',desc:clip(n.next_step,140),ok:'Save',
+    body:'<div class="fld"><label class="l" for="nxnt">Note</label><textarea id="nxnt" rows="4">'+esc(n.note||'')+'</textarea></div>',
+    onOk:async()=>{v=$('nxnt').value.trim();return true;}});
+  if(!ok||v===null||v===String(n.note||''))return;
+  NX.focus=id;
+  return nxDo(id,{note:v},v?'Note saved':'Note removed');
+}
+async function nxAdd(){
+  const inp=$('nxnew'); if(!inp)return;
+  const text=inp.value.trim(); if(!text){inp.focus();return;}
+  const proj=($('nxproj')?$('nxproj').value:'').trim(), due=($('nxdue0')?$('nxdue0').value:'').trim();
+  if(due&&!DATE_RE.test(due)){toast('Use a date like 2026-11-19');return;}
+  const sort=NEXT.reduce((m,n)=>Math.max(m,+n.sort||0),0)+1;
+  const body={ref:'',project:proj,point:'',next_step:text,who:meName(),ball:'me',waiting_on:'',due,status:'Open',meeting_id:null,note:'',sort};
+  let out;
+  try{out=await api('task_next?select='+NXF,{method:'POST',body:JSON.stringify(body)});}
+  catch(e){toast('Could not add: '+e.message);return;}
+  const row=out&&out[0]?out[0]:Object.assign({id:Date.now(),created_at:nowIso(),done_at:'',last_chased:''},body);
+  NEXT.push(row); NX.lastProj=proj; NX.tab='me'; NX.od=false;
+  nxAfter();
+  toast('Added'+(proj?' to '+proj:''));
+  const ni=$('nxnew'); if(ni)ni.focus();
+}
+/* inline edit of the next step itself */
+function nxBeginEdit(id){
+  const el=document.querySelector('#v-next [data-nxedit="'+id+'"]'), n=nxById(id); if(!el||!n||NX.editing)return;
+  NX.editing=true;
+  const inp=document.createElement('input');
+  inp.className='nxin'; inp.value=n.next_step||''; inp.setAttribute('aria-label','Next step');
+  el.replaceWith(inp); inp.focus(); try{inp.setSelectionRange(inp.value.length,inp.value.length);}catch(e){console.warn('caret',e);}
+  let done=false;
+  const finish=async save=>{
+    if(done)return; done=true; NX.editing=false;
+    const v=inp.value.trim();
+    NX.focus=id;
+    if(save&&v&&v!==String(n.next_step||'')){
+      const old=n.next_step||'';
+      await nxDo(id,{next_step:v},'Saved',{next_step:old});
+    }else renderNext();
+  };
+  inp.addEventListener('keydown',e=>{
+    e.stopPropagation();
+    if(e.key==='Enter'){e.preventDefault();finish(true);}
+    else if(e.key==='Escape'){e.preventDefault();finish(false);}
+  });
+  inp.addEventListener('blur',()=>finish(true));
+}
+
+/* ---------- the weekly review: one page, four steps ---------- */
+function charbelEmails(){
+  if(!CAPS.emails)return [];
+  return keyEmails().filter(e=>e.from_key||/charbel/i.test(e.sender_name||''));
+}
+function reviewData(t){
+  t=t||nxToday();
+  const weeks=[0,1,2,3].map(b=>{const w=nxWeek(t,b);return {back:b,start:w.start,end:w.end,n:doneIn(w).length};});
+  return {t,overdue:overdueMe(t),stale:staleWaiting(t),emails:charbelEmails(),weeks};
+}
+function renderReview(){
+  const R=reviewData(), t=R.t, w0=nxWeek(t,0), rev=readReview();
+  const stepH=(n,title,count,clear)=>'<h3 class="nxsh"><span class="nxsn">'+n+'</span><span class="nxst">'+esc(title)+'</span>'
+    +'<span class="chip'+(count?(n===1?' hot':' warn'):' good')+'">'+(count?count:clear)+'</span></h3>';
+  const prev=R.weeks.slice(1), avg=prev.reduce((s,w)=>s+w.n,0)/3;
+  const wlab=w=>w.back===0?'This week':w.back===1?'Last week':w.back+' weeks ago';
+  putView('next','<div class="vscroll nxrev" id="nxscroll"><div class="vhead"><div><h2>Weekly review</h2>'
+    +'<p>Week '+esc(dayShort(w0.start))+' to '+esc(dayShort(w0.end))+'. Work down four steps, then mark it reviewed.'
+    +(rev?' Last reviewed '+esc(dayLong(rev))+'.':'')+'</p></div><span class="hgrow"></span>'
+    +'<button type="button" class="tbtn" data-nxback="1">'+icon('chevron',14)+' Back to next steps</button></div>'
+    +'<section class="nxstep" id="nxs1">'+stepH(1,'Overdue steps on me: set a new date or drop',R.overdue.length,'clear')
+    +(R.overdue.length?R.overdue.map(n=>'<div class="nxrr" data-nx="'+n.id+'"><span class="nxref">'+esc(n.ref||'+')+'</span>'
+      +'<div class="nxrt"><b>'+esc(n.next_step)+'</b><small>'+esc(projName(nxProj(n)))+' · due '+esc(dayShort(n.due))+' · '+daysBetween(n.due,t)+' d late</small></div>'
+      +'<div class="nxrc"><input type="date" data-nxrd="'+n.id+'" aria-label="New due date for point '+esc(n.ref||'')+'" value="'+esc(addDays(w0.end,dowOf(t)===4?7:0))+'">'
+      +'<button type="button" class="tbtn" data-nxrset="'+n.id+'">Set date</button>'
+      +'<button type="button" class="tbtn" data-nxa="drop" data-id="'+n.id+'">Drop…</button></div></div>').join('')
+      :'<p class="nxok">'+icon('check',14)+' Nothing on you is overdue.</p>')+'</section>'
+    +'<section class="nxstep" id="nxs2">'+stepH(2,'Waiting for, not chased in 7 days',R.stale.length,'clear')
+    +(R.stale.length?R.stale.map(n=>'<div class="nxrr" data-nx="'+n.id+'"><span class="nxref">'+esc(n.ref||'+')+'</span>'
+      +'<div class="nxrt"><b>'+esc(n.next_step)+'</b><small>waiting on '+esc(n.waiting_on||n.who)+' · '+esc(chaseText(n,t))+' · '+esc(projName(nxProj(n)))+'</small></div>'
+      +'<div class="nxrc"><button type="button" class="tbtn" data-nxa="chase" data-id="'+n.id+'">'+icon('check',13)+' Chased today</button>'
+      +'<button type="button" class="tbtn" data-nxa="me" data-id="'+n.id+'">Back to me</button></div></div>').join('')
+      :'<p class="nxok">'+icon('check',14)+' Every waiting item was chased in the last 7 days.</p>')+'</section>'
+    +'<section class="nxstep" id="nxs3">'+stepH(3,'Charbel emails not handled in Key inbox',R.emails.length,'clear')
+    +(CAPS.emails?(R.emails.length?'<ul class="nxml">'+R.emails.slice(0,8).map(e=>'<li><span class="nxmd">'+esc(dayShort(rDay(e.sent_at)))+'</span>'
+      +'<span class="nxms">'+esc(e.subject||'(no subject)')+'</span></li>').join('')+'</ul>'
+      +(R.emails.length>8?'<p class="muted nxmore">and '+(R.emails.length-8)+' more</p>':''):'<p class="nxok">'+icon('check',14)+' No Charbel email is waiting.</p>')
+      +'<button type="button" class="tbtn" data-nxinbox="1">'+icon('inbox',14)+' Open Key inbox</button>'
+      :'<p class="muted">Key inbox is not set up on this database.</p>')+'</section>'
+    +'<section class="nxstep" id="nxs4"><h3 class="nxsh"><span class="nxsn">4</span><span class="nxst">Done this week against previous 3 weeks</span></h3>'
+    +'<table class="nxwk"><thead><tr><th>Week</th><th>Saturday to Thursday</th><th class="num">Done</th></tr></thead><tbody>'
+    +R.weeks.map(w=>'<tr'+(w.back===0?' class="cur"':'')+'><td>'+wlab(w)+'</td><td>'+esc(dayShort(w.start))+' to '+esc(dayShort(w.end))+'</td><td class="num">'+w.n+'</td></tr>').join('')
+    +'</tbody></table><p class="nxavg">Previous 3 weeks average: <b>'+(Math.round(avg*10)/10)+'</b> a week. This week: <b>'+R.weeks[0].n+'</b>.</p></section>'
+    +'<div class="nxrevf"><button type="button" class="tbtn primary" data-nxmark="1">'+icon('check',14)+' Mark reviewed</button>'
+    +'<span class="muted" id="nxrevd">'+(rev?'Reviewed on '+esc(dayLong(rev)):'Not reviewed yet')+'</span></div></div>');
+}
+async function nxReviewSet(id){
+  const inp=document.querySelector('#v-next [data-nxrd="'+id+'"]'); if(!inp)return;
+  const v=inp.value.trim(); if(!DATE_RE.test(v)){toast('Pick a date first');return;}
+  const n=nxById(id); if(!n)return;
+  return nxDo(id,{due:v},'Due '+dayShort(v),{due:n.due||''});
+}
+function nxMarkReviewed(){
+  const t=nxToday(); saveReview(t);
+  toast('Reviewed on '+dayLong(t));
+  buildNav(); renderNext();
+}
+function openReview(){NX.review=true;if(VIEWNOW!=='next')setView('next');else renderNext();const s=$('nxscroll');if(s)s.scrollTop=0;}
+
+/* ---------- jumping to a step from elsewhere ---------- */
+function gotoNext(id){
+  const n=nxById(id); if(!n)return;
+  NX.review=false; NX.tab=isOpenN(n)?(isWaitN(n)?'waiting':'me'):'done';
+  if(NX.od&&!nOver(n))NX.od=false;
+  const g=nxProj(n);
+  delete NX.col[nxColKey(NX.tab,g)];
+  if(VQ.next&&!nxText(n).includes(VQ.next.trim().toLowerCase()))VQ.next='';
+  if(NX.tab==='done'){const back=nxDoneGroups([n])[0];if(back)NX.col[nxColKey('done',back.key)]=false;}
+  if(VIEWNOW!=='next')setView('next'); else renderNext();
+  const el=document.querySelector('#v-next [data-nx="'+id+'"]');
+  if(el){if(el.scrollIntoView)el.scrollIntoView({block:'center'});el.focus({preventScroll:true});
+    el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1800);}
+}
+function nxTab(k,od){NX.review=false;NX.tab=k;NX.od=!!od;if(VIEWNOW!=='next')setView('next');else renderNext();}
+
+/* ---------- clicks, keys ---------- */
+function nxAct(a,id){
+  if(a==='wait')return nxWaitDialog(id);
+  if(a==='me')return nxBackToMe(id);
+  if(a==='chase')return nxChase(id);
+  if(a==='due')return nxDueDialog(id);
+  if(a==='note')return nxNoteDialog(id);
+  if(a==='drop')return nxDropDialog(id);
+  if(a==='reopen')return nxReopen(id);
+  if(a==='done')return nxDone(id);
+}
+function wireNext(){
+  const v=$('v-next'); if(!v)return;
+  v.addEventListener('click',e=>{
+    const t=e.target; if(!t.closest)return;
+    const b=t.closest('[data-nxa]'); if(b){e.stopPropagation();return nxAct(b.dataset.nxa,+b.dataset.id);}
+    const tb=t.closest('[data-nxtab]');
+    if(tb){NX.tab=tb.dataset.nxtab;NX.od=false;renderNext();const f=v.querySelector('[data-nxtab="'+NX.tab+'"]');if(f)f.focus();return;}
+    const k=t.closest('[data-nxk]');
+    if(k){const id=k.dataset.nxk;
+      if(id==='over'){NX.od=!NX.od;if(NX.od&&NX.tab==='done')NX.tab='me';}
+      else{NX.tab=id;NX.od=false;}
+      renderNext();return;}
+    const g=t.closest('[data-nxg]');
+    if(g){const id=g.dataset.nxg, tab=id.split('|')[0];
+      const cur=v.querySelector('[data-nxg="'+id.replace(/"/g,'\\"')+'"]');
+      NX.col[id]=cur?cur.getAttribute('aria-expanded')==='true':true; renderNext();
+      const f=v.querySelector('[data-nxg="'+id.replace(/"/g,'\\"')+'"]'); if(f)f.focus(); return;}
+    const p=t.closest('[data-nxpt]');
+    if(p){const id=+p.dataset.nxpt;NX.expand[id]=!NX.expand[id];NX.focus=id;renderNext();return;}
+    const ed=t.closest('[data-nxedit]'); if(ed)return nxBeginEdit(+ed.dataset.nxedit);
+    if(t.closest('[data-nxrev]'))return openReview();
+    if(t.closest('[data-nxback]')){NX.review=false;renderNext();return;}
+    if(t.closest('[data-nxmark]'))return nxMarkReviewed();
+    if(t.closest('[data-nxinbox]'))return setView('inbox');
+    const rs=t.closest('[data-nxrset]'); if(rs)return nxReviewSet(+rs.dataset.nxrset);
+    if(t.closest('[data-nxxl]'))return exportXLSX();
+  });
+  v.addEventListener('change',e=>{
+    const c=e.target.closest&&e.target.closest('[data-nxdone]'); if(!c)return;
+    const id=+c.dataset.nxdone;
+    if(c.checked)nxDone(id); else nxReopen(id);
+  });
+  v.addEventListener('submit',e=>{if(e.target.id==='nxadd'){e.preventDefault();nxAdd();}});
+  v.addEventListener('keydown',e=>{
+    const t=e.target;
+    if(!t.classList||!t.classList.contains('nxrow'))return;
+    if(e.ctrlKey||e.metaKey||e.altKey)return;
+    const id=+t.dataset.nx, n=nxById(id); if(!n)return;
+    const k=e.key, open=isOpenN(n);
+    const mv=d=>{const rows=[...v.querySelectorAll('.nxrow')],i=rows.indexOf(t),nx=rows[i+d];if(nx)nx.focus();};
+    if(k==='ArrowDown'||k==='j'){e.preventDefault();mv(1);}
+    else if(k==='ArrowUp'||k==='k'){e.preventDefault();mv(-1);}
+    else if(k==='Enter'||k==='F2'){e.preventDefault();nxBeginEdit(id);}
+    else if(k==='x'||k===' '){e.preventDefault();open?nxDone(id):nxReopen(id);}
+    else if(k==='o'&&!open){e.preventDefault();nxReopen(id);}
+    else if(k==='w'&&open&&!isWaitN(n)){e.preventDefault();nxWaitDialog(id);}
+    else if(k==='m'&&isWaitN(n)){e.preventDefault();nxBackToMe(id);}
+    else if(k==='c'&&isWaitN(n)){e.preventDefault();nxChase(id);}
+    else if(k==='d'&&open){e.preventDefault();nxDueDialog(id);}
+    else if(k==='n'){e.preventDefault();nxNoteDialog(id);}
+    else if((k==='Delete'||k==='Backspace')&&open){e.preventDefault();nxDropDialog(id);}
+  });
+  /* dashboard lists jump to the step */
+  $('main').addEventListener('click',e=>{const li=e.target.closest&&e.target.closest('li[data-nxgo]');if(li)gotoNext(+li.dataset.nxgo);});
+  $('main').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&e.target.matches&&e.target.matches('li[data-nxgo]'))gotoNext(+e.target.dataset.nxgo);});
+}
+
+/* ---------- Dashboard from next steps, once the old register is empty ---------- */
+function nxKpis(t){
+  t=t||nxToday(); const c=nxCounts(t);
+  return {me:c.me,wait:c.wait,over:c.over,doneW:c.doneW,
+    due7:NEXT.filter(n=>isOpenN(n)&&n.due&&n.due>=t&&n.due<=addDays(t,7)).length,
+    done30:NEXT.filter(n=>n.status==='Done'&&n.done_at&&n.done_at>=addDays(t,-30)).length,
+    stale:staleWaiting(t).length,emails:CAPS.emails?keyEmails().length:0,points:CAPS.points?newPoints():0};
+}
+function nxBars(){
+  const m=new Map();
+  nxProjects().forEach(k=>m.set(k,{k:projName(k),open:0,closed:0}));
+  NEXT.forEach(n=>{const o=m.get(nxProj(n)); if(!o)return; if(isOpenN(n))o.open++; else if(n.status==='Done')o.closed++;});
+  return [...m.values()].filter(o=>o.open+o.closed).slice(0,10);
+}
+function nxDli(n,right,hot){
+  return '<li data-nxgo="'+n.id+'" tabindex="0" role="button"><span class="dn">'+esc(n.ref||'+')+'</span><span class="dt">'
+    +esc(clip(n.next_step,120))+'</span><span class="dd'+(hot?' hot':'')+'">'+esc(right)+'</span></li>';
+}
+function renderDashNext(){
+  const t=nxToday(), K=nxKpis(t);
+  const tiles=[
+    [K.me,'On me, open','',()=>nxTab('me')],
+    [K.wait,'Waiting for','',()=>nxTab('waiting')],
+    [K.over,'Overdue','hot',()=>nxTab('me',true)],
+    [K.stale,'Not chased in 7 days',K.stale?'hot':'',()=>openReview()],
+    [K.doneW,'Done this week','',()=>nxTab('done')],
+    [K.emails,'Key emails waiting','key',()=>setView('inbox')]
+  ].filter((x,i)=>i!==5||CAPS.emails);
+  DASHT=tiles.map(x=>[null,x[1],x[2],x[3]]);
+  const od=NEXT.filter(n=>nOver(n,t)).sort((a,b)=>cmpS(a.due,b.due)||nxOrder(a,b)).slice(0,10);
+  const wt=NEXT.filter(isWaitN).sort((a,b)=>chaseDays(b,t)-chaseDays(a,t)||nxOrder(a,b)).slice(0,10);
+  const dw=doneIn(nxWeek(t,0)).sort((a,b)=>cmpS(b.done_at,a.done_at)).slice(0,10);
+  const W=Math.max(280,Math.min(880,(($('v-dash').clientWidth||700)-90)));
+  const chart=chartSVG(nxBars(),W).replace('Open and closed actions by project','Open and done next steps by project').replace(/ closed<\/title>/g,' done</title>');
+  putView('dash','<div class="vscroll"><div class="vhead"><div><h2>Dashboard</h2><p>Where next steps stand today, '+esc(dayLong(t))+'. Week runs Saturday to Thursday.</p></div></div>'
+    +'<div class="tiles nxtiles">'+tiles.map((x,i)=>'<button class="tile '+x[2]+'" data-tile="'+i+'"><b>'+x[0]+'</b><span>'+x[1]+'</span></button>').join('')+'</div>'
+    +'<div class="dgrid nxdg"><section class="card full"><h3>Open and done next steps by project</h3>'
+    +'<div id="chartbox">'+chart+'</div><div class="legend"><span><i class="o"></i>Open</span><span><i class="c"></i>Done</span></div></section>'
+    +'<div class="nxdcol"><section class="card"><h3>Overdue</h3>'+dlist(od.map(n=>nxDli(n,daysBetween(n.due,t)+' d late',true)),'Nothing is overdue.')+'</section>'
+    +'<section class="card"><h3>Done this week</h3>'+dlist(dw.map(n=>nxDli(n,dayShort(n.done_at))),'Nothing done yet this week.')+'</section></div>'
+    +'<section class="card"><h3>Waiting for</h3>'+dlist(wt.map(n=>nxDli(n,(n.waiting_on||n.who)+' · '+chaseText(n,t),chaseDays(n,t)>7)),'Not waiting on anyone.')+'</section></div></div>');
+}
+
+/* ---------- Room: one pile per project of next-step cards ---------- */
+function nxCardHTML(c,common){
+  const n=c.n, t=nxToday(), over=nOver(n,t), wait=isWaitN(n);
+  return '<div class="rc ac nx'+(wait?' wt':'')+'"'+common+' role="button" tabindex="-1" aria-label="Next step '
+    +esc(n.ref||'')+': '+esc(clip(n.next_step,70))+(wait?', waiting on '+esc(n.waiting_on||n.who):'')+'">'
+    +'<span class="rl1"><b class="rno">'+esc(n.ref||'+')+'</b><span class="rst">'+(wait?'waiting: '+esc(clip(n.waiting_on||n.who,16)):'on me')+'</span></span>'
+    +'<span class="rsubj">'+esc(n.next_step||'')+'</span>'
+    +'<span class="rl3'+(over?' over':'')+'">'+(n.due?(over?'overdue ':'due ')+esc(dayShort(n.due)):'since '+esc(dayShort(meetDay(n))))+'</span></div>';
+}
+async function roomMoveNext(id,target){
+  const n=nxById(id); if(!n)return;
+  const from=nxProj(n);
+  if(from===target){toast('Already in '+projName(target)+'.');return;}
+  try{await patchNext(id,{project:target});}catch(err){toast('Could not move: '+err.message);return;}
+  toast('Moved to '+projName(target)+'.','Undo',async()=>{
+    try{await patchNext(id,{project:from});toast('Moved back.');}catch(err){toast('Could not undo: '+err.message);}});
+}
+
+/* ---------- print and Excel ---------- */
+function nxReportHTML(head){
+  const t=nxToday(), c=nxCounts(t), open=NEXT.filter(isOpenN).sort(nxOrder), gs=nxGroups(open,t);
+  const meN=meName();
+  const withTxt=n=>isWaitN(n)?'Waiting: '+(n.waiting_on||n.who||''):(n.who===meN?shortName(n.who):(n.who||''));
+  let h=head('Next steps','On me '+c.me+', waiting for '+c.wait+', overdue '+c.over+', done this week '+c.doneW);
+  gs.forEach((g,i)=>{
+    h+='<h2>'+(i+1)+'. '+esc(g.name)+' ('+g.rows.length+')</h2><table class="nxp"><thead><tr><th class="w1">Ref</th><th>Next step and Charbel point</th>'
+      +'<th class="ww">With</th><th class="wd">Due</th><th class="wd">Since</th></tr></thead><tbody>'
+      +g.rows.map(n=>'<tr><td>'+esc(n.ref||'')+'</td><td><b>'+esc(n.next_step||'')+'</b>'
+        +(n.point&&n.point!==n.next_step?'<div class="pt">'+esc(n.point)+'</div>':'')+(n.note?'<div class="pt">Note: '+esc(n.note)+'</div>':'')+'</td>'
+        +'<td>'+esc(withTxt(n))+(isWaitN(n)?'<div class="pt">'+esc(chaseText(n,t))+'</div>':'')+'</td>'
+        +'<td class="wd">'+(n.due?esc(dmy(n.due))+(nOver(n,t)?'<div class="pt">overdue</div>':''):'')+'</td><td class="wd">'+esc(dmy(meetDay(n)))+'</td></tr>').join('')
+      +'</tbody></table>';
+  });
+  if(!gs.length)h+='<p>No open next steps.</p>';
+  const dw=doneIn(nxWeek(t,0));
+  h+='<h2>'+(gs.length+1)+'. Done this week ('+dw.length+')</h2>'
+    +(dw.length?'<table class="nxp"><thead><tr><th class="w1">Ref</th><th>Next step</th><th class="ww">Project</th><th class="wd">Done</th></tr></thead><tbody>'
+      +dw.map(n=>'<tr><td>'+esc(n.ref||'')+'</td><td>'+esc(n.next_step||'')+'</td><td>'+esc(projName(nxProj(n)))+'</td><td class="wd">'+esc(dmy(n.done_at))+'</td></tr>').join('')
+      +'</tbody></table>':'<p>Nothing done yet this week.</p>');
+  return h;
+}
+const NXHEADS=['Ref','Project','Next step','Charbel point','Who','Ball','Waiting on','Due','Status','Done','Last chased'];
+function nxSheetRows(){
+  const order=nxProjects(), rank=n=>isMeN(n)?0:isWaitN(n)?1:2;
+  return NEXT.slice().sort((a,b)=>rank(a)-rank(b)||order.indexOf(nxProj(a))-order.indexOf(nxProj(b))||nxOrder(a,b))
+    .map(n=>[n.ref||'',n.project||'',n.next_step||'',n.point||'',n.who||'',n.ball==='waiting'?'Waiting for':'On me',
+      n.waiting_on||'',xdate(n.due),n.status||'',xdate(n.done_at),xdate(n.last_chased)]);
+}
+function addNextSheet(wb){
+  if(!CAPS.next)return;
+  const ws=plainSheet(wb,'Next steps',NXHEADS,[7,14,46,56,20,12,16,13,10,13,13],nxSheetRows(),[7,9,10]);
+  ws.orderNo=-1;
+  return ws;
+}
+
 /* ----- closures ----- */
 const CLF={period:'week',reason:''};
 const cDay=c=>c.closed_on||rDay(c.closed_at);
@@ -5918,6 +6695,7 @@ function dli(a,right,hot){
     +esc(clip(a.text,120))+'</span><span class="dd'+(hot?' hot':'')+'">'+esc(right)+'</span></li>';
 }
 function renderDash(){
+  if(nextMode())return renderDashNext();
   const K=kpis(), t=TODAY(), ws=weekStartPast(t);
   const tiles=[
     ['open_actions','Open actions','',()=>gotoRegister('open')],
@@ -5991,6 +6769,7 @@ function wireViews(){
 function reportHTML(kind){
   const t=TODAY();
   const head=(title,sub)=>'<h1>'+esc(title)+'</h1><p class="ps">'+esc(sub)+' · printed '+esc(dmy(t))+' · '+esc(BUILD)+'</p>';
+  if(kind==='next')return nxReportHTML(head);
   if(kind==='inbox'){
     const rows=keyEmails();
     return head('Key inbox','Emails from key people or mentioning Karim, not yet handled: '+rows.length)
@@ -6057,6 +6836,7 @@ function plainSheet(wb,name,heads,widths,rows,dateCols){
   return ws;
 }
 function addExtraSheets(wb){
+  addNextSheet(wb);
   if(CAPS.emails&&EM.length){
     plainSheet(wb,'Emails',['Date','Time','From','Subject','Linked items','Screenshots','Handled'],[13,8,24,52,16,12,10],
       EM.slice().sort((a,b)=>String(b.sent_at||'').localeCompare(String(a.sent_at||''))).map(e=>[
@@ -6102,14 +6882,17 @@ function closedFromGrid(list){
    ============================================================ */
 async function startApp(){
   loadPrefs(); readSide();
-  await loadAll();
+  const nx=await Promise.all([loadAll(),has('task_next?select=id')]);
+  CAPS.next=!!nx[1];
+  if(CAPS.next){try{await loadNext();}catch(e){console.error('next steps',e);CAPS.next=false;}}
   await loadLogCounts();
   paint();
   wireGrid(); wireDrag(); wireTools(); wireResize(); wireRowResize(); wireMobile();
-  wireShell(); wireCtx(); wireDrawer(); wireViews(); wireB30(); wireLightbox(); wirePalette(); wirePaste();
+  wireShell(); wireCtx(); wireDrawer(); wireViews(); wireB30(); wireNext(); wireLightbox(); wirePalette(); wirePaste();
   buildNav();
   $('app').classList.add('ready');
-  if(!isMobile())$('gwrap').focus();
+  if(CAPS.next)setView('next');
+  else if(!isMobile())$('gwrap').focus();
   /* the new sections load after the grid is on screen; a missing table only hides its section */
   await loadExtra();
   paint(); buildNav(); renderView(VIEWNOW);
